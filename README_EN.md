@@ -132,7 +132,7 @@ The core corpus containing 5,989 fully annotated Chinese copular metaphorical co
 | Field | Value | Calculation/Determination |
 |:------|:-----:|:--------------------------|
 | `mapping_direction` | 2.0 | Source "sharp weapon" (concrete) → Target "general line" (abstract), classified as "concrete→abstract", coded as 2 |
-| `cognitive_accessibility` | 4.0 | Formula: 0.55×*D*reg + 0.45×*D*trans; "weapon" is high-frequency conventional metaphor, *D*reg≈0.8, *D*trans≈0.7, calculated value≈0.76, corresponds to Level 4 (0.60-0.79) |
+| `cognitive_accessibility` | 4.0 | Formula: 0.55×*D*reg + 0.45×*D*trans; "weapon" is high-frequency conventional metaphor, *D*reg≈0.8, *D*trans≈0.7, raw score≈0.76 (relatively high), converted to Level 4 via quintile method |
 | `conceptual_complexity` | 2.0 | Raw score converted via quintile method; this construction falls in the 20-40% percentile (relatively simple), consistent with MD=2 type mean (2.002±0.853) |
 
 > See Appendix C (Cognitive Accessibility) and Appendix D (Conceptual Complexity) for detailed measurement schemes.
@@ -184,7 +184,7 @@ D_processing = 0.6×I_depth + 0.4×S_schema
 | *I*depth | 0.33 | Single-step inference (weapon functionality → general line's role) |
 | *S*schema | 0 | Single simple schema (force schema) |
 
-Calculation: *D*abstract = 0.25×0.80 + 0.50×0.33 + 0.25×0.40 = 0.465, *D*processing = 0.6×0.33 + 0.4×0 = 0.198, Raw score = 0.55×0.465 + 0.45×0.198 ≈ 0.345. After quintile conversion, corresponds to Level 2 (relatively simple), consistent with MD=2 type mean.
+Calculation: *D*abstract = 0.25×0.80 + 0.50×0.33 + 0.25×0.40 = 0.465, *D*processing = 0.6×0.33 + 0.4×0 = 0.198, Raw score = 0.55×0.465 + 0.45×0.198 ≈ 0.345 (relatively low). Annotated value 2.0 is consistent with MD=2 type mean.
 
 </details>
 
