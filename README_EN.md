@@ -137,6 +137,43 @@ The core corpus containing 5,989 fully annotated Chinese copular metaphorical co
 
 > See Appendix C (Cognitive Accessibility) and Appendix D (Conceptual Complexity) for detailed measurement schemes.
 
+<details>
+<summary><strong>Conceptual Complexity Formula System</strong> (click to expand)</summary>
+
+**Formula D-3 (Final Formula)**:
+```
+Conceptual_Complexity = 0.55 × D_abstract + 0.45 × D_processing
+```
+
+**Formula D-1: Abstraction Dimension**
+```
+D_abstract = 0.25×F_field + 0.50×A_level + 0.25×D_number
+```
+- F_field: Domain transfer degree (same=1, near=2, far=3)
+- A_level: Abstraction level (basic=1, superordinate=2, highly abstract=3)
+- D_number: Dimension count (single=1, dual=2, multiple=3)
+
+**Formula D-2: Processing Dimension**
+```
+D_processing = 0.6×I_depth + 0.4×S_schema
+```
+- I_depth: Inference depth (direct=1, single-step=2, multi-step=3)
+- S_schema: Schema activation (single=1, combined=2, novel=3)
+
+**Example zh55588 Verification** ("General line is a sharp weapon for building socialism", MD=2):
+
+| Parameter | Value | Description |
+|:----------|:-----:|:------------|
+| F_field | 2 | Politics→Military, near-domain transfer |
+| A_level | 1 | Basic-level metaphor |
+| D_number | 1 | Single dimension |
+| I_depth | 1-2 | Direct/single-step inference |
+| S_schema | 1 | Single schema activation |
+
+Calculation: D_abstract = 0.25×2 + 0.50×1 + 0.25×1 = 1.25, D_processing ≈ 1.2, Conceptual_Complexity ≈ 0.55×1.25 + 0.45×1.2 ≈ 1.23-2.0. The annotated value 2.0 is consistent with MD=2 type mean (2.002±0.853).
+
+</details>
+
 
 ### Data Tables Index
 
