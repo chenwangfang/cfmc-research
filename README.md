@@ -111,17 +111,17 @@ cfmc-research/
 {
   "metadata": {
     "description": "CFMC-33汉语系表隐喻构式标注语料库",
-    "field_count": 41,
+    "field_count": 45,
     "construction_count": 5989
   },
   "constructions": [
     {
-      "original_id": "CFMC_0001",
-      "full_sentence": "生活是一本教科书。",
-      "construction_form": "X是Y",
-      "cognitive_accessibility": 4,
-      "conceptual_complexity": 2,
-      "mapping_direction": "concrete_to_abstract",
+      "original_id": "zh55588",
+      "full_sentence": "会议认为，总路线是建设社会主义的锐利武器...",
+      "construction": "总路线是建设社会主义的锐利武器",
+      "cognitive_accessibility": 4.0,
+      "conceptual_complexity": 2.0,
+      "mapping_direction": 2.0,
       ...
     }
   ]

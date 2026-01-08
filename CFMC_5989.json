@@ -1,7 +1,7 @@
 {
   "metadata": {
     "description": "CFMC-33汉语系表隐喻构式标注语料库",
-    "field_count": 41,
+    "field_count": 45,
     "construction_count": 5989,
     "generated_time": "2025-11-26 23:06:55",
     "source_file": "CFMC的已标注语料.md",
