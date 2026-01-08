@@ -127,6 +127,17 @@ The core corpus containing 5,989 fully annotated Chinese copular metaphorical co
 }
 ```
 
+**Field Calculation Process** (Example: zh55588):
+
+| Field | Value | Calculation/Determination |
+|:------|:-----:|:--------------------------|
+| `mapping_direction` | 2.0 | Source "sharp weapon" (concrete) → Target "general line" (abstract), classified as "concrete→abstract", coded as 2 |
+| `cognitive_accessibility` | 4.0 | Formula: 0.55×D_reg + 0.45×D_trans; "weapon" is high-frequency conventional metaphor, D_reg≈0.8, D_trans≈0.7, calculated value≈0.76, corresponds to Level 4 (0.60-0.79) |
+| `conceptual_complexity` | 2.0 | Formula: 0.55×D_abstract + 0.45×D_processing; politics→military is near-domain transfer, basic level, single dimension, calculated value≈2.0, consistent with MD=2 type mean (2.002±0.853) |
+
+> See Appendix C (Cognitive Accessibility) and Appendix D (Conceptual Complexity) for detailed measurement schemes.
+
+
 ### Data Tables Index
 
 - **Q1 Typological Analysis (Chapter 5)**: Tables 58-72
