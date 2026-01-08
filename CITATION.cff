@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+message: "If you use this corpus or code in your research, please cite it as below."
+type: dataset
+title: "CFMC-Research: A Corpus-Based Study on the Cognitive Mechanisms of Chinese Copular Metaphorical Constructions"
+abstract: "This research builds upon Sullivan's (2013) theory of metaphorical constructions to develop the Cognitive Framework for Metaphorical Constructions (CFMC) for Chinese copular metaphors. The framework is validated through a corpus of 5,989 annotated constructions, testing a four-stage cognitive encoding mechanism."
+authors:
+  - family-names: "Chen"
+    given-names: "Fang"
+    email: "15397647129@163.com"
+    affiliation: "Beijing Normal University"
+    orcid: "https://orcid.org/0009-0001-9317-7694"
+  - family-names: "Wang"
+    given-names: "Deliang"
+    email: "wangdeliang@bnu.edu.cn"
+    affiliation: "Beijing Normal University"
+    orcid: "https://orcid.org/0000-0001-6142-1624"
+keywords:
+  - cognitive linguistics
+  - metaphor
+  - corpus linguistics
+  - Chinese linguistics
+  - construction grammar
+  - structural equation modeling
+  - network analysis
+license: CC-BY-NC-4.0
+version: "1.0.0"
+date-released: "2026-01-07"
+repository-code: "https://github.com/chenwangfang/cfmc-research"
+preferred-citation:
+  type: thesis
+  authors:
+    - family-names: "Chen"
+      given-names: "Fang"
+  title: "A Corpus-Based Study on the Cognitive Mechanisms of Chinese Copular Metaphorical Construction Networks"
+  year: 2026
+  institution:
+    name: "Beijing Normal University"
+  thesis-type: "PhD Dissertation"

@@ -4,13 +4,17 @@
 
 *A Corpus-Based Study on the Cognitive Mechanisms of Chinese Copular Metaphorical Constructions*
 
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.XXXXXXX-blue)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![Corpus](https://img.shields.io/badge/Corpus-5989%20constructions-blue)](CFMC_5989.json)
 [![Scripts](https://img.shields.io/badge/Scripts-39%20Python-green)](scripts/)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey)](LICENSE)
-[![Language](https://img.shields.io/badge/Language-Chinese-red)](README.md)
+[![GitHub Pages](https://img.shields.io/badge/Demo-GitHub%20Pages-brightgreen)](https://chenwangfang.github.io/cfmc-research/visualization/)
+[![中文](https://img.shields.io/badge/中文-README-red)](README.md)
 [![English](https://img.shields.io/badge/English-README-orange)](README_EN.md)
 
 ---
+
+> **快速链接**：[语料库](CFMC_5989.json) | [理论框架](CFMC.md) | [在线演示](https://chenwangfang.github.io/cfmc-research/visualization/) | [English](README_EN.md)
 
 ## 项目简介
 
@@ -49,6 +53,7 @@ cfmc-research/
 ├── README.md                    # 中文说明
 ├── README_EN.md                 # 英文说明
 ├── LICENSE                      # CC BY-NC 4.0许可证
+├── CITATION.cff                 # 引用信息（GitHub自动识别）
 ├── .gitignore                   # Git忽略配置
 │
 ├── CFMC_5989.json               # 核心语料库（5989条，13MB）

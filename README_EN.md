@@ -4,12 +4,16 @@
 
 *汉语系表隐喻构式认知框架研究*
 
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.XXXXXXX-blue)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![Corpus](https://img.shields.io/badge/Corpus-5989%20constructions-blue)](CFMC_5989.json)
 [![Scripts](https://img.shields.io/badge/Scripts-39%20Python-green)](scripts/)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey)](LICENSE)
+[![GitHub Pages](https://img.shields.io/badge/Demo-GitHub%20Pages-brightgreen)](https://chenwangfang.github.io/cfmc-research/visualization/)
 [![中文](https://img.shields.io/badge/中文-README-red)](README.md)
 
 ---
+
+> **Quick Links**: [Corpus](CFMC_5989.json) | [Framework](CFMC.md) | [Live Demo](https://chenwangfang.github.io/cfmc-research/visualization/) | [中文](README.md)
 
 ## Overview
 
@@ -48,6 +52,7 @@ cfmc-research/
 ├── README.md                    # Chinese documentation
 ├── README_EN.md                 # English documentation
 ├── LICENSE                      # CC BY-NC 4.0 License
+├── CITATION.cff                 # Citation info (GitHub auto-detected)
 ├── .gitignore                   # Git ignore configuration
 │
 ├── CFMC_5989.json               # Core corpus (5,989 entries, 13MB)

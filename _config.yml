@@ -1,0 +1,17 @@
+# GitHub Pages Configuration
+title: CFMC-Research
+description: "汉语系表隐喻构式认知框架研究 | A Corpus-Based Study on Chinese Copular Metaphorical Constructions"
+baseurl: "/cfmc-research"
+url: "https://chenwangfang.github.io"
+
+# Theme
+remote_theme: pages-themes/minimal@v0.2.0
+plugins:
+  - jekyll-remote-theme
+
+# Exclude from processing
+exclude:
+  - scripts/
+  - data/
+  - "*.json"
+  - "*.py"
