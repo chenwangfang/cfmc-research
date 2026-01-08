@@ -132,8 +132,8 @@ The core corpus containing 5,989 fully annotated Chinese copular metaphorical co
 | Field | Value | Calculation/Determination |
 |:------|:-----:|:--------------------------|
 | `mapping_direction` | 2.0 | Source "sharp weapon" (concrete) → Target "general line" (abstract), classified as "concrete→abstract", coded as 2 |
-| `cognitive_accessibility` | 4.0 | Formula: 0.55×D_reg + 0.45×D_trans; "weapon" is high-frequency conventional metaphor, D_reg≈0.8, D_trans≈0.7, calculated value≈0.76, corresponds to Level 4 (0.60-0.79) |
-| `conceptual_complexity` | 2.0 | Formula: 0.55×D_abstract + 0.45×D_processing; politics→military is near-domain transfer, basic level, single dimension, calculated value≈2.0, consistent with MD=2 type mean (2.002±0.853) |
+| `cognitive_accessibility` | 4.0 | Formula: 0.55×*D*reg + 0.45×*D*trans; "weapon" is high-frequency conventional metaphor, *D*reg≈0.8, *D*trans≈0.7, calculated value≈0.76, corresponds to Level 4 (0.60-0.79) |
+| `conceptual_complexity` | 2.0 | Raw score converted via quintile method; this construction falls in the 20-40% percentile (relatively simple), consistent with MD=2 type mean (2.002±0.853) |
 
 > See Appendix C (Cognitive Accessibility) and Appendix D (Conceptual Complexity) for detailed measurement schemes.
 
@@ -142,35 +142,49 @@ The core corpus containing 5,989 fully annotated Chinese copular metaphorical co
 
 **Formula D-3 (Final Formula)**:
 ```
-Conceptual_Complexity = 0.55 × D_abstract + 0.45 × D_processing
+Conceptual_Complexity_Raw = 0.55 × D_abstract + 0.45 × D_processing
 ```
+Raw score range [0, 1], converted to 1-5 scale via quintile method.
 
-**Formula D-1: Abstraction Dimension**
+**Formula D-1: Cognitive Domain Abstraction**
 ```
 D_abstract = 0.25×F_field + 0.50×A_level + 0.25×D_number
 ```
-- F_field: Domain transfer degree (same=1, near=2, far=3)
-- A_level: Abstraction level (basic=1, superordinate=2, highly abstract=3)
-- D_number: Dimension count (single=1, dual=2, multiple=3)
 
-**Formula D-2: Processing Dimension**
+| Parameter | Meaning | Values |
+|:----------|:--------|:-------|
+| *F*field | Domain type | Everyday concrete=0.20, Everyday abstract=0.40, Professional concrete=0.60, Professional abstract=0.80, Philosophical abstract=1.00 |
+| *A*level | Abstraction level | Basic concrete=0, First-order abstract=0.33, Second-order abstract=0.67, Higher-order abstract=1.00 |
+| *D*number | Cognitive domain count | Single=0.20, 2-3 domains=0.40, 4-5 domains=0.60, 6+ domains=0.80, Highly complex=1.00 |
+
+**Formula D-2: Mapping Processing Depth**
 ```
 D_processing = 0.6×I_depth + 0.4×S_schema
 ```
-- I_depth: Inference depth (direct=1, single-step=2, multi-step=3)
-- S_schema: Schema activation (single=1, combined=2, novel=3)
+
+| Parameter | Meaning | Values |
+|:----------|:--------|:-------|
+| *I*depth | Inference depth | Direct mapping=0, Single-step=0.33, Multi-step=0.67, Deep inference=1.00 |
+| *S*schema | Image schema complexity | Single simple=0, Single complex=0.33, Multi-schema=0.67, Complex network=1.00 |
+
+**Quintile Conversion**:
+- [0%, 20%) → Level 1 (Very simple)
+- [20%, 40%) → Level 2 (Relatively simple)
+- [40%, 60%) → Level 3 (Moderate)
+- [60%, 80%) → Level 4 (Relatively complex)
+- [80%, 100%] → Level 5 (Very complex)
 
 **Example zh55588 Verification** ("General line is a sharp weapon for building socialism", MD=2):
 
 | Parameter | Value | Description |
 |:----------|:-----:|:------------|
-| F_field | 2 | Politics→Military, near-domain transfer |
-| A_level | 1 | Basic-level metaphor |
-| D_number | 1 | Single dimension |
-| I_depth | 1-2 | Direct/single-step inference |
-| S_schema | 1 | Single schema activation |
+| *F*field | 0.80 | Target "general line" is professional abstract domain (political concept) |
+| *A*level | 0.33 | First-order abstract (abstracted from concrete policies) |
+| *D*number | 0.40 | Activates 2-3 cognitive domains (political, action, goal) |
+| *I*depth | 0.33 | Single-step inference (weapon functionality → general line's role) |
+| *S*schema | 0 | Single simple schema (force schema) |
 
-Calculation: D_abstract = 0.25×2 + 0.50×1 + 0.25×1 = 1.25, D_processing ≈ 1.2, Conceptual_Complexity ≈ 0.55×1.25 + 0.45×1.2 ≈ 1.23-2.0. The annotated value 2.0 is consistent with MD=2 type mean (2.002±0.853).
+Calculation: *D*abstract = 0.25×0.80 + 0.50×0.33 + 0.25×0.40 = 0.465, *D*processing = 0.6×0.33 + 0.4×0 = 0.198, Raw score = 0.55×0.465 + 0.45×0.198 ≈ 0.345. After quintile conversion, corresponds to Level 2 (relatively simple), consistent with MD=2 type mean.
 
 </details>
 
