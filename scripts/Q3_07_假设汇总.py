@@ -632,7 +632,7 @@ def verify_h3_2(results: dict) -> dict:
         'evidence': []
     }
 
-    # 基于CLAUDE.md中的预期，使用模拟数据
+    # 基于研究假设的预期示例值（实际值需从Q1和Q3整合）
     # 实际分析需要整合Q1的原型距离和Q3的路径系数
     verification['evidence'].append("H3-2验证需要整合Q1和Q3的分析结果")
 
