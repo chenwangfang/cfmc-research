@@ -16,7 +16,7 @@
   python3 语料质量检查.py --alignment  # 衍生文件对齐检查
   python3 语料质量检查.py --report # 生成Markdown报告
 
-作者：Claude Code
+作者：Fang Chen
 日期：2026-01-06
 """
 
