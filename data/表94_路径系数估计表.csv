@@ -1,0 +1,9 @@
+﻿,路径,系数beta,标准误,z值,p值,显著性
+0,eta2->eta3 (beta2),0.526,0.055,9.60,<.001,***
+1,eta2->conventionality,1.000,-,-,-,
+2,eta2->cognitive_accessibility,4.530,0.061,73.85,<.001,***
+3,eta2->prototype_distance,-3.746,0.053,-70.14,<.001,***
+4,eta3->mapping_direction,1.000,-,-,-,
+5,eta3->systematicity,1.208,0.124,9.73,<.001,***
+6,eta3->entailment_richness,0.539,0.055,9.90,<.001,***
+7,eta3->Y (gamma),-0.648,0.097,-6.67,<.001,***

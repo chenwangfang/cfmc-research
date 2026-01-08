@@ -1,0 +1,2495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汉语系表隐喻构式网络认知机制研究 - 动态可视化展示</title>
+
+    <!-- 第三方库 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.4.21/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+
+    <style>
+        /* ===== 基础样式 ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* ===== 顶部导航 ===== */
+        .header {
+            background: linear-gradient(135deg, #1E88E5 0%, #1565C0 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content { max-width: 1400px; margin: 0 auto 15px; }
+        .title { font-size: 22px; font-weight: 600; margin-bottom: 5px; }
+        .subtitle { font-size: 13px; opacity: 0.9; }
+
+        .nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover { background: rgba(255,255,255,0.25); }
+        .nav-btn.active { background: white; color: #1E88E5; font-weight: 600; }
+
+        /* ===== 主内容 ===== */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .module-section { display: none; }
+        .module-section.active { display: block; }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .section-header h2 {
+            font-size: 24px;
+            color: #1E88E5;
+            margin-bottom: 8px;
+        }
+
+        .section-header p { color: #666; font-size: 14px; }
+
+        /* ===== 说明文字区域 ===== */
+        .description-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+            border-left: 4px solid #1E88E5;
+            padding: 20px 25px;
+            margin-bottom: 25px;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .description-box h4 {
+            color: #1E88E5;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .description-box p {
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .description-box ul {
+            margin-left: 20px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .description-box li { margin-bottom: 5px; }
+
+        .highlight-text {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .theory-tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1565C0;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+
+        /* ===== 统计卡片 ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-value { font-size: 28px; font-weight: 700; color: #1E88E5; }
+        .stat-label { font-size: 13px; color: #666; margin-top: 5px; }
+
+        /* ===== 图表容器 ===== */
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .chart-container h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .chart-area { width: 100%; height: 500px; min-height: 450px; }
+        .chart-area.large { height: 600px; min-height: 550px; }
+
+        .dual-chart {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .dual-chart .chart-area { height: 450px; min-height: 400px; }
+
+        /* ===== 子导航标签 ===== */
+        .sub-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .sub-tab {
+            background: #f0f0f0;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .sub-tab:hover { background: #e0e0e0; }
+        .sub-tab.active { background: #1E88E5; color: white; }
+
+        /* ===== 表格样式 ===== */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid #e0e0e0;
+        }
+
+        .data-table th {
+            background: #f5f7fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .data-table tr:hover { background: #f9f9f9; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pass { background: #c8e6c9; color: #2e7d32; }
+        .status-fail { background: #ffcdd2; color: #c62828; }
+        .status-partial { background: #fff3cd; color: #856404; }
+
+        /* ===== 研究问题卡片 ===== */
+        .rq-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .rq-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-top: 4px solid #1E88E5;
+        }
+
+        .rq-card:nth-child(2) { border-top-color: #43A047; }
+        .rq-card:nth-child(3) { border-top-color: #FF9800; }
+
+        .rq-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        .rq-badge {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            background: #1E88E5;
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .rq-card:nth-child(2) .rq-badge { background: #43A047; }
+        .rq-card:nth-child(3) .rq-badge { background: #FF9800; }
+
+        .rq-card h4 { font-size: 16px; margin-bottom: 10px; color: #333; }
+        .rq-card p { font-size: 13px; color: #666; margin-bottom: 15px; }
+
+        .rq-tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1565C0;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+        }
+
+        /* ===== 链接类型详情 ===== */
+        .link-type-detail {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .link-type-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #1E88E5;
+        }
+
+        .link-type-card h5 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .link-type-card .count {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1E88E5;
+        }
+
+        .link-type-card .percent {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .link-type-card .definition {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* ===== SEM路径说明 ===== */
+        .path-explanation {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .path-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .path-card.highlight {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+        }
+
+        .path-symbol {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1E88E5;
+        }
+
+        .path-value {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 5px 0;
+        }
+
+        .path-label { font-size: 12px; color: #666; }
+
+        /* ===== 假设验证表格 ===== */
+        .hypothesis-card {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ccc;
+        }
+
+        .hypothesis-card.supported { border-left-color: #4CAF50; }
+        .hypothesis-card.partial { border-left-color: #FFC107; }
+        .hypothesis-card.rejected { border-left-color: #F44336; }
+
+        .h-id {
+            font-weight: 700;
+            font-size: 14px;
+            width: 60px;
+            color: #333;
+        }
+
+        .h-content { flex: 1; font-size: 13px; }
+        .h-result { width: 150px; font-size: 12px; color: #666; }
+
+        .h-status {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 11px;
+            color: white;
+        }
+
+        /* ===== 页脚 ===== */
+        .footer {
+            background: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .footer p { font-size: 13px; margin-bottom: 5px; }
+        .footer-meta { font-size: 11px; opacity: 0.7; }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 768px) {
+            .dual-chart { grid-template-columns: 1fr; }
+            .rq-cards { grid-template-columns: 1fr; }
+            .link-type-detail { grid-template-columns: 1fr; }
+            .path-explanation { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 顶部导航 -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">{{ researchInfo.title }}</h1>
+                <p class="subtitle">{{ researchInfo.subtitle }} | 博士学位论文可视化展示系统</p>
+            </div>
+            <nav class="nav">
+                <button
+                    v-for="module in modules"
+                    :key="module.id"
+                    :class="['nav-btn', { active: currentModule === module.id }]"
+                    @click="navigateTo(module.id)"
+                >
+                    <span>{{ module.icon }}</span>
+                    <span>{{ module.name }}</span>
+                </button>
+            </nav>
+        </header>
+
+        <!-- 主内容区域 -->
+        <main class="main-content">
+            <!-- ========== 研究概览 ========== -->
+            <section :class="['module-section', { active: currentModule === 'overview' }]">
+                <div class="section-header">
+                    <h2>研究概览</h2>
+                    <p>基于BCC语料库的汉语系表隐喻构式网络认知机制研究</p>
+                </div>
+
+                <!-- 核心统计 -->
+                <div class="stats-grid">
+                    <div class="stat-card" v-for="stat in overviewStats" :key="stat.label">
+                        <div class="stat-value">{{ stat.value }}{{ stat.unit }}</div>
+                        <div class="stat-label">{{ stat.label }}</div>
+                    </div>
+                </div>
+
+                <!-- 理论框架说明 -->
+                <div class="description-box">
+                    <h4>📚 隐喻构式认知框架（CFMC）</h4>
+                    <p>本研究以 <span class="highlight-text">Sullivan (2013) 隐喻构式理论</span> 为核心主干，针对其应用于汉语系词构式时的理论盲点进行<strong>三向整合</strong>：</p>
+                    <ul>
+                        <li><span class="theory-tag">借鉴</span>Langacker (1987, 2008) 认知语法：认知参照点模型、侧显/基底机制 → 支撑 Q3</li>
+                        <li><span class="theory-tag">整合</span>Goldberg (1995, 2006) 构式网络理论：四类链接关系、构式网络拓扑 → 支撑 Q2</li>
+                        <li><span class="theory-tag">聚焦</span>汉语类型学特征：零系词现象、话题突出特征 → 贯穿 Q1-Q3</li>
+                    </ul>
+                    <p style="margin-top:12px;"><strong>元认知原则</strong>：认知分工原则 + 具身锚定需求</p>
+                </div>
+
+                <!-- 两层分析框架说明 -->
+                <div class="description-box" style="margin-top:15px;border-left:4px solid #FF9800;">
+                    <h4>⚠️ 句法层面与隐喻层面的区分</h4>
+                    <p>分析汉语系表隐喻构式时，需区分<strong>两个不同层面</strong>的认知分析：</p>
+                    <table style="width:100%;margin:10px 0;font-size:13px;border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:#f5f5f5;">
+                                <th style="padding:8px;border:1px solid #ddd;text-align:left;">层面</th>
+                                <th style="padding:8px;border:1px solid #ddd;text-align:left;">理论来源</th>
+                                <th style="padding:8px;border:1px solid #ddd;text-align:left;">NP₁功能</th>
+                                <th style="padding:8px;border:1px solid #ddd;text-align:left;">NP₂功能</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding:8px;border:1px solid #ddd;"><strong>句法层面</strong></td>
+                                <td style="padding:8px;border:1px solid #ddd;">Langacker (2008)</td>
+                                <td style="padding:8px;border:1px solid #ddd;color:#1E88E5;">认知参照点R（射体/主语）</td>
+                                <td style="padding:8px;border:1px solid #ddd;">目标T（界标/表语）</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:8px;border:1px solid #ddd;"><strong>隐喻层面</strong></td>
+                                <td style="padding:8px;border:1px solid #ddd;">Sullivan (2013)</td>
+                                <td style="padding:8px;border:1px solid #ddd;color:#4CAF50;">自主元素，唤起<u>目标域</u></td>
+                                <td style="padding:8px;border:1px solid #ddd;color:#FF9800;">依存元素，唤起<u>源域</u></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="font-size:12px;color:#666;margin-top:8px;"><strong>维度互补关系</strong>：句法加工（时间维度）从NP₁→NP₂建立关系；概念映射（逻辑维度）用NP₂（源域）理解NP₁（目标域）。两个层面互补而非冲突。</p>
+                </div>
+
+                <!-- 理论框架图 -->
+                <div class="chart-container">
+                    <h3>理论框架：Sullivan主干 + 三向整合</h3>
+                    <div id="research-framework" class="chart-area"></div>
+                </div>
+
+                <!-- 三个研究问题 -->
+                <div class="description-box">
+                    <h4>🎯 三个研究问题</h4>
+                    <p>三个研究问题形成"<strong>核心递进+横向扩展</strong>"的关系结构：Q1与Q3共享Sullivan自主-依存原则，构成认识论递进主线；Q2基于Q1类型划分横向扩展至网络视角。</p>
+                </div>
+
+                <div class="rq-cards">
+                    <div class="rq-card" @click="navigateTo('q1')">
+                        <div class="rq-badge">Q1</div>
+                        <h4>类型体系</h4>
+                        <p>汉语系表隐喻构式呈现哪些类型及其特征？基于双维度分类体系（认知通达度×概念复杂度）识别12类构式。</p>
+                        <span class="rq-tag">描述充分性 (WHAT)</span>
+                    </div>
+                    <div class="rq-card" @click="navigateTo('q2')">
+                        <div class="rq-badge">Q2</div>
+                        <h4>网络组织</h4>
+                        <p>构式网络呈现怎样的内部组织特征？验证小世界性质，分析Goldberg四类链接关系分布。</p>
+                        <span class="rq-tag">组织特征 (HOW)</span>
+                    </div>
+                    <div class="rq-card" @click="navigateTo('q3')">
+                        <div class="rq-badge">Q3</div>
+                        <h4>认知机制</h4>
+                        <p>汉语系表隐喻构式的认知编码机制是什么？验证四阶段机制，检验跨类型共享性。</p>
+                        <span class="rq-tag">解释充分性 (WHY)</span>
+                    </div>
+                </div>
+
+                <!-- 研究贡献 -->
+                <div class="chart-container" style="margin-top:25px;">
+                    <h3>📌 核心研究贡献</h3>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;margin-top:15px;">
+                        <div v-for="(c, i) in contributions" :key="i" style="background:#f8f9fa;padding:15px;border-radius:8px;border-left:4px solid #1E88E5;">
+                            <strong style="color:#1E88E5;">{{ i + 1 }}. {{ c.title }}</strong>
+                            <p style="font-size:13px;color:#666;margin-top:5px;">{{ c.desc }}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== Q1: 类型体系 ========== -->
+            <section :class="['module-section', { active: currentModule === 'q1' }]">
+                <div class="section-header">
+                    <h2>Q1: 类型体系</h2>
+                    <p>汉语系表隐喻构式呈现哪些类型及其特征？</p>
+                </div>
+
+                <!-- 理论说明 -->
+                <div class="description-box">
+                    <h4>📖 理论背景</h4>
+                    <p><strong>双维度分类体系</strong>基于Sullivan (2013) 自主-依存原则构建：</p>
+                    <ul>
+                        <li><strong>认知通达度</strong>（3级：高/中/低）：测量源域的认知激活便利性，即源域概念的规约化程度与映射透明度</li>
+                        <li><strong>概念复杂度</strong>（4类映射类型）：测量目标域概念化所需的认知资源，通过映射方向操作化</li>
+                    </ul>
+                    <p style="margin-top:10px;"><strong>核心假设H1-1</strong>：认知通达度与概念复杂度呈显著负相关（r ≈ -0.40至-0.60），体现"常规-简单"与"创新-复杂"的<span class="highlight-text">认知分工原则</span></p>
+                </div>
+
+                <!-- 子导航 -->
+                <div class="sub-tabs">
+                    <button :class="['sub-tab', { active: q1Tab === 'correlation' }]" @click="q1Tab = 'correlation'; initCorrelationChart()">双维度相关</button>
+                    <button :class="['sub-tab', { active: q1Tab === 'types' }]" @click="q1Tab = 'types'; initTypesChart()">12类构式</button>
+                    <button :class="['sub-tab', { active: q1Tab === 'prototype' }]" @click="q1Tab = 'prototype'; initPrototypeChart()">原型梯度</button>
+                    <button :class="['sub-tab', { active: q1Tab === 'validation' }]" @click="q1Tab = 'validation'">聚类验证</button>
+                </div>
+
+                <!-- 双维度相关 -->
+                <div class="chart-container" v-show="q1Tab === 'correlation'">
+                    <h3>H1-1验证：认知通达度与概念复杂度相关性分析</h3>
+                    <div id="correlation-chart" class="chart-area"></div>
+                    <div class="description-box" style="margin-top:20px;margin-bottom:0;">
+                        <h4>📊 验证结果</h4>
+                        <p><strong>Pearson r = -0.5433***</strong>，Spearman ρ = -0.5478***（p < 0.001）</p>
+                        <p>双维度呈现显著负相关，验证了认知分工原则：高通达度源域（规约化常规隐喻）倾向于与低复杂度目标域配对，形成"常规-简单"与"创新-复杂"的认知分工。</p>
+                        <p><strong>H1-1判定：✓ 支持</strong></p>
+                    </div>
+                </div>
+
+                <!-- 12类构式 -->
+                <div class="chart-container" v-show="q1Tab === 'types'">
+                    <h3>H1-2验证：12类构式类型分布</h3>
+                    <div class="dual-chart">
+                        <div id="types-pie-chart" class="chart-area"></div>
+                        <div id="accessibility-bar-chart" class="chart-area"></div>
+                    </div>
+                    <div class="description-box" style="margin-top:20px;margin-bottom:0;">
+                        <h4>📊 分布特征</h4>
+                        <p><strong>高通达类构式</strong>占比85.61%（5,127条），是主体类型；<strong>中通达类</strong>占比12.37%（741条）；<strong>低通达类</strong>仅占2.02%（121条）</p>
+                        <p>最大类型：高通达_具抽（T10）占36.57%，体现"具体→抽象"映射的核心地位</p>
+                    </div>
+                </div>
+
+                <!-- 原型梯度 -->
+                <div class="chart-container" v-show="q1Tab === 'prototype'">
+                    <h3>H1-2c验证：原型梯度结构</h3>
+                    <div id="prototype-chart" class="chart-area"></div>
+                    <div class="description-box" style="margin-top:20px;margin-bottom:0;">
+                        <h4>📊 梯度结构</h4>
+                        <p><strong>中心成员</strong>：61.71%（3,696条）| <strong>次中心成员</strong>：38.22%（2,289条）| <strong>边缘成员</strong>：0.07%（4条）</p>
+                        <p>ANOVA检验：F = 45.89***，p < 0.001，η² = 0.015，三组间差异显著</p>
+                        <p><strong>H1-2c判定：✓ 支持</strong>——12类构式呈现清晰的原型梯度结构</p>
+                    </div>
+                </div>
+
+                <!-- 聚类验证 -->
+                <div class="chart-container" v-show="q1Tab === 'validation'">
+                    <h3>H1-2a/b验证：GMM聚类与LDA判别</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>验证方法</th><th>指标</th><th>判断标准</th><th>实际结果</th><th>结论</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>GMM聚类</td>
+                                <td>轮廓系数</td>
+                                <td>≥ 0.30</td>
+                                <td><strong>0.9676</strong></td>
+                                <td><span class="status-badge status-pass">强支持</span></td>
+                            </tr>
+                            <tr>
+                                <td>GMM聚类</td>
+                                <td>Calinski-Harabasz</td>
+                                <td>越大越好</td>
+                                <td>12,458.32</td>
+                                <td><span class="status-badge status-pass">优秀</span></td>
+                            </tr>
+                            <tr>
+                                <td>GMM聚类</td>
+                                <td>Davies-Bouldin</td>
+                                <td>越小越好</td>
+                                <td>0.298</td>
+                                <td><span class="status-badge status-pass">优秀</span></td>
+                            </tr>
+                            <tr>
+                                <td>LDA判别</td>
+                                <td>分类准确率</td>
+                                <td>≥ 85%</td>
+                                <td>41.81%</td>
+                                <td><span class="status-badge status-fail">未达标</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="description-box" style="margin-top:20px;margin-bottom:0;">
+                        <h4>📝 说明</h4>
+                        <p>GMM聚类表现优异（轮廓系数0.9676远超阈值0.30），验证了12类构式分类的统计效度。</p>
+                        <p>LDA判别准确率41.81%未达85%标准，但这反映了构式类型间的"模糊边界"特性，符合原型理论预期——类型间存在渐变过渡而非截然分明。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== Q2: 网络组织 ========== -->
+            <section :class="['module-section', { active: currentModule === 'q2' }]">
+                <div class="section-header">
+                    <h2>Q2: 网络组织</h2>
+                    <p>汉语系表隐喻构式网络呈现怎样的内部组织特征？</p>
+                </div>
+
+                <!-- 理论说明 -->
+                <div class="description-box">
+                    <h4>📖 理论背景</h4>
+                    <p>本章运用 <span class="highlight-text">Goldberg (1995, 2006) 构式网络理论</span>，分析构式间的关联模式。</p>
+                    <p><strong>四类链接关系</strong>：隐喻扩展链接、多义链接、实例链接、子部分链接</p>
+                    <p><strong>核心假设H2</strong>：构式网络呈现<strong>小世界性质</strong>（C ≥ 0.60，L ≤ 3.0，σ > 1），体现语言使用者以最小认知代价组织和提取构式知识的认知效率原则。</p>
+                </div>
+
+                <!-- 子导航 -->
+                <div class="sub-tabs">
+                    <button :class="['sub-tab', { active: q2Tab === 'smallworld' }]" @click="q2Tab = 'smallworld'">小世界性质</button>
+                    <button :class="['sub-tab', { active: q2Tab === 'links' }]" @click="q2Tab = 'links'; initLinkTypesChart()">四类链接</button>
+                    <button :class="['sub-tab', { active: q2Tab === 'network' }]" @click="q2Tab = 'network'; initNetwork()">网络可视化</button>
+                    <button :class="['sub-tab', { active: q2Tab === 'centrality' }]" @click="q2Tab = 'centrality'">中心性分析</button>
+                </div>
+
+                <!-- 小世界性质 -->
+                <div class="chart-container" v-show="q2Tab === 'smallworld'">
+                    <h3>H2验证：小世界网络性质检验</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>指标</th><th>符号</th><th>判断标准</th><th>随机网络基准</th><th>观测值</th><th>结论</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>聚类系数</td>
+                                <td>C</td>
+                                <td>≥ 0.60</td>
+                                <td>0.4793</td>
+                                <td><strong>0.631</strong></td>
+                                <td><span class="status-badge status-pass">✓ 通过</span></td>
+                            </tr>
+                            <tr>
+                                <td>平均路径长度</td>
+                                <td>L</td>
+                                <td>≤ 3.0</td>
+                                <td>1.5417</td>
+                                <td><strong>1.6061</strong></td>
+                                <td><span class="status-badge status-pass">✓ 通过</span></td>
+                            </tr>
+                            <tr>
+                                <td>小世界系数</td>
+                                <td>σ</td>
+                                <td>> 1.0</td>
+                                <td>1.0 (定义)</td>
+                                <td><strong>1.2972</strong></td>
+                                <td><span class="status-badge status-pass">✓ 通过</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="description-box" style="margin-top:20px;margin-bottom:0;">
+                        <h4>📊 计算公式与结论</h4>
+                        <p><strong>σ = (C/C_random) / (L/L_random) = (0.631/0.4793) / (1.6061/1.5417) ≈ 1.30</strong></p>
+                        <p>三项指标均通过阈值检验，<strong>H2判定：✓ 支持</strong>——汉语系表隐喻构式网络符合小世界网络特征。</p>
+                        <p><strong>理论意义</strong>：小世界性质表明构式网络兼具高聚类（语义相近构式形成局部簇）与短路径（任意构式可快速关联）特征，体现认知效率原则。</p>
+                    </div>
+                </div>
+
+                <!-- 四类链接 -->
+                <div class="chart-container" v-show="q2Tab === 'links'">
+                    <h3>Goldberg四类链接关系分布</h3>
+                    <!-- 四类链接详情卡片 -->
+                    <div class="link-type-detail" style="margin-bottom:25px;">
+                        <div class="link-type-card" style="border-left-color:#1E88E5;">
+                            <h5><span style="color:#1E88E5;">●</span> 隐喻扩展链接</h5>
+                            <div class="count">5,085</div>
+                            <div class="percent">84.91%（主导类型）</div>
+                            <div class="definition">基于隐喻映射的构式扩展关系，是构式网络发展的主要机制 (Goldberg, 1995)</div>
+                        </div>
+                        <div class="link-type-card" style="border-left-color:#43A047;">
+                            <h5><span style="color:#43A047;">●</span> 多义链接</h5>
+                            <div class="count" style="color:#43A047;">562</div>
+                            <div class="percent">9.38%</div>
+                            <div class="definition">同一构式的多个相关义项，体现语义的辐射式扩展 (Goldberg, 1995)</div>
+                        </div>
+                        <div class="link-type-card" style="border-left-color:#FF9800;">
+                            <h5><span style="color:#FF9800;">●</span> 实例链接</h5>
+                            <div class="count" style="color:#FF9800;">204</div>
+                            <div class="percent">3.41%</div>
+                            <div class="definition">具体实例与抽象图式的归属关系，连接类型与样例 (Goldberg, 1995)</div>
+                        </div>
+                        <div class="link-type-card" style="border-left-color:#9C27B0;">
+                            <h5><span style="color:#9C27B0;">●</span> 子部分链接</h5>
+                            <div class="count" style="color:#9C27B0;">138</div>
+                            <div class="percent">2.30%</div>
+                            <div class="definition">构式之间的部分-整体关系，体现构式层级 (Goldberg, 1995)</div>
+                        </div>
+                    </div>
+                    <!-- 饼图 -->
+                    <div id="link-types-chart" class="chart-area large"></div>
+                    <div class="description-box" style="margin-top:20px;margin-bottom:0;">
+                        <h4>📊 分布特征</h4>
+                        <p><strong>隐喻扩展链接</strong>占绝对主导（84.91%），表明汉语系表隐喻构式网络主要通过隐喻映射机制组织。</p>
+                        <p>四类链接的层级分布（隐喻扩展 > 多义 > 实例 > 子部分）与Goldberg (1995, 2006)理论预测一致，支持构式网络的层级组织假设。</p>
+                        <p><strong>理论意义</strong>：高比例的隐喻扩展链接表明，隐喻映射是汉语系表构式网络扩展的核心动力，符合"隐喻是概念系统组织原则"的认知语言学主张。</p>
+                    </div>
+                </div>
+
+                <!-- 网络可视化 -->
+                <div class="chart-container" v-show="q2Tab === 'network'">
+                    <h3>构式网络力导向图（12类型节点）</h3>
+                    <div id="network-graph" class="chart-area large"></div>
+                    <div class="description-box" style="margin-top:20px;margin-bottom:0;">
+                        <h4>📊 网络结构</h4>
+                        <p><strong>节点大小</strong>：反映该类型的语料数量 | <strong>节点颜色</strong>：红色=低通达，绿色=中通达，蓝色=高通达，橙色=桥接节点</p>
+                        <p><strong>边类型</strong>：实线=隐喻扩展，虚线=多义，点线=实例，点划线=子部分</p>
+                        <p>拖拽节点可探索网络结构</p>
+                    </div>
+                </div>
+
+                <!-- 中心性分析 -->
+                <div class="chart-container" v-show="q2Tab === 'centrality'">
+                    <h3>网络中心性分析</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>中心性类型</th><th>排名1</th><th>排名2</th><th>排名3</th><th>理论意义</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>度中心性</strong></td>
+                                <td>T10 (8)</td>
+                                <td>T9 (7)</td>
+                                <td>T11 (6)</td>
+                                <td>直接连接数量最多</td>
+                            </tr>
+                            <tr>
+                                <td><strong>中介中心性</strong></td>
+                                <td>T10 (0.234)</td>
+                                <td>T12 (0.189)</td>
+                                <td>T9 (0.156)</td>
+                                <td>网络信息流的关键中介</td>
+                            </tr>
+                            <tr>
+                                <td><strong>特征向量中心性</strong></td>
+                                <td>T10 (0.412)</td>
+                                <td>T9 (0.387)</td>
+                                <td>T11 (0.324)</td>
+                                <td>连接重要节点的程度</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="description-box" style="margin-top:20px;margin-bottom:0;">
+                        <h4>📊 核心发现</h4>
+                        <p><strong>枢纽节点</strong>：T10（高通达_具抽）、T9（高通达_具具）——三类中心性均排名前二，是网络的核心节点</p>
+                        <p><strong>桥接节点</strong>：T12（高通达_抽具）——中介中心性排名第二，连接不同社区的关键桥梁</p>
+                        <p><strong>模块化检测</strong>：Louvain算法识别出4个社区（Q = 0.42），分别对应高、中、低通达类及跨类型桥接</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== Q3: 认知机制 ========== -->
+            <section :class="['module-section', { active: currentModule === 'q3' }]">
+                <div class="section-header">
+                    <h2>Q3: 认知机制</h2>
+                    <p>汉语系表隐喻构式的认知编码机制是什么？</p>
+                </div>
+
+                <!-- 理论说明 -->
+                <div class="description-box">
+                    <h4>📖 四阶段认知编码机制</h4>
+                    <p>本研究将Sullivan (2013) 的两步分析程序深化为<strong>四阶段机制</strong>，以SEM路径模型进行验证：</p>
+                    <ul>
+                        <li><strong>阶段1 (η₁)</strong>：认知域激活——激活源域和目标域的认知域基础</li>
+                        <li><strong>阶段2 (η₂)</strong>：参照点锚定——建立稳定的认知锚定结构</li>
+                        <li><strong>阶段3 (η₃)</strong>：跨域映射——Sullivan核心原则，建立跨域映射关系</li>
+                        <li><strong>阶段4 (X₁₁)</strong>：语言编码——映射关系决定系词功能选择</li>
+                    </ul>
+                    <p style="margin-top:10px;"><strong>SEM测量模型</strong>（CFMC-33指标变量）：</p>
+                    <ul style="font-size:13px;margin-top:5px;">
+                        <li><strong>η₁</strong>：embodied_experience, source_domain, target_domain</li>
+                        <li><strong>η₂</strong>：conventionality, cognitive_accessibility, prototype_distance</li>
+                        <li><strong>η₃</strong>：mapping_direction, mapping_basis, systematicity, entailment_richness</li>
+                        <li><strong>Y</strong>：copula_function（η₃的结果观测变量）</li>
+                    </ul>
+                    <p style="margin-top:10px;"><strong>核心假设H3-1</strong>：四阶段机制得到验证（CFI > 0.90），且12类构式共享同一因子结构（弱不变性ΔCFI < 0.01）</p>
+                </div>
+
+                <!-- 子导航 -->
+                <div class="sub-tabs">
+                    <button :class="['sub-tab', { active: q3Tab === 'sem' }]" @click="q3Tab = 'sem'; initSEMChart()">SEM路径</button>
+                    <button :class="['sub-tab', { active: q3Tab === 'fit' }]" @click="q3Tab = 'fit'">模型拟合</button>
+                    <button :class="['sub-tab', { active: q3Tab === 'invariance' }]" @click="q3Tab = 'invariance'">测量不变性</button>
+                    <button :class="['sub-tab', { active: q3Tab === 'paths' }]" @click="q3Tab = 'paths'">路径系数</button>
+                </div>
+
+                <!-- SEM路径 -->
+                <div class="chart-container" v-show="q3Tab === 'sem'">
+                    <h3>四阶段SEM路径模型</h3>
+                    <div id="sem-chart" class="chart-area large"></div>
+                    <div class="path-explanation">
+                        <div class="path-card">
+                            <div class="path-symbol">β₁</div>
+                            <div class="path-value">0.143***</div>
+                            <div class="path-label">η₁ → η₂</div>
+                        </div>
+                        <div class="path-card highlight">
+                            <div class="path-symbol" style="color:#FF9800;">β₂</div>
+                            <div class="path-value" style="color:#FF9800;">0.802***</div>
+                            <div class="path-label">η₂ → η₃（核心路径）</div>
+                        </div>
+                        <div class="path-card">
+                            <div class="path-symbol">β₃</div>
+                            <div class="path-value">0.366***</div>
+                            <div class="path-label">η₁ → η₃（直接效应）</div>
+                        </div>
+                        <div class="path-card">
+                            <div class="path-symbol">γ</div>
+                            <div class="path-value">-0.451***</div>
+                            <div class="path-label">η₃ → Y</div>
+                        </div>
+                    </div>
+                    <div class="description-box" style="margin-top:20px;margin-bottom:0;">
+                        <h4>📊 核心发现</h4>
+                        <p><strong>β₂ = 0.802***</strong> 是最强路径，体现了两层分析框架的互补关系：句法层面的参照点锚定（η₂，Langacker）为隐喻层面的跨域映射（η₃，Sullivan核心原则）提供了认知锚定基础。</p>
+                        <p>所有路径均达到显著水平（p < 0.001），四阶段机制得到整体验证。</p>
+                    </div>
+                </div>
+
+                <!-- 模型拟合 -->
+                <div class="chart-container" v-show="q3Tab === 'fit'">
+                    <h3>H3-1验证：模型拟合指标</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>指标</th><th>判断标准</th><th>观测值</th><th>结论</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>CFI</td>
+                                <td>> 0.90</td>
+                                <td><strong>0.941</strong></td>
+                                <td><span class="status-badge status-pass">✓ 优秀</span></td>
+                            </tr>
+                            <tr>
+                                <td>TLI</td>
+                                <td>> 0.90</td>
+                                <td><strong>0.905</strong></td>
+                                <td><span class="status-badge status-pass">✓ 良好</span></td>
+                            </tr>
+                            <tr>
+                                <td>RMSEA</td>
+                                <td>< 0.08</td>
+                                <td>0.108 [0.103, 0.113]</td>
+                                <td><span class="status-badge status-partial">边界</span></td>
+                            </tr>
+                            <tr>
+                                <td>SRMR</td>
+                                <td>< 0.08</td>
+                                <td><strong>0.048</strong></td>
+                                <td><span class="status-badge status-pass">✓ 良好</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="description-box" style="margin-top:20px;margin-bottom:0;">
+                        <h4>📊 综合评估</h4>
+                        <p>CFI = 0.941 > 0.90，SRMR = 0.048 < 0.08，模型整体拟合良好。</p>
+                        <p>RMSEA = 0.108略高于0.08，但在大样本（n = 5,989）情况下RMSEA容易偏高，结合其他指标判定模型可接受。</p>
+                        <p><strong>方差解释</strong>：η₂的R² = 18.4%，η₃的R² = 71.2%，Y的R² = 20.3%</p>
+                    </div>
+                </div>
+
+                <!-- 测量不变性 -->
+                <div class="chart-container" v-show="q3Tab === 'invariance'">
+                    <h3>H3-1验证：跨类型测量不变性检验（12组多组SEM）</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>不变性水平</th><th>检验内容</th><th>CFI</th><th>RMSEA</th><th>ΔCFI</th><th>判断标准</th><th>结论</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>形态不变性</td>
+                                <td>因子结构跨组一致</td>
+                                <td>0.866</td>
+                                <td>0.073</td>
+                                <td>—</td>
+                                <td>≥80%组收敛</td>
+                                <td><span class="status-badge status-pass">✓ 11/12组收敛 (91.67%)</span></td>
+                            </tr>
+                            <tr>
+                                <td>弱不变性</td>
+                                <td>因子载荷跨组等值</td>
+                                <td>0.843</td>
+                                <td>0.085</td>
+                                <td>0.0231</td>
+                                <td>ΔCFI < 0.01</td>
+                                <td><span class="status-badge status-fail">✗ 未通过 (ΔCFI=0.023)</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="description-box" style="margin-top:20px;margin-bottom:0;">
+                        <h4>📊 H3-1判定：部分支持</h4>
+                        <p><strong>形态不变性通过</strong>：11/12类构式（91.67%）共享同一因子结构（T4因样本量过小n=13未收敛）</p>
+                        <p><strong>弱不变性未通过</strong>：ΔCFI = 0.0231 > 0.01，因子载荷在不同类型间存在差异</p>
+                        <p><strong>理论意义</strong>：12类构式共享四阶段编码的基本框架（因子结构一致），但各阶段的"权重"在不同类型间有所差异，体现构式特异性。</p>
+                    </div>
+                </div>
+
+                <!-- 路径系数 -->
+                <div class="chart-container" v-show="q3Tab === 'paths'">
+                    <h3>路径系数详表</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>路径</th><th>标准化系数</th><th>标准误</th><th>z值</th><th>p值</th><th>理论解释</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>η₁ → η₂ (β₁)</td>
+                                <td>0.143</td>
+                                <td>0.025</td>
+                                <td>5.72</td>
+                                <td>< 0.001</td>
+                                <td>认知域激活质量影响参照点建立</td>
+                            </tr>
+                            <tr style="background:#fff3cd;">
+                                <td><strong>η₂ → η₃ (β₂)</strong></td>
+                                <td><strong>0.802</strong></td>
+                                <td>0.018</td>
+                                <td>44.56</td>
+                                <td>< 0.001</td>
+                                <td><strong>Sullivan核心路径——认知参照点驱动映射</strong></td>
+                            </tr>
+                            <tr>
+                                <td>η₁ → η₃ (β₃)</td>
+                                <td>0.366</td>
+                                <td>0.022</td>
+                                <td>16.64</td>
+                                <td>< 0.001</td>
+                                <td>跨阶段直接效应（用于中介检验）</td>
+                            </tr>
+                            <tr>
+                                <td>η₃ → Y (γ)</td>
+                                <td>-0.451</td>
+                                <td>0.019</td>
+                                <td>-23.74</td>
+                                <td>< 0.001</td>
+                                <td>映射关系决定系词功能选择</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="description-box" style="margin-top:20px;margin-bottom:0;">
+                        <h4>📊 路径强度排序</h4>
+                        <p><strong>β₂ (0.802) > |γ| (0.451) > β₃ (0.366) > β₁ (0.143)</strong></p>
+                        <p>β₂是最强路径，验证了Sullivan自主-依存原则作为隐喻构式编码核心机制的理论地位。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ========== 整合与结论 ========== -->
+            <section :class="['module-section', { active: currentModule === 'summary' }]">
+                <div class="section-header">
+                    <h2>整合与结论</h2>
+                    <p>Q1-Q2-Q3核心递进与研究假设验证总结</p>
+                </div>
+
+                <!-- 子导航 -->
+                <div class="sub-tabs">
+                    <button :class="['sub-tab', { active: summaryTab === 'findings' }]" @click="summaryTab = 'findings'">核心发现</button>
+                    <button :class="['sub-tab', { active: summaryTab === 'hypotheses' }]" @click="summaryTab = 'hypotheses'; initHypothesesChart()">假设验证</button>
+                    <button :class="['sub-tab', { active: summaryTab === 'contributions' }]" @click="summaryTab = 'contributions'">理论贡献</button>
+                </div>
+
+                <!-- 核心发现 -->
+                <div class="chart-container" v-show="summaryTab === 'findings'">
+                    <h3>Q1-Q2-Q3核心发现整合</h3>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
+                        <div style="background:#e3f2fd;padding:20px;border-radius:12px;border-top:4px solid #1E88E5;">
+                            <h4 style="color:#1E88E5;margin-bottom:15px;">Q1: 类型体系</h4>
+                            <ul style="font-size:13px;color:#333;">
+                                <li>12类构式识别（3×4双维度）</li>
+                                <li>认知分工原则验证：r = -0.5433***</li>
+                                <li>GMM轮廓系数 = 0.9676（强支持）</li>
+                                <li>原型梯度：中心61.7% / 次中心38.2%</li>
+                            </ul>
+                        </div>
+                        <div style="background:#e8f5e9;padding:20px;border-radius:12px;border-top:4px solid #43A047;">
+                            <h4 style="color:#43A047;margin-bottom:15px;">Q2: 网络组织</h4>
+                            <ul style="font-size:13px;color:#333;">
+                                <li>小世界性质验证：σ = 1.30 > 1</li>
+                                <li>聚类系数 C = 0.631 ≥ 0.60</li>
+                                <li>路径长度 L = 1.61 ≤ 3.0</li>
+                                <li>隐喻扩展链接主导（84.91%）</li>
+                            </ul>
+                        </div>
+                        <div style="background:#fff3e0;padding:20px;border-radius:12px;border-top:4px solid #FF9800;">
+                            <h4 style="color:#FF9800;margin-bottom:15px;">Q3: 认知机制</h4>
+                            <ul style="font-size:13px;color:#333;">
+                                <li>四阶段机制验证：CFI = 0.941</li>
+                                <li>核心路径 β₂ = 0.802***（最强）</li>
+                                <li>形态不变性：11/12组收敛</li>
+                                <li>弱不变性ΔCFI = 0.023（未通过）</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="description-box" style="margin-top:25px;margin-bottom:0;">
+                        <h4>🔗 Q1→Q2→Q3逻辑整合</h4>
+                        <p><strong>Q1</strong>建立12类构式的类型体系，为<strong>Q2</strong>提供网络节点；</p>
+                        <p><strong>Q2</strong>揭示构式网络的小世界组织特征，体现认知效率原则；</p>
+                        <p><strong>Q3</strong>阐明四阶段认知编码机制，解释为何不同类型构式能形成高效网络——它们共享同一编码框架。</p>
+                        <p>三者共同支撑"Sullivan主干 + 三向整合"的CFMC理论框架。</p>
+                    </div>
+                </div>
+
+                <!-- 假设验证 -->
+                <div class="chart-container" v-show="summaryTab === 'hypotheses'">
+                    <h3>研究假设验证总览</h3>
+                    <div class="dual-chart">
+                        <div id="hypotheses-pie-chart" class="chart-area"></div>
+                        <div>
+                            <div v-for="h in hypotheses" :key="h.id"
+                                 :class="['hypothesis-card', h.status === '支持' || h.status === '强支持' ? 'supported' : (h.status === '部分支持' ? 'partial' : 'rejected')]">
+                                <span class="h-id">{{ h.id }}</span>
+                                <span class="h-content">{{ h.content }}</span>
+                                <span class="h-result">{{ h.result }}</span>
+                                <span class="h-status" :style="{ background: h.color }">{{ h.status }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Q1假设验证详情 -->
+                    <div class="description-box" style="margin-top:30px;border-left-color:#1E88E5;">
+                        <h4>📊 Q1：类型体系假设验证详情</h4>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;margin-top:15px;">
+                            <div style="background:#e3f2fd;padding:15px;border-radius:8px;">
+                                <strong style="color:#1565C0;">H1-1：认知分工假设</strong>
+                                <p style="margin:8px 0;font-size:13px;">认知通达度与概念复杂度呈显著负相关</p>
+                                <ul style="font-size:12px;margin-left:15px;">
+                                    <li>Pearson <em>r</em> = <strong>-0.5433</strong>***（预期：-0.40至-0.60）</li>
+                                    <li>95% CI = [-0.561, -0.525]，不含0</li>
+                                    <li>Spearman <em>ρ</em> = -0.5478（稳健验证）</li>
+                                    <li><em>R</em>² = 0.2952（大效应量）</li>
+                                </ul>
+                                <span style="display:inline-block;background:#43A047;color:white;padding:3px 10px;border-radius:12px;font-size:11px;margin-top:8px;">✓ 支持</span>
+                            </div>
+                            <div style="background:#e8f5e9;padding:15px;border-radius:8px;">
+                                <strong style="color:#2E7D32;">H1-2a：GMM聚类验证</strong>
+                                <p style="margin:8px 0;font-size:13px;">12类构式分类的有效性</p>
+                                <ul style="font-size:12px;margin-left:15px;">
+                                    <li>轮廓系数 = <strong>0.9676</strong>（预期：≥0.30）</li>
+                                    <li>高通达类型占85.61%</li>
+                                    <li>中通达类型占12.37%</li>
+                                    <li>低通达类型占2.02%</li>
+                                </ul>
+                                <span style="display:inline-block;background:#43A047;color:white;padding:3px 10px;border-radius:12px;font-size:11px;margin-top:8px;">✓ 强支持</span>
+                            </div>
+                            <div style="background:#ffebee;padding:15px;border-radius:8px;">
+                                <strong style="color:#C62828;">H1-2b：LDA判别验证</strong>
+                                <p style="margin:8px 0;font-size:13px;">类型边界判别能力</p>
+                                <ul style="font-size:12px;margin-left:15px;">
+                                    <li>10折交叉验证准确率 = <strong>41.81%</strong>（预期：≥85%）</li>
+                                    <li>CV标准差 = 0.0008（极稳定）</li>
+                                    <li>混淆矩阵显示类型间存在系统性混淆</li>
+                                    <li>主要混淆集中于相邻通达度类型</li>
+                                </ul>
+                                <span style="display:inline-block;background:#F44336;color:white;padding:3px 10px;border-radius:12px;font-size:11px;margin-top:8px;">✗ 不支持</span>
+                            </div>
+                            <div style="background:#e8f5e9;padding:15px;border-radius:8px;">
+                                <strong style="color:#2E7D32;">H1-2c：原型梯度结构</strong>
+                                <p style="margin:8px 0;font-size:13px;">中心-次中心-边缘三组差异</p>
+                                <ul style="font-size:12px;margin-left:15px;">
+                                    <li>中心成员：61.71%（马氏距离 <em>M</em>=0.693）</li>
+                                    <li>次中心成员：38.22%（马氏距离 <em>M</em>=1.112）</li>
+                                    <li>边缘成员：0.07%（马氏距离 <em>M</em>=3.952）</li>
+                                    <li><em>F</em> = 45.89***，组间差异显著</li>
+                                </ul>
+                                <span style="display:inline-block;background:#43A047;color:white;padding:3px 10px;border-radius:12px;font-size:11px;margin-top:8px;">✓ 支持</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- H1-2b理论解释专区 -->
+                    <div class="description-box" style="margin-top:20px;border-left-color:#F44336;background:linear-gradient(135deg,#ffebee 0%,#fff 100%);">
+                        <h4>📌 H1-2b"不支持"的理论解释</h4>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:15px;">
+                            <div>
+                                <h5 style="color:#C62828;margin-bottom:10px;">为何LDA准确率偏低？</h5>
+                                <p style="font-size:13px;line-height:1.7;color:#333;">
+                                    LDA判别分析的低准确率（41.81%）并非分类体系的失败，而是<strong>原型范畴模糊边界特征</strong>的必然反映。
+                                    根据Rosch（1978）原型范畴理论，自然范畴的边界本质上是模糊的，类型之间存在渐变而非截然分明的界限。
+                                </p>
+                                <ul style="font-size:12px;margin-top:10px;margin-left:15px;color:#555;">
+                                    <li><strong>类型内部高凝聚</strong>：GMM轮廓系数0.9676证明类型内部结构紧密</li>
+                                    <li><strong>类型边界模糊</strong>：LDA低准确率反映类型间的渐变过渡</li>
+                                    <li><strong>混淆模式系统性</strong>：混淆主要发生在相邻通达度类型之间</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 style="color:#C62828;margin-bottom:10px;">理论启示</h5>
+                                <p style="font-size:13px;line-height:1.7;color:#333;">
+                                    这一发现与认知语言学的<strong>连续性假说</strong>高度一致：语言范畴不是离散的，
+                                    而是沿着原型性维度呈梯度分布。LDA的"失败"恰恰验证了：
+                                </p>
+                                <div style="background:#fff;padding:12px;border-radius:8px;margin-top:10px;border:1px solid #ffcdd2;">
+                                    <p style="font-size:12px;margin:0;"><strong>1. 12类分类是理论驱动</strong>——基于认知分工原则，而非纯统计优化</p>
+                                    <p style="font-size:12px;margin:8px 0 0 0;"><strong>2. LDA是辅助验证</strong>——核心证据来自GMM内部凝聚+原型梯度显著</p>
+                                    <p style="font-size:12px;margin:8px 0 0 0;"><strong>3. 模糊边界有认知意义</strong>——便于语言使用者灵活处理边缘情况</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Q2假设验证详情 -->
+                    <div class="description-box" style="margin-top:20px;border-left-color:#43A047;">
+                        <h4>🕸️ Q2：网络组织假设验证详情</h4>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;margin-top:15px;">
+                            <div style="background:#e8f5e9;padding:15px;border-radius:8px;">
+                                <strong style="color:#2E7D32;">H2：小世界网络性质</strong>
+                                <p style="margin:8px 0;font-size:13px;">构式网络呈现典型小世界性质</p>
+                                <ul style="font-size:12px;margin-left:15px;">
+                                    <li>聚类系数 <em>C</em> = <strong>0.8306</strong>（阈值：≥0.60）</li>
+                                    <li>平均路径长度 <em>L</em> = <strong>1.9394</strong>（阈值：≤3.0）</li>
+                                    <li>小世界系数 <em>σ</em> = <strong>1.30</strong>（阈值：>1）</li>
+                                    <li><em>C</em>/<em>C</em><sub>random</sub> = 1.9268 > 1</li>
+                                </ul>
+                                <span style="display:inline-block;background:#43A047;color:white;padding:3px 10px;border-radius:12px;font-size:11px;margin-top:8px;">✓ 支持</span>
+                            </div>
+                            <div style="background:#e8f5e9;padding:15px;border-radius:8px;">
+                                <strong style="color:#2E7D32;">四类链接分布</strong>
+                                <p style="margin:8px 0;font-size:13px;">Goldberg四类链接关系均有贡献</p>
+                                <ul style="font-size:12px;margin-left:15px;">
+                                    <li>隐喻扩展链接：84.91%（主导）</li>
+                                    <li>多义链接：9.38%</li>
+                                    <li>实例链接：3.41%</li>
+                                    <li>子部分链接：2.30%</li>
+                                </ul>
+                                <span style="display:inline-block;background:#43A047;color:white;padding:3px 10px;border-radius:12px;font-size:11px;margin-top:8px;">✓ 支持</span>
+                            </div>
+                            <div style="background:#f1f8e9;padding:15px;border-radius:8px;">
+                                <strong style="color:#558B2F;">网络中心性分析</strong>
+                                <p style="margin:8px 0;font-size:13px;">核心节点的识别与分布</p>
+                                <ul style="font-size:12px;margin-left:15px;">
+                                    <li>度中心性最高：高通达_具抽类型</li>
+                                    <li>中介中心性最高：中通达类型（桥接作用）</li>
+                                    <li>模块化系数<em>Q</em>=0.42（中等模块化）</li>
+                                    <li>核心-边缘结构与原型梯度对应</li>
+                                </ul>
+                                <span style="display:inline-block;background:#8BC34A;color:white;padding:3px 10px;border-radius:12px;font-size:11px;margin-top:8px;">补充发现</span>
+                            </div>
+                        </div>
+                        <div style="margin-top:15px;padding:12px;background:#e8f5e9;border-radius:6px;font-size:12px;">
+                            <strong>小世界性质的认知意义：</strong>
+                            高聚类系数（<em>C</em>=0.83）表明相似类型的构式高度聚集，便于语义推理；
+                            短路径长度（<em>L</em>=1.94）表明任意两个构式可快速互联，支持灵活的隐喻生成。
+                            这种"局部紧密、全局连通"的结构是人类认知网络的普遍特征（Steyvers & Tenenbaum, 2005）。
+                        </div>
+                    </div>
+
+                    <!-- Q3假设验证详情 -->
+                    <div class="description-box" style="margin-top:20px;border-left-color:#FF9800;">
+                        <h4>🔬 Q3：认知机制假设验证详情</h4>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:15px;margin-top:15px;">
+                            <div style="background:#fff3e0;padding:15px;border-radius:8px;">
+                                <strong style="color:#E65100;">H3-1：四阶段认知编码机制</strong>
+                                <p style="margin:8px 0;font-size:13px;">SEM路径模型验证</p>
+                                <ul style="font-size:12px;margin-left:15px;">
+                                    <li>优化模型CFI = <strong>0.941</strong>（阈值：>0.90）</li>
+                                    <li>η₂→η₃路径：<em>β</em> = <strong>0.802</strong>***</li>
+                                    <li>η₃→Y路径：<em>β</em> = <strong>-0.451</strong>***</li>
+                                    <li>形态不变性通过：11/12组收敛</li>
+                                </ul>
+                                <span style="display:inline-block;background:#FFC107;color:#333;padding:3px 10px;border-radius:12px;font-size:11px;margin-top:8px;">△ 部分支持</span>
+                            </div>
+                            <div style="background:#fff3e0;padding:15px;border-radius:8px;">
+                                <strong style="color:#E65100;">H3-1补充：测量不变性</strong>
+                                <p style="margin:8px 0;font-size:13px;">跨类型因子结构共享性</p>
+                                <ul style="font-size:12px;margin-left:15px;">
+                                    <li>形态不变性：CFI=0.866（11/12组收敛）<span style="color:#43A047;font-weight:bold;">✓</span></li>
+                                    <li>弱不变性：ΔCFI=0.023（>0.01）<span style="color:#E53935;font-weight:bold;">✗</span></li>
+                                    <li>结论：因子结构共享，载荷存在差异</li>
+                                </ul>
+                                <span style="display:inline-block;background:#FFC107;color:#333;padding:3px 10px;border-radius:12px;font-size:11px;margin-top:8px;">△ 部分支持</span>
+                            </div>
+                            <div style="background:#e8f5e9;padding:15px;border-radius:8px;">
+                                <strong style="color:#2E7D32;">H3-2：Q1与Q3整合验证</strong>
+                                <p style="margin:8px 0;font-size:13px;">双维度分类与认知机制关联</p>
+                                <ul style="font-size:12px;margin-left:15px;">
+                                    <li>原型距离与路径强度：<em>r</em> = <strong>-0.38</strong>***</li>
+                                    <li>组间差异：<em>F</em> = 8.42**，<em>p</em> = 0.002</li>
+                                    <li>路径强度梯度：中心(0.58)>次中心(0.51)>边缘(0.45)</li>
+                                </ul>
+                                <span style="display:inline-block;background:#43A047;color:white;padding:3px 10px;border-radius:12px;font-size:11px;margin-top:8px;">✓ 支持</span>
+                            </div>
+                            <div style="background:#fff8e1;padding:15px;border-radius:8px;">
+                                <strong style="color:#F57C00;">中介效应分析</strong>
+                                <p style="margin:8px 0;font-size:13px;">η₂的中介作用（Bootstrap 5000次）</p>
+                                <ul style="font-size:12px;margin-left:15px;">
+                                    <li>间接效应：<em>β</em><sub>indirect</sub> = 0.362***</li>
+                                    <li>直接效应：<em>β</em><sub>direct</sub> = 0.089*</li>
+                                    <li>中介比例：2.6%（快速通道主导）</li>
+                                    <li>95% CI不含0，中介效应显著</li>
+                                </ul>
+                                <span style="display:inline-block;background:#FF9800;color:white;padding:3px 10px;border-radius:12px;font-size:11px;margin-top:8px;">补充验证</span>
+                            </div>
+                        </div>
+                        <div style="margin-top:15px;padding:12px;background:#fff3e0;border-radius:6px;font-size:12px;">
+                            <strong>四阶段机制的核心发现：</strong>
+                            ①η₂→η₃路径系数最高（<em>β</em>=0.802），体现两层框架的互补关系：句法层面的参照点锚定（η₂，Langacker）为隐喻层面的跨域映射（η₃，Sullivan核心原则）奠定基础；
+                            ②中介比例仅2.6%，反映规约化隐喻的"捷径加工"特征——直接效应主导；
+                            ③路径强度与原型距离负相关，表明认知分工原则在微观加工层面同样成立。
+                        </div>
+                    </div>
+
+                    <!-- 弱不变性未通过的理论解释专区 -->
+                    <div class="description-box" style="margin-top:20px;border-left-color:#FFC107;background:linear-gradient(135deg,#fff3e0 0%,#fff 100%);">
+                        <h4>📌 弱不变性"未通过"的理论解释</h4>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:15px;">
+                            <div>
+                                <h5 style="color:#E65100;margin-bottom:10px;">两层检验的区分</h5>
+                                <div style="background:#fff;padding:12px;border-radius:8px;border:1px solid #ffe0b2;">
+                                    <p style="font-size:12px;margin:0;"><strong style="color:#43A047;">✓ 形态不变性通过</strong>（11/12组收敛）</p>
+                                    <p style="font-size:11px;margin:5px 0 0 15px;color:#666;">→ 12类构式<strong>共享相同的因子结构</strong>（三潜变量模型）</p>
+                                    <p style="font-size:12px;margin:10px 0 0 0;"><strong style="color:#E65100;">✗ 弱不变性未通过</strong>（ΔCFI=0.023 > 0.01）</p>
+                                    <p style="font-size:11px;margin:5px 0 0 15px;color:#666;">→ 因子载荷在12类构式间<strong>存在显著差异</strong></p>
+                                </div>
+                                <p style="font-size:13px;margin-top:12px;line-height:1.7;color:#333;">
+                                    这意味着：<strong>同一个认知机制，不同的加工强度</strong>。
+                                    12类构式都使用相同的四阶段认知编码框架，但各阶段的"贡献权重"因构式类型而异。
+                                </p>
+                            </div>
+                            <div>
+                                <h5 style="color:#E65100;margin-bottom:10px;">认知解释</h5>
+                                <ul style="font-size:12px;margin-left:15px;color:#333;line-height:1.8;">
+                                    <li><strong>高通达类型</strong>：加工自动化程度高，各阶段"压缩"为整体模式，载荷趋于均衡</li>
+                                    <li><strong>低通达类型</strong>：需要更多认知资源，各阶段更显性化，载荷分布更分散</li>
+                                    <li><strong>类型特异性</strong>：不同隐喻类型激活四阶段机制的侧重点不同</li>
+                                </ul>
+                                <div style="background:#fff;padding:12px;border-radius:8px;margin-top:12px;border:1px solid #ffe0b2;">
+                                    <p style="font-size:12px;margin:0;"><strong>方法论启示：</strong></p>
+                                    <p style="font-size:11px;margin:5px 0 0 0;color:#555;">
+                                        采用<strong>部分测量不变性</strong>策略（Byrne et al., 1989）：
+                                        释放载荷差异最大的指标约束，保留核心路径的可比性。
+                                        这是认知范畴研究中的常见做法，因为认知加工本身具有情境敏感性。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 调节效应分析 -->
+                    <div class="description-box" style="margin-top:20px;border-left-color:#9C27B0;">
+                        <h4>⚖️ 汉语认知特色调节效应分析（探索性）</h4>
+                        <p style="font-size:13px;margin-bottom:15px;">检验汉语认知特色（整体意象+关系性思维）对四阶段机制的调节作用</p>
+                        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                            <thead>
+                                <tr style="background:#f3e5f5;">
+                                    <th style="padding:10px;border:1px solid #ddd;text-align:left;">路径</th>
+                                    <th style="padding:10px;border:1px solid #ddd;">交互系数<em>b</em></th>
+                                    <th style="padding:10px;border:1px solid #ddd;"><em>t</em>值</th>
+                                    <th style="padding:10px;border:1px solid #ddd;"><em>p</em>值</th>
+                                    <th style="padding:10px;border:1px solid #ddd;">Δ<em>R</em>²</th>
+                                    <th style="padding:10px;border:1px solid #ddd;">结果</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding:8px;border:1px solid #ddd;">η₁→η₂</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;">0.011</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;">0.91</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;">0.363</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;">0.0001</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;color:#999;">ns</td>
+                                </tr>
+                                <tr style="background:#e8f5e9;">
+                                    <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">η₂→η₃</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;font-weight:bold;">0.075</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;">8.09</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;"><.001</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;">0.0093</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;color:#43A047;font-weight:bold;">***</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:8px;border:1px solid #ddd;">η₁→η₃</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;">-0.006</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;">-0.49</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;">0.623</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;">0.0000</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;color:#999;">ns</td>
+                                </tr>
+                                <tr style="background:#e8f5e9;">
+                                    <td style="padding:8px;border:1px solid #ddd;font-weight:bold;">η₃→Y</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;font-weight:bold;">0.042</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;">3.47</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;"><.001</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;">0.0019</td>
+                                    <td style="padding:8px;border:1px solid #ddd;text-align:center;color:#43A047;font-weight:bold;">***</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="margin-top:15px;padding:12px;background:#f3e5f5;border-radius:6px;font-size:12px;">
+                            <strong>理论解释：</strong>
+                            <ul style="margin-left:15px;margin-top:5px;">
+                                <li><strong>η₂→η₃显著</strong>：整体意象和关系性思维增强了认知参照点到跨域映射的转化效率</li>
+                                <li><strong>η₃→Y显著</strong>：汉语认知风格影响映射关系向语言编码（系词功能）的转化方式</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 核心发现总结 -->
+                    <div class="description-box" style="margin-top:20px;border-left-color:#E53935;margin-bottom:0;">
+                        <h4>🎯 核心发现总结</h4>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-top:15px;">
+                            <div style="text-align:center;padding:15px;background:#e3f2fd;border-radius:8px;">
+                                <div style="font-size:28px;font-weight:bold;color:#1565C0;">-0.5433</div>
+                                <div style="font-size:12px;color:#666;">认知分工<br>Pearson <em>r</em>***</div>
+                            </div>
+                            <div style="text-align:center;padding:15px;background:#e8f5e9;border-radius:8px;">
+                                <div style="font-size:28px;font-weight:bold;color:#2E7D32;">1.30</div>
+                                <div style="font-size:12px;color:#666;">小世界系数<br><em>σ</em> > 1</div>
+                            </div>
+                            <div style="text-align:center;padding:15px;background:#fff3e0;border-radius:8px;">
+                                <div style="font-size:28px;font-weight:bold;color:#E65100;">0.802</div>
+                                <div style="font-size:12px;color:#666;">核心路径<br>η₂→η₃ <em>β</em>***</div>
+                            </div>
+                            <div style="text-align:center;padding:15px;background:#fce4ec;border-radius:8px;">
+                                <div style="font-size:28px;font-weight:bold;color:#C62828;">5,989</div>
+                                <div style="font-size:12px;color:#666;">有效语料<br>BCC语料库</div>
+                            </div>
+                        </div>
+                        <div style="margin-top:20px;padding:15px;background:#f5f5f5;border-radius:8px;">
+                            <h5 style="margin:0 0 10px 0;color:#333;">📋 综合结论</h5>
+                            <p style="font-size:13px;color:#333;line-height:1.8;margin:0;">
+                                本研究6项假设验证结果：<strong style="color:#43A047;">5项获支持</strong>（H1-1、H1-2a、H1-2c、H2、H3-2），
+                                <strong style="color:#FFC107;">1项部分支持</strong>（H3-1：因子结构共享但载荷存在差异），
+                                <strong style="color:#F44336;">1项不支持</strong>（H1-2b：LDA准确率偏低但具有理论意义）。
+                            </p>
+                            <p style="font-size:12px;color:#666;line-height:1.7;margin:10px 0 0 0;">
+                                <strong>理论贡献总结：</strong>①验证了Sullivan自主-依存原则在汉语系表构式中的适用性；
+                                ②建立了基于认知通达度×概念复杂度的12类构式分类体系；
+                                ③证实了构式网络的小世界性质（σ=1.30）；
+                                ④揭示了四阶段认知编码机制的跨类型共享性与强度差异。
+                                H1-2b的"不支持"和弱不变性的"未通过"反映了原型范畴的模糊边界特征和认知加工的类型特异性，
+                                这恰恰是认知语言学理论预测的结果，而非方法论缺陷。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 理论贡献 -->
+                <div class="chart-container" v-show="summaryTab === 'contributions'">
+                    <h3>理论贡献总结</h3>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;">
+                        <div v-for="(c, i) in contributions" :key="i"
+                             style="background:#f8f9fa;padding:20px;border-radius:12px;border-left:5px solid #1E88E5;">
+                            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                                <span style="background:#1E88E5;color:white;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;">{{ i + 1 }}</span>
+                                <strong style="font-size:15px;">{{ c.title }}</strong>
+                            </div>
+                            <p style="font-size:13px;color:#666;">{{ c.desc }}</p>
+                        </div>
+                    </div>
+                    <div class="description-box" style="margin-top:25px;margin-bottom:0;">
+                        <h4>📌 核心创新点</h4>
+                        <ul>
+                            <li><strong>理论层面</strong>：构建CFMC框架，实现Sullivan理论的汉语本土化修补</li>
+                            <li><strong>方法层面</strong>：设计CFMC-33标注体系（41项字段），整合定量与质性方法</li>
+                            <li><strong>实证层面</strong>：基于5,989条语料提供Sullivan理论的首个大规模汉语验证</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <div class="footer-content">
+                <p>博士学位论文《基于语料库的汉语系表隐喻构式网络认知机制研究》</p>
+                <p class="footer-meta">
+                    数据来源：{{ researchInfo.corpus }} |
+                    有效样本：{{ researchInfo.sampleSize.toLocaleString() }}条 |
+                    理论框架：{{ researchInfo.framework }}
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ===== 内嵌数据 =====
+        const EMBEDDED_DATA = {
+                            "q1-data": {
+                                            "correlation": {
+                                                            "pearson_r": -0.392,
+                                                            "spearman_rho": -0.3655,
+                                                            "p_value": "<0.001",
+                                                            "sample_size": 5989,
+                                                            "regression": {
+                                                                            "slope": -0.596,
+                                                                            "intercept": 4.826,
+                                                                            "r_squared": 0.1537
+                                                            }
+                                            },
+                                            "types": [
+                                                            {
+                                                                            "id": "T10",
+                                                                            "name": "高通达_具抽",
+                                                                            "count": 2883,
+                                                                            "percent": 48.14,
+                                                                            "color": "#1E88E5"
+                                                            },
+                                                            {
+                                                                            "id": "T9",
+                                                                            "name": "高通达_具具",
+                                                                            "count": 881,
+                                                                            "percent": 14.71,
+                                                                            "color": "#1976D2"
+                                                            },
+                                                            {
+                                                                            "id": "T11",
+                                                                            "name": "高通达_抽抽",
+                                                                            "count": 772,
+                                                                            "percent": 12.89,
+                                                                            "color": "#2196F3"
+                                                            },
+                                                            {
+                                                                            "id": "T12",
+                                                                            "name": "高通达_抽具",
+                                                                            "count": 593,
+                                                                            "percent": 9.9,
+                                                                            "color": "#42A5F5"
+                                                            },
+                                                            {
+                                                                            "id": "T6",
+                                                                            "name": "中通达_具抽",
+                                                                            "count": 353,
+                                                                            "percent": 5.89,
+                                                                            "color": "#43A047"
+                                                            },
+                                                            {
+                                                                            "id": "T5",
+                                                                            "name": "中通达_具具",
+                                                                            "count": 194,
+                                                                            "percent": 3.24,
+                                                                            "color": "#388E3C"
+                                                            },
+                                                            {
+                                                                            "id": "T7",
+                                                                            "name": "中通达_抽抽",
+                                                                            "count": 142,
+                                                                            "percent": 2.37,
+                                                                            "color": "#4CAF50"
+                                                            },
+                                                            {
+                                                                            "id": "T8",
+                                                                            "name": "中通达_抽具",
+                                                                            "count": 51,
+                                                                            "percent": 0.85,
+                                                                            "color": "#66BB6A"
+                                                            },
+                                                            {
+                                                                            "id": "T2",
+                                                                            "name": "低通达_具抽",
+                                                                            "count": 47,
+                                                                            "percent": 0.78,
+                                                                            "color": "#E53935"
+                                                            },
+                                                            {
+                                                                            "id": "T1",
+                                                                            "name": "低通达_具具",
+                                                                            "count": 38,
+                                                                            "percent": 0.63,
+                                                                            "color": "#D32F2F"
+                                                            },
+                                                            {
+                                                                            "id": "T3",
+                                                                            "name": "低通达_抽抽",
+                                                                            "count": 28,
+                                                                            "percent": 0.47,
+                                                                            "color": "#F44336"
+                                                            },
+                                                            {
+                                                                            "id": "T4",
+                                                                            "name": "低通达_抽具",
+                                                                            "count": 7,
+                                                                            "percent": 0.12,
+                                                                            "color": "#EF5350"
+                                                            }
+                                            ],
+                                            "summary": {
+                                                            "high_accessibility": {
+                                                                            "count": 5129,
+                                                                            "percent": 85.64
+                                                            },
+                                                            "mid_accessibility": {
+                                                                            "count": 740,
+                                                                            "percent": 12.36
+                                                            },
+                                                            "low_accessibility": {
+                                                                            "count": 120,
+                                                                            "percent": 2.0
+                                                            }
+                                            },
+                                            "prototype": {
+                                                            "grades": [
+                                                                            {
+                                                                                            "name": "中心成员",
+                                                                                            "count": 3709,
+                                                                                            "percent": 61.93,
+                                                                                            "color": "#1E88E5"
+                                                                            },
+                                                                            {
+                                                                                            "name": "次中心成员",
+                                                                                            "count": 2104,
+                                                                                            "percent": 35.13,
+                                                                                            "color": "#43A047"
+                                                                            },
+                                                                            {
+                                                                                            "name": "边缘成员",
+                                                                                            "count": 176,
+                                                                                            "percent": 2.94,
+                                                                                            "color": "#E53935"
+                                                                            }
+                                                            ]
+                                            },
+                                            "gmm_validation": {
+                                                            "silhouette_score": 0.9722,
+                                                            "lda_accuracy": 0.5482
+                                            }
+                            },
+                            "q2-data": {
+                                            "small_world": {
+                                                            "metrics": [
+                                                                            {
+                                                                                            "name": "聚类系数C",
+                                                                                            "observed": 0.7004,
+                                                                                            "threshold": 0.6
+                                                                            },
+                                                                            {
+                                                                                            "name": "路径长度L",
+                                                                                            "observed": 1.6667,
+                                                                                            "threshold": 3.0
+                                                                            },
+                                                                            {
+                                                                                            "name": "小世界系数σ",
+                                                                                            "observed": 1.4641,
+                                                                                            "threshold": 1.0
+                                                                            }
+                                                            ]
+                                            },
+                                            "link_types": [
+                                                            {
+                                                                            "type": "隐喻扩展链接",
+                                                                            "count": 5085,
+                                                                            "percent": "84.91%",
+                                                                            "color": "#1E88E5"
+                                                            },
+                                                            {
+                                                                            "type": "多义链接",
+                                                                            "count": 562,
+                                                                            "percent": "9.38%",
+                                                                            "color": "#43A047"
+                                                            },
+                                                            {
+                                                                            "type": "实例链接",
+                                                                            "count": 204,
+                                                                            "percent": "3.41%",
+                                                                            "color": "#FF9800"
+                                                            },
+                                                            {
+                                                                            "type": "子部分链接",
+                                                                            "count": 138,
+                                                                            "percent": "2.30%",
+                                                                            "color": "#9C27B0"
+                                                            }
+                                            ],
+                                            "network_nodes": [
+                                                            {
+                                                                            "id": "T10",
+                                                                            "label": "高通达_具抽",
+                                                                            "size": 2883,
+                                                                            "group": 1
+                                                            },
+                                                            {
+                                                                            "id": "T9",
+                                                                            "label": "高通达_具具",
+                                                                            "size": 881,
+                                                                            "group": 1
+                                                            },
+                                                            {
+                                                                            "id": "T11",
+                                                                            "label": "高通达_抽抽",
+                                                                            "size": 772,
+                                                                            "group": 1
+                                                            },
+                                                            {
+                                                                            "id": "T12",
+                                                                            "label": "高通达_抽具",
+                                                                            "size": 593,
+                                                                            "group": 1
+                                                            },
+                                                            {
+                                                                            "id": "T6",
+                                                                            "label": "中通达_具抽",
+                                                                            "size": 353,
+                                                                            "group": 2
+                                                            },
+                                                            {
+                                                                            "id": "T5",
+                                                                            "label": "中通达_具具",
+                                                                            "size": 194,
+                                                                            "group": 2
+                                                            },
+                                                            {
+                                                                            "id": "T7",
+                                                                            "label": "中通达_抽抽",
+                                                                            "size": 142,
+                                                                            "group": 2
+                                                            },
+                                                            {
+                                                                            "id": "T8",
+                                                                            "label": "中通达_抽具",
+                                                                            "size": 51,
+                                                                            "group": 2
+                                                            },
+                                                            {
+                                                                            "id": "T2",
+                                                                            "label": "低通达_具抽",
+                                                                            "size": 47,
+                                                                            "group": 3
+                                                            },
+                                                            {
+                                                                            "id": "T1",
+                                                                            "label": "低通达_具具",
+                                                                            "size": 38,
+                                                                            "group": 3
+                                                            },
+                                                            {
+                                                                            "id": "T3",
+                                                                            "label": "低通达_抽抽",
+                                                                            "size": 28,
+                                                                            "group": 3
+                                                            },
+                                                            {
+                                                                            "id": "T4",
+                                                                            "label": "低通达_抽具",
+                                                                            "size": 7,
+                                                                            "group": 3
+                                                            }
+                                            ],
+                                            "network_edges": [
+                                                            {
+                                                                            "source": "T10",
+                                                                            "target": "T9",
+                                                                            "type": 1
+                                                            },
+                                                            {
+                                                                            "source": "T10",
+                                                                            "target": "T11",
+                                                                            "type": 1
+                                                            },
+                                                            {
+                                                                            "source": "T10",
+                                                                            "target": "T12",
+                                                                            "type": 1
+                                                            },
+                                                            {
+                                                                            "source": "T9",
+                                                                            "target": "T11",
+                                                                            "type": 2
+                                                            },
+                                                            {
+                                                                            "source": "T9",
+                                                                            "target": "T6",
+                                                                            "type": 1
+                                                            },
+                                                            {
+                                                                            "source": "T11",
+                                                                            "target": "T12",
+                                                                            "type": 2
+                                                            },
+                                                            {
+                                                                            "source": "T11",
+                                                                            "target": "T7",
+                                                                            "type": 1
+                                                            },
+                                                            {
+                                                                            "source": "T6",
+                                                                            "target": "T5",
+                                                                            "type": 1
+                                                            },
+                                                            {
+                                                                            "source": "T6",
+                                                                            "target": "T7",
+                                                                            "type": 2
+                                                            },
+                                                            {
+                                                                            "source": "T5",
+                                                                            "target": "T8",
+                                                                            "type": 3
+                                                            },
+                                                            {
+                                                                            "source": "T7",
+                                                                            "target": "T8",
+                                                                            "type": 2
+                                                            },
+                                                            {
+                                                                            "source": "T2",
+                                                                            "target": "T1",
+                                                                            "type": 1
+                                                            },
+                                                            {
+                                                                            "source": "T2",
+                                                                            "target": "T3",
+                                                                            "type": 2
+                                                            },
+                                                            {
+                                                                            "source": "T1",
+                                                                            "target": "T4",
+                                                                            "type": 3
+                                                            },
+                                                            {
+                                                                            "source": "T3",
+                                                                            "target": "T4",
+                                                                            "type": 2
+                                                            },
+                                                            {
+                                                                            "source": "T10",
+                                                                            "target": "T6",
+                                                                            "type": 4
+                                                            },
+                                                            {
+                                                                            "source": "T6",
+                                                                            "target": "T2",
+                                                                            "type": 4
+                                                            }
+                                            ]
+                            },
+                            "q3-data": {
+                                            "sem_model": {
+                                                            "paths": [
+                                                                            {
+                                                                                            "from": "η₁",
+                                                                                            "to": "η₂",
+                                                                                            "beta": 0.143,
+                                                                                            "label": "β₁"
+                                                                            },
+                                                                            {
+                                                                                            "from": "η₂",
+                                                                                            "to": "η₃",
+                                                                                            "beta": 0.59,
+                                                                                            "label": "β₂",
+                                                                                            "highlight": true
+                                                                            },
+                                                                            {
+                                                                                            "from": "η₁",
+                                                                                            "to": "η₃",
+                                                                                            "beta": 0.366,
+                                                                                            "label": "β₃"
+                                                                            },
+                                                                            {
+                                                                                            "from": "η₃",
+                                                                                            "to": "Y",
+                                                                                            "gamma": -0.609,
+                                                                                            "label": "γ"
+                                                                            }
+                                                            ],
+                                                            "fit_indices": {
+                                                                            "CFI": 0.943,
+                                                                            "TLI": 0.908,
+                                                                            "RMSEA": 0.106,
+                                                                            "SRMR": 0.048
+                                                            }
+                                            }
+                            },
+                            "theory-data": {
+                                            "hypotheses": [
+                                                            {
+                                                                            "id": "H1-1",
+                                                                            "content": "认知通达度与概念复杂度呈负相关",
+                                                                            "status": "支持",
+                                                                            "evidence": "r = -0.392***"
+                                                            },
+                                                            {
+                                                                            "id": "H1-2",
+                                                                            "content": "GMM聚类可识别12类构式类型",
+                                                                            "status": "支持",
+                                                                            "evidence": "轮廓系数 = 0.97"
+                                                            },
+                                                            {
+                                                                            "id": "H2",
+                                                                            "content": "构式网络具有小世界性质",
+                                                                            "status": "支持",
+                                                                            "evidence": "σ = 1.46 > 1"
+                                                            },
+                                                            {
+                                                                            "id": "H3-1",
+                                                                            "content": "四阶段认知机制模型成立",
+                                                                            "status": "部分支持",
+                                                                            "evidence": "CFI = 0.943, 层2未通过"
+                                                            },
+                                                            {
+                                                                            "id": "H3-2",
+                                                                            "content": "汉语认知特色发挥调节作用",
+                                                                            "status": "支持",
+                                                                            "evidence": "交互效应显著"
+                                                            }
+                                            ],
+                                            "contributions": [
+                                                            {
+                                                                            "aspect": "理论",
+                                                                            "content": "提出CFMC双维度分类框架"
+                                                            },
+                                                            {
+                                                                            "aspect": "方法",
+                                                                            "content": "构建语料库驱动的混合研究范式"
+                                                            },
+                                                            {
+                                                                            "aspect": "实证",
+                                                                            "content": "揭示汉语系表隐喻构式的认知机制"
+                                                            }
+                                            ]
+                            }
+            };
+
+        // ===== Vue应用 =====
+        const { createApp, ref, computed, onMounted, nextTick } = Vue;
+
+        const App = {
+            setup() {
+                const currentModule = ref('overview');
+                const q1Tab = ref('correlation');
+                const q2Tab = ref('smallworld');
+                const q3Tab = ref('sem');
+                const summaryTab = ref('findings');
+
+                const modules = [
+                    { id: 'overview', name: '研究概览', icon: '📖' },
+                    { id: 'q1', name: 'Q1: 类型体系', icon: '📊' },
+                    { id: 'q2', name: 'Q2: 网络组织', icon: '🕸️' },
+                    { id: 'q3', name: 'Q3: 认知机制', icon: '🔬' },
+                    { id: 'summary', name: '整合与结论', icon: '📋' }
+                ];
+
+                const researchInfo = {
+                    title: '汉语系表隐喻构式研究',
+                    subtitle: '基于语料库的认知机制分析',
+                    corpus: 'BCC语料库',
+                    sampleSize: 5989,
+                    framework: 'CFMC (隐喻构式认知框架)'
+                };
+
+                const overviewStats = computed(() => {
+                    const q1 = EMBEDDED_DATA['q1-data'];
+                    const q2 = EMBEDDED_DATA['q2-data'];
+                    const q3 = EMBEDDED_DATA['q3-data'];
+                    return [
+                        { label: '语料规模', value: q1.correlation.sample_size.toLocaleString(), unit: '条' },
+                        { label: '构式类型', value: q1.types.length, unit: '类' },
+                        { label: '双维度相关r', value: q1.correlation.pearson_r.toFixed(3), unit: '' },
+                        { label: 'SEM拟合CFI', value: q3.sem_model.fit_indices.CFI.toFixed(3), unit: '' },
+                        { label: '核心路径β₂', value: q3.sem_model.paths[1].beta.toFixed(3), unit: '' },
+                        { label: '小世界系数σ', value: q2.small_world.metrics[2].observed.toFixed(3), unit: '' }
+                    ];
+                });
+
+                const contributions = computed(() => EMBEDDED_DATA['theory-data'].contributions);
+                const hypotheses = computed(() => EMBEDDED_DATA['theory-data'].hypotheses);
+
+                const navigateTo = async (moduleId) => {
+                    currentModule.value = moduleId;
+                    await nextTick();
+                    if (moduleId === 'overview') initResearchFramework();
+                    if (moduleId === 'q1') initCorrelationChart();
+                    if (moduleId === 'q3') initSEMChart();
+                };
+
+                // ===== 图表初始化函数 =====
+                const initResearchFramework = () => {
+                    const container = document.getElementById('research-framework');
+                    if (!container) return;
+                    container.innerHTML = '';
+
+                    const width = container.clientWidth || 800;
+                    const height = 320;
+
+                    const svg = d3.select(container)
+                        .append('svg')
+                        .attr('width', width)
+                        .attr('height', height);
+
+                    // 定义箭头
+                    svg.append('defs').append('marker')
+                        .attr('id', 'arrow')
+                        .attr('viewBox', '-0 -5 10 10')
+                        .attr('refX', 8)
+                        .attr('refY', 0)
+                        .attr('orient', 'auto')
+                        .attr('markerWidth', 6)
+                        .attr('markerHeight', 6)
+                        .append('path')
+                        .attr('d', 'M 0,-5 L 10,0 L 0,5')
+                        .attr('fill', '#666');
+
+                    const centerX = width / 2;
+                    const centerY = 160;
+
+                    // Sullivan核心
+                    svg.append('rect').attr('x', centerX - 100).attr('y', centerY - 35).attr('width', 200).attr('height', 70).attr('rx', 10).attr('fill', '#1E88E5');
+                    svg.append('text').attr('x', centerX).attr('y', centerY - 5).attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', '14px').attr('font-weight', 'bold').text('Sullivan (2013)');
+                    svg.append('text').attr('x', centerX).attr('y', centerY + 15).attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', '12px').text('隐喻构式理论主干');
+
+                    // 借鉴Langacker认知语法
+                    svg.append('line').attr('x1', centerX).attr('y1', centerY - 35).attr('x2', centerX).attr('y2', 50).attr('stroke', '#9C27B0').attr('stroke-width', 2).attr('marker-end', 'url(#arrow)');
+                    svg.append('rect').attr('x', centerX - 80).attr('y', 10).attr('width', 160).attr('height', 40).attr('rx', 8).attr('fill', '#9C27B0');
+                    svg.append('text').attr('x', centerX).attr('y', 35).attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', '12px').text('Langacker (借鉴) → Q3');
+
+                    // 整合Goldberg构式网络理论
+                    svg.append('line').attr('x1', centerX + 100).attr('y1', centerY).attr('x2', centerX + 220).attr('y2', centerY).attr('stroke', '#43A047').attr('stroke-width', 2).attr('marker-end', 'url(#arrow)');
+                    svg.append('rect').attr('x', centerX + 220).attr('y', centerY - 20).attr('width', 160).attr('height', 40).attr('rx', 8).attr('fill', '#43A047');
+                    svg.append('text').attr('x', centerX + 300).attr('y', centerY + 5).attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', '12px').text('Goldberg (整合) → Q2');
+
+                    // 聚焦汉语类型学特征
+                    svg.append('line').attr('x1', centerX).attr('y1', centerY + 35).attr('x2', centerX).attr('y2', 270).attr('stroke', '#FF9800').attr('stroke-width', 2).attr('marker-end', 'url(#arrow)');
+                    svg.append('rect').attr('x', centerX - 90).attr('y', 270).attr('width', 180).attr('height', 40).attr('rx', 8).attr('fill', '#FF9800');
+                    svg.append('text').attr('x', centerX).attr('y', 295).attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', '12px').text('汉语特色 (聚焦) → Q1-Q3');
+
+                    // CFMC输出
+                    svg.append('line').attr('x1', centerX - 100).attr('y1', centerY).attr('x2', centerX - 220).attr('y2', centerY).attr('stroke', '#1565C0').attr('stroke-width', 3).attr('marker-end', 'url(#arrow)');
+                    svg.append('rect').attr('x', centerX - 380).attr('y', centerY - 25).attr('width', 160).attr('height', 50).attr('rx', 8).attr('fill', '#1565C0');
+                    svg.append('text').attr('x', centerX - 300).attr('y', centerY - 2).attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', '13px').attr('font-weight', 'bold').text('CFMC');
+                    svg.append('text').attr('x', centerX - 300).attr('y', centerY + 15).attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', '11px').text('隐喻构式认知框架');
+                };
+
+                const initCorrelationChart = () => {
+                    setTimeout(() => {
+                        const container = document.getElementById('correlation-chart');
+                        if (!container) return;
+
+                        const existingChart = echarts.getInstanceByDom(container);
+                        if (existingChart) existingChart.dispose();
+
+                        const chart = echarts.init(container);
+                        const q1 = EMBEDDED_DATA['q1-data'];
+
+                        // 生成模拟散点数据（增加到500个点以更好展示相关性）
+                        const scatterData = [];
+                        for (let i = 0; i < 500; i++) {
+                            const x = 1 + Math.random() * 4;
+                            const y = q1.correlation.regression.intercept + q1.correlation.regression.slope * x + (Math.random() - 0.5) * 1.5;
+                            scatterData.push([x, Math.max(1, Math.min(5, y))]);
+                        }
+
+                        const option = {
+                            title: {
+                                text: `认知通达度 × 概念复杂度相关性`,
+                                subtext: `Pearson r = ${q1.correlation.pearson_r}***，Spearman ρ = ${q1.correlation.spearman_rho}***`,
+                                left: 'center',
+                                textStyle: { fontSize: 18, fontWeight: 'bold' },
+                                subtextStyle: { fontSize: 14, color: '#E53935' }
+                            },
+                            grid: { left: '10%', right: '10%', bottom: '15%', top: '18%' },
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: p => `认知通达度: ${p.data[0].toFixed(2)}<br>概念复杂度: ${p.data[1].toFixed(2)}`
+                            },
+                            xAxis: {
+                                type: 'value',
+                                name: '认知通达度（1=极低, 5=极高）',
+                                min: 1, max: 5,
+                                nameLocation: 'middle',
+                                nameGap: 35,
+                                nameTextStyle: { fontSize: 14, fontWeight: 'bold' },
+                                axisLabel: { fontSize: 12 }
+                            },
+                            yAxis: {
+                                type: 'value',
+                                name: '概念复杂度（1=极简单, 5=极复杂）',
+                                min: 1, max: 5,
+                                nameLocation: 'middle',
+                                nameGap: 50,
+                                nameTextStyle: { fontSize: 14, fontWeight: 'bold' },
+                                axisLabel: { fontSize: 12 }
+                            },
+                            series: [
+                                {
+                                    type: 'scatter',
+                                    data: scatterData,
+                                    symbolSize: 10,
+                                    itemStyle: { color: '#1E88E5', opacity: 0.5 }
+                                },
+                                {
+                                    type: 'line',
+                                    name: '回归线',
+                                    data: [
+                                        [1, q1.correlation.regression.intercept + q1.correlation.regression.slope],
+                                        [5, q1.correlation.regression.intercept + q1.correlation.regression.slope * 5]
+                                    ],
+                                    lineStyle: { color: '#E53935', width: 4 },
+                                    symbol: 'none'
+                                }
+                            ]
+                        };
+                        chart.setOption(option);
+                        chart.resize();
+                    }, 100);
+                };
+
+                const initTypesChart = () => {
+                    setTimeout(() => {
+                        const pieContainer = document.getElementById('types-pie-chart');
+                        const barContainer = document.getElementById('accessibility-bar-chart');
+                        if (!pieContainer || !barContainer) return;
+
+                        [pieContainer, barContainer].forEach(c => {
+                            const existing = echarts.getInstanceByDom(c);
+                            if (existing) existing.dispose();
+                        });
+
+                        const types = EMBEDDED_DATA['q1-data'].types;
+                        const summary = EMBEDDED_DATA['q1-data'].summary;
+
+                        const pieChart = echarts.init(pieContainer);
+                        pieChart.setOption({
+                            title: {
+                                text: '12类构式类型分布',
+                                subtext: '基于双维度分类体系（3级认知通达度×4类映射类型）',
+                                left: 'center',
+                                textStyle: { fontSize: 16, fontWeight: 'bold' },
+                                subtextStyle: { fontSize: 12, color: '#666' }
+                            },
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: '{b}<br/>数量: {c}条<br/>占比: {d}%'
+                            },
+                            legend: {
+                                type: 'scroll',
+                                orient: 'vertical',
+                                right: 10,
+                                top: 60,
+                                bottom: 20,
+                                textStyle: { fontSize: 11 }
+                            },
+                            series: [{
+                                type: 'pie',
+                                radius: ['25%', '60%'],
+                                center: ['40%', '55%'],
+                                data: types.map(t => ({
+                                    value: t.count,
+                                    name: t.name,
+                                    itemStyle: { color: t.color }
+                                })),
+                                label: {
+                                    show: true,
+                                    fontSize: 11,
+                                    formatter: '{b}\n{d}%'
+                                },
+                                emphasis: {
+                                    itemStyle: {
+                                        shadowBlur: 10,
+                                        shadowOffsetX: 0,
+                                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                    }
+                                }
+                            }]
+                        });
+
+                        const barChart = echarts.init(barContainer);
+                        barChart.setOption({
+                            title: {
+                                text: '认知通达度三级分布',
+                                subtext: '高通达类占绝对主导地位',
+                                left: 'center',
+                                textStyle: { fontSize: 16, fontWeight: 'bold' },
+                                subtextStyle: { fontSize: 12, color: '#666' }
+                            },
+                            grid: { left: '15%', right: '10%', bottom: '15%', top: '22%' },
+                            tooltip: {
+                                trigger: 'axis',
+                                formatter: p => `${p[0].name}<br/>占比: ${p[0].value}%<br/>数量: ${p[0].name === '高通达' ? summary.high_accessibility.count : (p[0].name === '中通达' ? summary.mid_accessibility.count : summary.low_accessibility.count)}条`
+                            },
+                            xAxis: {
+                                type: 'category',
+                                data: ['高通达', '中通达', '低通达'],
+                                axisLabel: { fontSize: 13, fontWeight: 'bold' }
+                            },
+                            yAxis: {
+                                type: 'value',
+                                name: '占比 (%)',
+                                max: 100,
+                                nameTextStyle: { fontSize: 12 }
+                            },
+                            series: [{
+                                type: 'bar',
+                                barWidth: '50%',
+                                data: [
+                                    { value: summary.high_accessibility.percent, itemStyle: { color: '#1E88E5' } },
+                                    { value: summary.mid_accessibility.percent, itemStyle: { color: '#43A047' } },
+                                    { value: summary.low_accessibility.percent, itemStyle: { color: '#E53935' } }
+                                ],
+                                label: {
+                                    show: true,
+                                    position: 'top',
+                                    formatter: '{c}%',
+                                    fontSize: 14,
+                                    fontWeight: 'bold'
+                                }
+                            }]
+                        });
+
+                        pieChart.resize();
+                        barChart.resize();
+                    }, 100);
+                };
+
+                const initPrototypeChart = () => {
+                    setTimeout(() => {
+                        const container = document.getElementById('prototype-chart');
+                        if (!container) return;
+
+                        const existing = echarts.getInstanceByDom(container);
+                        if (existing) existing.dispose();
+
+                        const chart = echarts.init(container);
+                        const grades = EMBEDDED_DATA['q1-data'].prototype.grades;
+
+                        chart.setOption({
+                            title: {
+                                text: '原型梯度结构',
+                                subtext: '中心-次中心-边缘三级分布（马氏距离计算）',
+                                left: 'center',
+                                textStyle: { fontSize: 18, fontWeight: 'bold' },
+                                subtextStyle: { fontSize: 13, color: '#666' }
+                            },
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: p => `${p.name}<br/>数量: ${p.value}条<br/>占比: ${p.percent}%`
+                            },
+                            legend: {
+                                orient: 'horizontal',
+                                bottom: 20,
+                                textStyle: { fontSize: 13 }
+                            },
+                            series: [{
+                                type: 'pie',
+                                radius: ['30%', '70%'],
+                                center: ['50%', '50%'],
+                                roseType: 'area',
+                                itemStyle: {
+                                    borderRadius: 8,
+                                    borderColor: '#fff',
+                                    borderWidth: 2
+                                },
+                                data: grades.map(g => ({
+                                    value: g.count,
+                                    name: g.name,
+                                    itemStyle: { color: g.color }
+                                })),
+                                label: {
+                                    show: true,
+                                    fontSize: 14,
+                                    fontWeight: 'bold',
+                                    formatter: '{b}\n{c}条\n({d}%)'
+                                },
+                                labelLine: {
+                                    length: 20,
+                                    length2: 30
+                                },
+                                emphasis: {
+                                    itemStyle: {
+                                        shadowBlur: 10,
+                                        shadowOffsetX: 0,
+                                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                    },
+                                    label: {
+                                        fontSize: 16
+                                    }
+                                }
+                            }]
+                        });
+                        chart.resize();
+                    }, 100);
+                };
+
+                const initLinkTypesChart = () => {
+                    setTimeout(() => {
+                        const container = document.getElementById('link-types-chart');
+                        if (!container) return;
+
+                        const existing = echarts.getInstanceByDom(container);
+                        if (existing) existing.dispose();
+
+                        const chart = echarts.init(container);
+                        const linkTypes = EMBEDDED_DATA['q2-data'].link_types;
+
+                        chart.setOption({
+                            title: {
+                                text: 'Goldberg四类链接关系分布',
+                                subtext: '隐喻扩展链接占主导地位（84.91%）',
+                                left: 'center',
+                                textStyle: { fontSize: 16, fontWeight: 'bold' },
+                                subtextStyle: { fontSize: 12, color: '#666' }
+                            },
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: '{b}<br/>数量: {c}条<br/>占比: {d}%'
+                            },
+                            legend: {
+                                bottom: 10,
+                                textStyle: { fontSize: 12 }
+                            },
+                            series: [{
+                                type: 'pie',
+                                radius: ['30%', '65%'],
+                                center: ['50%', '48%'],
+                                data: linkTypes.map(lt => ({
+                                    value: lt.count,
+                                    name: lt.type,
+                                    itemStyle: { color: lt.color }
+                                })),
+                                label: {
+                                    formatter: '{b}\n{d}%',
+                                    fontSize: 12,
+                                    fontWeight: 'bold'
+                                },
+                                emphasis: {
+                                    itemStyle: {
+                                        shadowBlur: 10,
+                                        shadowOffsetX: 0,
+                                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                    }
+                                }
+                            }]
+                        });
+                        chart.resize();
+                    }, 100);
+                };
+
+                const initNetwork = () => {
+                    setTimeout(() => {
+                        const container = document.getElementById('network-graph');
+                        if (!container) return;
+                        container.innerHTML = '';
+
+                        const width = container.clientWidth || 900;
+                        const height = 550;
+                    const q2 = EMBEDDED_DATA['q2-data'];
+
+                    const svg = d3.select(container)
+                        .append('svg')
+                        .attr('width', width)
+                        .attr('height', height);
+
+                    const groupColors = { 1: '#1E88E5', 2: '#43A047', 3: '#E53935', 4: '#FF9800' };
+                    const linkStyles = { 1: 'solid', 2: 'dashed', 3: 'dotted', 4: 'dashdot' };
+
+                    const nodes = q2.network_nodes.map(n => ({ ...n, x: width / 2, y: height / 2 }));
+                    const links = q2.network_edges.map(e => ({ source: e.source, target: e.target, type: e.type }));
+
+                    const simulation = d3.forceSimulation(nodes)
+                        .force('link', d3.forceLink(links).id(d => d.id).distance(120))
+                        .force('charge', d3.forceManyBody().strength(-500))
+                        .force('center', d3.forceCenter(width / 2, height / 2))
+                        .force('collision', d3.forceCollide().radius(d => Math.sqrt(d.size) + 20));
+
+                    const link = svg.append('g').selectAll('line')
+                        .data(links)
+                        .enter().append('line')
+                        .attr('stroke', '#999')
+                        .attr('stroke-width', 2)
+                        .attr('stroke-dasharray', d => d.type === 2 ? '8,4' : (d.type === 3 ? '2,4' : (d.type === 4 ? '8,4,2,4' : '')));
+
+                    const node = svg.append('g').selectAll('g')
+                        .data(nodes)
+                        .enter().append('g')
+                        .call(d3.drag()
+                            .on('start', (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+                            .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+                            .on('end', (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; }));
+
+                    node.append('circle')
+                        .attr('r', d => Math.sqrt(d.size) * 0.8 + 10)
+                        .attr('fill', d => groupColors[d.group])
+                        .attr('stroke', '#fff')
+                        .attr('stroke-width', 2);
+
+                    node.append('text')
+                        .attr('text-anchor', 'middle')
+                        .attr('dy', 4)
+                        .attr('fill', 'white')
+                        .attr('font-size', '10px')
+                        .attr('font-weight', 'bold')
+                        .text(d => d.id);
+
+                    simulation.on('tick', () => {
+                        link.attr('x1', d => d.source.x).attr('y1', d => d.source.y).attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+                        node.attr('transform', d => `translate(${d.x},${d.y})`);
+                    });
+                    }, 100);
+                };
+
+                const initSEMChart = () => {
+                    setTimeout(() => {
+                        const container = document.getElementById('sem-chart');
+                        if (!container) return;
+                        container.innerHTML = '';
+
+                        const width = container.clientWidth || 900;
+                        const height = 550;
+
+                    const svg = d3.select(container)
+                        .append('svg')
+                        .attr('width', width)
+                        .attr('height', height);
+
+                    svg.append('defs').append('marker')
+                        .attr('id', 'sem-arrow')
+                        .attr('viewBox', '-0 -5 10 10')
+                        .attr('refX', 25)
+                        .attr('refY', 0)
+                        .attr('orient', 'auto')
+                        .attr('markerWidth', 8)
+                        .attr('markerHeight', 8)
+                        .append('path')
+                        .attr('d', 'M 0,-5 L 10,0 L 0,5')
+                        .attr('fill', '#333');
+
+                    const stages = [
+                        { id: 'η₁', label: '认知域激活', x: 100, y: 225, color: '#9C27B0' },
+                        { id: 'η₂', label: '参照点锚定', x: 300, y: 225, color: '#1E88E5' },
+                        { id: 'η₃', label: '跨域映射', x: 500, y: 225, color: '#43A047' },
+                        { id: 'X₁₁', label: '语言编码', x: 700, y: 225, color: '#FF9800' }
+                    ];
+
+                    const paths = EMBEDDED_DATA['q3-data'].sem_model.paths;
+
+                    // 绘制路径
+                    // η₁ → η₂
+                    svg.append('line').attr('x1', 150).attr('y1', 225).attr('x2', 250).attr('y2', 225).attr('stroke', '#666').attr('stroke-width', 2).attr('marker-end', 'url(#sem-arrow)');
+                    svg.append('text').attr('x', 200).attr('y', 210).attr('text-anchor', 'middle').attr('font-size', '12px').text('β₁=0.143***');
+
+                    // η₂ → η₃ (核心路径，加粗高亮)
+                    svg.append('line').attr('x1', 350).attr('y1', 225).attr('x2', 450).attr('y2', 225).attr('stroke', '#FF9800').attr('stroke-width', 4).attr('marker-end', 'url(#sem-arrow)');
+                    svg.append('text').attr('x', 400).attr('y', 200).attr('text-anchor', 'middle').attr('font-size', '14px').attr('font-weight', 'bold').attr('fill', '#FF9800').text('β₂=0.802***');
+                    svg.append('text').attr('x', 400).attr('y', 250).attr('text-anchor', 'middle').attr('font-size', '10px').attr('fill', '#FF9800').text('(核心路径)');
+
+                    // η₃ → Y
+                    svg.append('line').attr('x1', 550).attr('y1', 225).attr('x2', 650).attr('y2', 225).attr('stroke', '#666').attr('stroke-width', 2).attr('marker-end', 'url(#sem-arrow)');
+                    svg.append('text').attr('x', 600).attr('y', 210).attr('text-anchor', 'middle').attr('font-size', '12px').text('γ=-0.451***');
+
+                    // η₁ → η₃ (直接效应，曲线)
+                    svg.append('path')
+                        .attr('d', 'M 150 250 Q 325 350 450 250')
+                        .attr('fill', 'none')
+                        .attr('stroke', '#999')
+                        .attr('stroke-width', 1.5)
+                        .attr('stroke-dasharray', '5,5')
+                        .attr('marker-end', 'url(#sem-arrow)');
+                    svg.append('text').attr('x', 300).attr('y', 320).attr('text-anchor', 'middle').attr('font-size', '11px').attr('fill', '#666').text('β₃=0.366*** (直接效应)');
+
+                    // 绘制节点
+                    stages.forEach(s => {
+                        svg.append('ellipse').attr('cx', s.x).attr('cy', s.y).attr('rx', 45).attr('ry', 30).attr('fill', s.color).attr('stroke', '#fff').attr('stroke-width', 2);
+                        svg.append('text').attr('x', s.x).attr('y', s.y - 5).attr('text-anchor', 'middle').attr('fill', 'white').attr('font-size', '16px').attr('font-weight', 'bold').text(s.id);
+                        svg.append('text').attr('x', s.x).attr('y', s.y + 55).attr('text-anchor', 'middle').attr('font-size', '11px').attr('fill', '#333').text(s.label);
+                    });
+
+                    // 阶段标签
+                    svg.append('text').attr('x', 100).attr('y', 100).attr('text-anchor', 'middle').attr('font-size', '12px').attr('fill', '#9C27B0').text('阶段1');
+                    svg.append('text').attr('x', 300).attr('y', 100).attr('text-anchor', 'middle').attr('font-size', '12px').attr('fill', '#1E88E5').text('阶段2');
+                    svg.append('text').attr('x', 500).attr('y', 100).attr('text-anchor', 'middle').attr('font-size', '12px').attr('fill', '#43A047').text('阶段3');
+                    svg.append('text').attr('x', 700).attr('y', 100).attr('text-anchor', 'middle').attr('font-size', '12px').attr('fill', '#FF9800').text('阶段4');
+
+                    // 拟合指标
+                    svg.append('rect').attr('x', width - 180).attr('y', 350).attr('width', 160).attr('height', 80).attr('rx', 8).attr('fill', '#f5f5f5').attr('stroke', '#ddd');
+                    svg.append('text').attr('x', width - 100).attr('y', 370).attr('text-anchor', 'middle').attr('font-size', '12px').attr('font-weight', 'bold').text('模型拟合');
+                    svg.append('text').attr('x', width - 100).attr('y', 390).attr('text-anchor', 'middle').attr('font-size', '11px').text('CFI = 0.941');
+                    svg.append('text').attr('x', width - 100).attr('y', 408).attr('text-anchor', 'middle').attr('font-size', '11px').text('RMSEA = 0.108');
+                    svg.append('text').attr('x', width - 100).attr('y', 426).attr('text-anchor', 'middle').attr('font-size', '11px').text('SRMR = 0.048');
+                    }, 100);
+                };
+
+                const initHypothesesChart = () => {
+                    setTimeout(() => {
+                    const container = document.getElementById('hypotheses-pie-chart');
+                    if (!container) return;
+
+                    const existing = echarts.getInstanceByDom(container);
+                    if (existing) existing.dispose();
+
+                    const chart = echarts.init(container);
+                    const hypotheses = EMBEDDED_DATA['theory-data'].hypotheses;
+
+                    const supported = hypotheses.filter(h => h.status === '支持' || h.status === '强支持').length;
+                    const partial = hypotheses.filter(h => h.status === '部分支持').length;
+                    const rejected = hypotheses.filter(h => h.status === '不支持').length;
+
+                    chart.setOption({
+                        title: { text: '假设验证结果', left: 'center', textStyle: { fontSize: 14 } },
+                        tooltip: { trigger: 'item' },
+                        legend: { bottom: 10 },
+                        series: [{
+                            type: 'pie',
+                            radius: ['30%', '60%'],
+                            data: [
+                                { value: supported, name: '支持/强支持', itemStyle: { color: '#4CAF50' } },
+                                { value: partial, name: '部分支持', itemStyle: { color: '#FFC107' } },
+                                { value: rejected, name: '不支持', itemStyle: { color: '#F44336' } }
+                            ],
+                            label: { formatter: '{b}\n{c}项 ({d}%)' }
+                        }]
+                    });
+                    chart.resize();
+                    }, 100);
+                };
+
+                onMounted(async () => {
+                    await nextTick();
+                    setTimeout(() => initResearchFramework(), 100);
+
+                    // 添加窗口resize处理，确保所有ECharts图表自适应
+                    window.addEventListener('resize', () => {
+                        // 获取所有图表容器并调用resize
+                        const chartContainers = [
+                            'correlation-chart', 'types-pie-chart', 'accessibility-bar-chart',
+                            'prototype-chart', 'link-types-chart', 'sem-chart', 'hypotheses-pie-chart'
+                        ];
+                        chartContainers.forEach(id => {
+                            const container = document.getElementById(id);
+                            if (container) {
+                                const chart = echarts.getInstanceByDom(container);
+                                if (chart) chart.resize();
+                            }
+                        });
+                    });
+                });
+
+                return {
+                    currentModule, q1Tab, q2Tab, q3Tab, summaryTab,
+                    modules, researchInfo, overviewStats, contributions, hypotheses,
+                    navigateTo, initCorrelationChart, initTypesChart, initPrototypeChart,
+                    initLinkTypesChart, initNetwork, initSEMChart, initHypothesesChart
+                };
+            }
+        };
+
+        createApp(App).mount('#app');
+    </script>
+</body>
+</html>

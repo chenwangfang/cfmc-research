@@ -1,0 +1,288 @@
+{
+  "nodes": [
+    {
+      "id": "T1",
+      "node_type": "type",
+      "size": 38,
+      "ca_mean": 1.9736842105263157,
+      "cc_mean": 3.0789473684210527,
+      "md_mode": 1
+    },
+    {
+      "id": "T2",
+      "node_type": "type",
+      "size": 47,
+      "ca_mean": 1.9787234042553192,
+      "cc_mean": 3.0,
+      "md_mode": 2
+    },
+    {
+      "id": "T3",
+      "node_type": "type",
+      "size": 28,
+      "ca_mean": 2.0,
+      "cc_mean": 2.7142857142857144,
+      "md_mode": 3
+    },
+    {
+      "id": "T4",
+      "node_type": "type",
+      "size": 7,
+      "ca_mean": 2.0,
+      "cc_mean": 3.0,
+      "md_mode": 4
+    },
+    {
+      "id": "T5",
+      "node_type": "type",
+      "size": 194,
+      "ca_mean": 3.0,
+      "cc_mean": 2.881443298969072,
+      "md_mode": 1
+    },
+    {
+      "id": "T6",
+      "node_type": "type",
+      "size": 353,
+      "ca_mean": 3.0,
+      "cc_mean": 2.68271954674221,
+      "md_mode": 2
+    },
+    {
+      "id": "T7",
+      "node_type": "type",
+      "size": 142,
+      "ca_mean": 3.0,
+      "cc_mean": 2.528169014084507,
+      "md_mode": 3
+    },
+    {
+      "id": "T8",
+      "node_type": "type",
+      "size": 51,
+      "ca_mean": 3.0,
+      "cc_mean": 2.4901960784313726,
+      "md_mode": 4
+    },
+    {
+      "id": "T9",
+      "node_type": "type",
+      "size": 881,
+      "ca_mean": 4.489216799091941,
+      "cc_mean": 2.2508513053348467,
+      "md_mode": 1
+    },
+    {
+      "id": "T10",
+      "node_type": "type",
+      "size": 2883,
+      "ca_mean": 4.548040235865418,
+      "cc_mean": 2.231703087062088,
+      "md_mode": 2
+    },
+    {
+      "id": "T11",
+      "node_type": "type",
+      "size": 772,
+      "ca_mean": 4.479274611398964,
+      "cc_mean": 2.2461139896373057,
+      "md_mode": 3
+    },
+    {
+      "id": "T12",
+      "node_type": "type",
+      "size": 593,
+      "ca_mean": 4.706576728499157,
+      "cc_mean": 1.984822934232715,
+      "md_mode": 4
+    }
+  ],
+  "edges": [
+    {
+      "source": "T1",
+      "target": "T2",
+      "link_type": "polysemy",
+      "weight": 0.7959888579387185
+    },
+    {
+      "source": "T1",
+      "target": "T3",
+      "link_type": "polysemy",
+      "weight": 0.7794871794871795
+    },
+    {
+      "source": "T1",
+      "target": "T4",
+      "link_type": "polysemy",
+      "weight": 0.7794871794871795
+    },
+    {
+      "source": "T1",
+      "target": "T5",
+      "link_type": "metaphorical_extension",
+      "weight": 0.49350649350649356
+    },
+    {
+      "source": "T2",
+      "target": "T3",
+      "link_type": "polysemy",
+      "weight": 0.7833333333333334
+    },
+    {
+      "source": "T2",
+      "target": "T4",
+      "link_type": "polysemy",
+      "weight": 0.7833333333333334
+    },
+    {
+      "source": "T2",
+      "target": "T6",
+      "link_type": "metaphorical_extension",
+      "weight": 0.49473684210526325
+    },
+    {
+      "source": "T3",
+      "target": "T4",
+      "link_type": "polysemy",
+      "weight": 0.8
+    },
+    {
+      "source": "T3",
+      "target": "T5",
+      "link_type": "polysemy",
+      "weight": 0.4
+    },
+    {
+      "source": "T3",
+      "target": "T6",
+      "link_type": "polysemy",
+      "weight": 0.4
+    },
+    {
+      "source": "T3",
+      "target": "T7",
+      "link_type": "metaphorical_extension",
+      "weight": 0.5
+    },
+    {
+      "source": "T3",
+      "target": "T8",
+      "link_type": "polysemy",
+      "weight": 0.4
+    },
+    {
+      "source": "T4",
+      "target": "T5",
+      "link_type": "polysemy",
+      "weight": 0.4
+    },
+    {
+      "source": "T4",
+      "target": "T6",
+      "link_type": "polysemy",
+      "weight": 0.4
+    },
+    {
+      "source": "T4",
+      "target": "T7",
+      "link_type": "polysemy",
+      "weight": 0.4
+    },
+    {
+      "source": "T4",
+      "target": "T8",
+      "link_type": "metaphorical_extension",
+      "weight": 0.5
+    },
+    {
+      "source": "T5",
+      "target": "T6",
+      "link_type": "polysemy",
+      "weight": 0.8
+    },
+    {
+      "source": "T5",
+      "target": "T7",
+      "link_type": "polysemy",
+      "weight": 0.8
+    },
+    {
+      "source": "T5",
+      "target": "T8",
+      "link_type": "polysemy",
+      "weight": 0.8
+    },
+    {
+      "source": "T5",
+      "target": "T9",
+      "link_type": "metaphorical_extension",
+      "weight": 0.4017327861377109
+    },
+    {
+      "source": "T6",
+      "target": "T7",
+      "link_type": "polysemy",
+      "weight": 0.8
+    },
+    {
+      "source": "T6",
+      "target": "T8",
+      "link_type": "polysemy",
+      "weight": 0.8
+    },
+    {
+      "source": "T6",
+      "target": "T10",
+      "link_type": "metaphorical_extension",
+      "weight": 0.3924584808058807
+    },
+    {
+      "source": "T7",
+      "target": "T8",
+      "link_type": "polysemy",
+      "weight": 0.8
+    },
+    {
+      "source": "T7",
+      "target": "T11",
+      "link_type": "metaphorical_extension",
+      "weight": 0.4033437826541275
+    },
+    {
+      "source": "T9",
+      "target": "T10",
+      "link_type": "polysemy",
+      "weight": 0.7555556216604135
+    },
+    {
+      "source": "T9",
+      "target": "T11",
+      "link_type": "polysemy",
+      "weight": 0.7921245490570598
+    },
+    {
+      "source": "T9",
+      "target": "T12",
+      "link_type": "polysemy",
+      "weight": 0.6571597936442296
+    },
+    {
+      "source": "T10",
+      "target": "T11",
+      "link_type": "polysemy",
+      "weight": 0.7485270686913919
+    },
+    {
+      "source": "T10",
+      "target": "T12",
+      "link_type": "polysemy",
+      "weight": 0.6905263710609011
+    },
+    {
+      "source": "T11",
+      "target": "T12",
+      "link_type": "polysemy",
+      "weight": 0.6518362421554352
+    }
+  ]
+}

@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文献综述逻辑结构可视化 - 汉语系表隐喻构式研究</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e8e8e8;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 2.2em;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #aaa;
+            font-size: 1.1em;
+        }
+
+        /* Navigation tabs */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+        }
+
+        .nav-tab:hover {
+            background: rgba(0, 217, 255, 0.2);
+            border-color: #00d9ff;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+
+        /* View sections */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Chapter cards */
+        .chapter-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .chapter-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(5px);
+            border-color: #00d9ff;
+        }
+
+        .chapter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .chapter-title {
+            font-size: 1.3em;
+            color: #00d9ff;
+        }
+
+        .chapter-badge {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+        }
+
+        .section-list {
+            display: none;
+            margin-top: 15px;
+            padding-left: 20px;
+            border-left: 2px solid rgba(0, 217, 255, 0.3);
+        }
+
+        .section-list.expanded {
+            display: block;
+        }
+
+        .section-item {
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .section-item:hover {
+            background: rgba(0, 217, 255, 0.15);
+            padding-left: 20px;
+        }
+
+        .section-item .support-tag {
+            display: inline-block;
+            background: rgba(255, 165, 0, 0.3);
+            color: #ffa500;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            margin-left: 10px;
+        }
+
+        /* Flowchart view */
+        .flowchart-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .flow-level {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .flow-node {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #00d9ff;
+            border-radius: 15px;
+            padding: 20px;
+            min-width: 200px;
+            max-width: 300px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .flow-node:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.3);
+        }
+
+        .flow-node.sullivan {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.15);
+        }
+
+        .flow-node.langacker {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.15);
+        }
+
+        .flow-node.goldberg {
+            border-color: #ffe66d;
+            background: rgba(255, 230, 109, 0.15);
+        }
+
+        .flow-node.chinese {
+            border-color: #a855f7;
+            background: rgba(168, 85, 247, 0.15);
+        }
+
+        .flow-node.question {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.15);
+        }
+
+        .flow-arrow {
+            text-align: center;
+            font-size: 2em;
+            color: rgba(255, 255, 255, 0.5);
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+        }
+
+        /* Gap analysis */
+        .gap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .gap-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            border-left: 4px solid #ff6b6b;
+            transition: all 0.3s ease;
+        }
+
+        .gap-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .gap-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+
+        .gap-title {
+            font-size: 1.1em;
+            color: #00d9ff;
+            margin-bottom: 10px;
+        }
+
+        .gap-solution {
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 15px;
+            border-left: 3px solid #00ff88;
+        }
+
+        .gap-solution-label {
+            color: #00ff88;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        /* Research questions mapping */
+        .question-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .question-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .question-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .q1 .question-icon { background: linear-gradient(135deg, #ff6b6b, #ee5a24); }
+        .q2 .question-icon { background: linear-gradient(135deg, #4ecdc4, #44bd32); }
+        .q3 .question-icon { background: linear-gradient(135deg, #a855f7, #6366f1); }
+
+        .question-text {
+            font-size: 1.2em;
+            color: #fff;
+        }
+
+        .support-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .support-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .support-icon {
+            color: #00ff88;
+            font-size: 1.2em;
+        }
+
+        /* Interactive modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+        }
+
+        /* Connection lines SVG */
+        .svg-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.5em; }
+            .nav-tabs { gap: 5px; }
+            .nav-tab { padding: 8px 16px; font-size: 0.85em; }
+        }
+
+        /* Animation */
+        .animate-in {
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Theory link diagram */
+        .theory-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .theory-core {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 50px;
+            font-size: 1.3em;
+            font-weight: bold;
+            box-shadow: 0 10px 40px rgba(255, 107, 107, 0.4);
+        }
+
+        .theory-branches {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .theory-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .branch-arrow {
+            font-size: 1.5em;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .branch-node {
+            padding: 20px 30px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 180px;
+        }
+
+        .branch-langacker { background: rgba(78, 205, 196, 0.3); border: 2px solid #4ecdc4; }
+        .branch-goldberg { background: rgba(255, 230, 109, 0.3); border: 2px solid #ffe66d; }
+        .branch-chinese { background: rgba(168, 85, 247, 0.3); border: 2px solid #a855f7; }
+
+        .branch-label {
+            font-size: 0.8em;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        /* Defects and gaps table */
+        .defect-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        .defect-table th {
+            background: rgba(0, 217, 255, 0.2);
+            padding: 15px;
+            text-align: left;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .defect-table td {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 15px;
+        }
+
+        .defect-table tr:hover td {
+            background: rgba(0, 217, 255, 0.1);
+        }
+
+        .defect-num {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+        }
+
+        /* Progress indicator */
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>文献综述逻辑结构可视化</h1>
+            <p class="subtitle">汉语系表隐喻构式研究 | 第2章文献综述</p>
+        </header>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="showView('overview')">总体结构</div>
+            <div class="nav-tab" onclick="showView('flowchart')">理论脉络</div>
+            <div class="nav-tab" onclick="showView('gaps')">缺陷与空白</div>
+            <div class="nav-tab" onclick="showView('questions')">研究问题支撑</div>
+            <div class="nav-tab" onclick="showView('interactive')">交互探索</div>
+        </div>
+
+        <!-- View 1: Overview -->
+        <div id="overview" class="view-section active">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 100%"></div>
+            </div>
+
+            <div class="chapter-card" onclick="toggleSection(this)">
+                <div class="chapter-header">
+                    <span class="chapter-title">2.1 Sullivan隐喻构式理论</span>
+                    <span class="chapter-badge">核心主干</span>
+                </div>
+                <p>系统呈现Sullivan (2013)理论的完整图景，为后续理论修补奠定基础</p>
+                <div class="section-list">
+                    <div class="section-item">
+                        <strong>2.1.1 核心框架</strong>
+                        <span class="support-tag">→ 自主-依存原则</span>
+                        <p style="margin-top: 8px; color: #aaa; font-size: 0.9em;">核心论题：隐喻如何在构式中编码 | 两步程序 | 三个形式化约束 | 域唤起机制</p>
+                    </div>
+                    <div class="section-item">
+                        <strong>2.1.2 系词构式应用</strong>
+                        <span class="support-tag">→ Q1类型分析</span>
+                        <p style="margin-top: 8px; color: #aaa; font-size: 0.9em;">双层自主-依存结构 | 三类等式（述谓/指称/等同）| 贡献与局限</p>
+                    </div>
+                    <div class="section-item">
+                        <strong>2.1.3 学术评价与后续研究</strong>
+                        <span class="support-tag">→ 研究定位</span>
+                        <p style="margin-top: 8px; color: #aaa; font-size: 0.9em;">220+引用 | 英语实证验证 | 跨语言应用空白 | 三类自述局限</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chapter-card" onclick="toggleSection(this)">
+                <div class="chapter-header">
+                    <span class="chapter-title">2.2 理论来源</span>
+                    <span class="chapter-badge">三向整合基础</span>
+                </div>
+                <p>回溯Sullivan整合的四大理论传统，为CFMC框架构建提供理论资源</p>
+                <div class="section-list">
+                    <div class="section-item">
+                        <strong>2.2.1 Langacker认知语法</strong>
+                        <span class="support-tag">→ 借鉴深化</span>
+                        <p style="margin-top: 8px; color: #aaa; font-size: 0.9em;">认知域理论 | 自主-依存性 | 侧显/基底 | 认知参照点模型 | 认知固化</p>
+                    </div>
+                    <div class="section-item">
+                        <strong>2.2.2 Goldberg构式语法</strong>
+                        <span class="support-tag">→ 整合补充</span>
+                        <p style="margin-top: 8px; color: #aaa; font-size: 0.9em;">构式形式化定义 | 四类继承链接 | 构式网络组织 | 小世界性质</p>
+                    </div>
+                    <div class="section-item">
+                        <strong>2.2.3 概念隐喻理论与框架语义学</strong>
+                        <span class="support-tag">→ 概念基础</span>
+                        <p style="margin-top: 8px; color: #aaa; font-size: 0.9em;">Lakoff & Johnson | 源域/目标域映射 | Fillmore框架语义学 | 域唤起机制</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chapter-card" onclick="toggleSection(this)">
+                <div class="chapter-header">
+                    <span class="chapter-title">2.3 系表结构与隐喻研究</span>
+                    <span class="chapter-badge">研究对象</span>
+                </div>
+                <p>呈现系表结构研究的发展脉络，揭示Sullivan视角的系统性缺失</p>
+                <div class="section-list">
+                    <div class="section-item">
+                        <strong>2.3.1 系表结构研究发展脉络</strong>
+                        <span class="support-tag">→ 句法基础</span>
+                        <p style="margin-top: 8px; color: #aaa; font-size: 0.9em;">传统语法 → 认知语法 → 构式语法</p>
+                    </div>
+                    <div class="section-item">
+                        <strong>2.3.2 系表隐喻研究</strong>
+                        <span class="support-tag">→ 研究空白</span>
+                        <p style="margin-top: 8px; color: #aaa; font-size: 0.9em;">英语系表隐喻 | 汉语"X是Y"现状 | Sullivan视角整合空白</p>
+                    </div>
+                    <div class="section-item">
+                        <strong>2.3.3 汉语系表结构的类型学特征</strong>
+                        <span class="support-tag">→ 聚焦验证</span>
+                        <p style="margin-top: 8px; color: #aaa; font-size: 0.9em;">零系词现象 | 整体性意象 | 关系性思维</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chapter-card" onclick="toggleSection(this)">
+                <div class="chapter-header">
+                    <span class="chapter-title">2.4 理论有待深化之处与研究空白</span>
+                    <span class="chapter-badge">问题识别</span>
+                </div>
+                <p>系统识别Sullivan理论七类缺陷与六项研究空白，为研究问题提供合法性基础</p>
+                <div class="section-list">
+                    <div class="section-item">
+                        <strong>2.4.1 Sullivan理论的待拓展领域</strong>
+                        <span class="support-tag">→ 七类缺陷</span>
+                        <p style="margin-top: 8px; color: #aaa; font-size: 0.9em;">语料层面: ①系词分析不足 ②零系词忽视 ③汉语特征缺失<br/>理论层面: ④认知机制欠发展 ⑤网络未涉及 ⑥阶段未形式化 ⑦实证局限</p>
+                    </div>
+                    <div class="section-item">
+                        <strong>2.4.2 现有研究的六项空白</strong>
+                        <span class="support-tag">→ Q1-Q3来源</span>
+                        <p style="margin-top: 8px; color: #aaa; font-size: 0.9em;">空白1: 系表隐喻系统研究 | 空白2: 分类工具 | 空白3: 编码链条<br/>空白4: 构式网络 | 空白5: 汉语特色 | 空白6: 非印欧验证</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chapter-card" onclick="toggleSection(this)">
+                <div class="chapter-header">
+                    <span class="chapter-title">2.5 本研究定位与本章小结</span>
+                    <span class="chapter-badge">研究定位</span>
+                </div>
+                <p>确立三重学术定位，为后续研究明确方向</p>
+                <div class="section-list">
+                    <div class="section-item">
+                        <strong>2.5.1 本研究的学术定位</strong>
+                        <span class="support-tag">→ 三重定位</span>
+                        <p style="margin-top: 8px; color: #aaa; font-size: 0.9em;">Sullivan理论的汉语验证者 | Sullivan理论的汉语适应者 | 隐喻构式研究的方法创新者</p>
+                    </div>
+                    <div class="section-item">
+                        <strong>2.5.2 本章小结</strong>
+                        <span class="support-tag">→ 承上启下</span>
+                        <p style="margin-top: 8px; color: #aaa; font-size: 0.9em;">综合四维度文献综述 → 第3章理论框架构建</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 2: Flowchart -->
+        <div id="flowchart" class="view-section">
+            <h2 style="text-align: center; color: #00d9ff; margin-bottom: 30px;">理论整合脉络图</h2>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ff6b6b;"></div>
+                    <span>Sullivan核心主干</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4ecdc4;"></div>
+                    <span>Langacker借鉴深化</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ffe66d;"></div>
+                    <span>Goldberg整合补充</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #a855f7;"></div>
+                    <span>汉语特色聚焦验证</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #00ff88;"></div>
+                    <span>研究问题</span>
+                </div>
+            </div>
+
+            <div class="theory-diagram">
+                <div class="theory-core">
+                    Sullivan (2013) 自主-依存原则<br/>
+                    <span style="font-size: 0.7em; font-weight: normal;">概念依存元素编码源域，概念自主元素编码目标域</span>
+                </div>
+
+                <div style="font-size: 2em; color: rgba(255,255,255,0.5);">↓ 三向整合 ↓</div>
+
+                <div class="theory-branches">
+                    <div class="theory-branch">
+                        <div class="branch-arrow">↑</div>
+                        <div class="branch-node branch-langacker">
+                            <strong>借鉴深化</strong><br/>
+                            Langacker (1987, 2008)
+                        </div>
+                        <div class="branch-label">
+                            认知参照点 | 侧显/基底<br/>
+                            认知固化 | 图形/背景
+                        </div>
+                    </div>
+
+                    <div class="theory-branch">
+                        <div class="branch-arrow">→</div>
+                        <div class="branch-node branch-goldberg">
+                            <strong>整合补充</strong><br/>
+                            Goldberg (1995, 2006)
+                        </div>
+                        <div class="branch-label">
+                            四类链接关系<br/>
+                            构式网络 | 小世界性质
+                        </div>
+                    </div>
+
+                    <div class="theory-branch">
+                        <div class="branch-arrow">↓</div>
+                        <div class="branch-node branch-chinese">
+                            <strong>聚焦验证</strong><br/>
+                            汉语类型学特色
+                        </div>
+                        <div class="branch-label">
+                            零系词现象<br/>
+                            整体性意象 | 关系性思维
+                        </div>
+                    </div>
+                </div>
+
+                <div style="font-size: 2em; color: rgba(255,255,255,0.5); margin-top: 30px;">↓ 整合为 ↓</div>
+
+                <div style="background: linear-gradient(135deg, #00d9ff, #00ff88); padding: 20px 40px; border-radius: 15px; color: #1a1a2e; font-weight: bold; font-size: 1.2em;">
+                    CFMC 隐喻构式认知框架
+                </div>
+
+                <div style="font-size: 2em; color: rgba(255,255,255,0.5);">↓ 回应 ↓</div>
+
+                <div class="flow-level">
+                    <div class="flow-node question">
+                        <strong>Q1</strong><br/>
+                        类型体系<br/>
+                        <span style="font-size: 0.8em; color: #aaa;">双维度分类</span>
+                    </div>
+                    <div class="flow-node question">
+                        <strong>Q2</strong><br/>
+                        网络组织<br/>
+                        <span style="font-size: 0.8em; color: #aaa;">四类链接关系</span>
+                    </div>
+                    <div class="flow-node question">
+                        <strong>Q3</strong><br/>
+                        认知机制<br/>
+                        <span style="font-size: 0.8em; color: #aaa;">四阶段编码</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 3: Gaps -->
+        <div id="gaps" class="view-section">
+            <h2 style="text-align: center; color: #00d9ff; margin-bottom: 30px;">Sullivan理论七类缺陷 → 六项研究空白</h2>
+
+            <div style="margin-bottom: 40px;">
+                <h3 style="color: #ff6b6b; margin-bottom: 20px;">七类待拓展领域</h3>
+                <table class="defect-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">编号</th>
+                            <th>缺陷内容</th>
+                            <th style="width: 150px;">层面</th>
+                            <th style="width: 120px;">对应空白</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="defect-num">①</span></td>
+                            <td>系词构式分析深度不足（仅6页篇幅，聚焦英语be动词）</td>
+                            <td>语料与语言</td>
+                            <td>空白1</td>
+                        </tr>
+                        <tr>
+                            <td><span class="defect-num">②</span></td>
+                            <td>零系词现象的忽视（假设系词显性存在）</td>
+                            <td>语料与语言</td>
+                            <td>空白1+5</td>
+                        </tr>
+                        <tr>
+                            <td><span class="defect-num">③</span></td>
+                            <td>汉语类型学特征缺失（未考虑话题突出语言）</td>
+                            <td>语料与语言</td>
+                            <td>空白1+5</td>
+                        </tr>
+                        <tr>
+                            <td><span class="defect-num">④</span></td>
+                            <td>认知参照点机制未充分发展</td>
+                            <td>理论与方法</td>
+                            <td>空白3</td>
+                        </tr>
+                        <tr>
+                            <td><span class="defect-num">⑤</span></td>
+                            <td>构式网络组织特征未涉及</td>
+                            <td>理论与方法</td>
+                            <td>空白4</td>
+                        </tr>
+                        <tr>
+                            <td><span class="defect-num">⑥</span></td>
+                            <td>编码机制的阶段性未形式化</td>
+                            <td>理论与方法</td>
+                            <td>空白2+3</td>
+                        </tr>
+                        <tr>
+                            <td><span class="defect-num">⑦</span></td>
+                            <td>实证验证方法的局限（内省式分析为主）</td>
+                            <td>理论与方法</td>
+                            <td>空白2+6</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 style="color: #00ff88; margin-bottom: 20px;">六项研究空白与本研究回应</h3>
+            <div class="gap-grid">
+                <div class="gap-card">
+                    <div class="gap-number">空白1</div>
+                    <div class="gap-title">系表隐喻构式系统研究</div>
+                    <p style="color: #aaa; font-size: 0.9em;">Sullivan系词分析仅6页，汉语研究尚未整合自主-依存原则</p>
+                    <div class="gap-solution">
+                        <div class="gap-solution-label">本研究回应 → Q1</div>
+                        基于6,000例语料建立类型体系
+                    </div>
+                </div>
+
+                <div class="gap-card">
+                    <div class="gap-number">空白2</div>
+                    <div class="gap-title">可操作化的分类工具</div>
+                    <p style="color: #aaa; font-size: 0.9em;">Sullivan和Langacker均未发展出系统的分类框架</p>
+                    <div class="gap-solution">
+                        <div class="gap-solution-label">本研究回应 → Q1</div>
+                        构建双维度分类体系（认知通达度×概念复杂度）
+                    </div>
+                </div>
+
+                <div class="gap-card">
+                    <div class="gap-number">空白3</div>
+                    <div class="gap-title">完整的认知编码链条</div>
+                    <p style="color: #aaa; font-size: 0.9em;">两步程序未能呈现从体验到编码的完整路径</p>
+                    <div class="gap-solution">
+                        <div class="gap-solution-label">本研究回应 → Q3</div>
+                        提出四阶段认知编码机制
+                    </div>
+                </div>
+
+                <div class="gap-card">
+                    <div class="gap-number">空白4</div>
+                    <div class="gap-title">构式网络系统分析</div>
+                    <p style="color: #aaa; font-size: 0.9em;">Sullivan聚焦单个构式，未涉及构式间网络关系</p>
+                    <div class="gap-solution">
+                        <div class="gap-solution-label">本研究回应 → Q2</div>
+                        运用Goldberg四类链接关系分析网络
+                    </div>
+                </div>
+
+                <div class="gap-card">
+                    <div class="gap-number">空白5</div>
+                    <div class="gap-title">汉语认知特色深度阐释</div>
+                    <p style="color: #aaa; font-size: 0.9em;">Sullivan基于英语，汉语类型学特征未纳入考量</p>
+                    <div class="gap-solution">
+                        <div class="gap-solution-label">本研究回应 → Q1-Q3</div>
+                        测量整体性意象与关系性思维
+                    </div>
+                </div>
+
+                <div class="gap-card">
+                    <div class="gap-number">空白6</div>
+                    <div class="gap-title">非印欧语系实证验证</div>
+                    <p style="color: #aaa; font-size: 0.9em;">Sullivan预测跨语言适用性，但汉语验证空白</p>
+                    <div class="gap-solution">
+                        <div class="gap-solution-label">本研究回应 → Q1-Q3</div>
+                        首次系统验证Sullivan理论在汉语中的适用性
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 4: Research Questions -->
+        <div id="questions" class="view-section">
+            <h2 style="text-align: center; color: #00d9ff; margin-bottom: 30px;">研究问题的文献支撑</h2>
+
+            <div class="question-section q1">
+                <div class="question-header">
+                    <div class="question-icon">Q1</div>
+                    <div>
+                        <div class="question-text">汉语系表隐喻构式呈现哪些类型及其特征？</div>
+                        <div style="color: #aaa; margin-top: 5px;">描述充分性（WHAT - 类型）| CFMC层次1+2</div>
+                    </div>
+                </div>
+                <div class="support-list">
+                    <div class="support-item">
+                        <div class="support-icon">✓</div>
+                        <div>
+                            <strong>Sullivan自主-依存原则</strong>
+                            <p style="color: #aaa; font-size: 0.85em;">2.1.1节：源域/目标域区分 → 双维度分类基础</p>
+                        </div>
+                    </div>
+                    <div class="support-item">
+                        <div class="support-icon">✓</div>
+                        <div>
+                            <strong>Sullivan三类等式</strong>
+                            <p style="color: #aaa; font-size: 0.85em;">2.1.2节：述谓/指称/等同 → 系词功能分类参考</p>
+                        </div>
+                    </div>
+                    <div class="support-item">
+                        <div class="support-icon">✓</div>
+                        <div>
+                            <strong>Langacker认知通达度</strong>
+                            <p style="color: #aaa; font-size: 0.85em;">2.2.1节：认知固化连续体 → 认知通达度维度</p>
+                        </div>
+                    </div>
+                    <div class="support-item">
+                        <div class="support-icon">✓</div>
+                        <div>
+                            <strong>空白1+2的回应</strong>
+                            <p style="color: #aaa; font-size: 0.85em;">2.4.2节：系统研究+分类工具 → Q1设计依据</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-section q2">
+                <div class="question-header">
+                    <div class="question-icon">Q2</div>
+                    <div>
+                        <div class="question-text">汉语系表隐喻构式网络呈现怎样的内部组织特征？</div>
+                        <div style="color: #aaa; margin-top: 5px;">HOW（组织）| CFMC层次3</div>
+                    </div>
+                </div>
+                <div class="support-list">
+                    <div class="support-item">
+                        <div class="support-icon">✓</div>
+                        <div>
+                            <strong>Goldberg四类链接关系</strong>
+                            <p style="color: #aaa; font-size: 0.85em;">2.2.2节：隐喻扩展/多义/实例/子部分链接</p>
+                        </div>
+                    </div>
+                    <div class="support-item">
+                        <div class="support-icon">✓</div>
+                        <div>
+                            <strong>构式网络理论</strong>
+                            <p style="color: #aaa; font-size: 0.85em;">2.2.2节：表面概括假设 + 小世界性质</p>
+                        </div>
+                    </div>
+                    <div class="support-item">
+                        <div class="support-icon">✓</div>
+                        <div>
+                            <strong>Sullivan缺陷⑤</strong>
+                            <p style="color: #aaa; font-size: 0.85em;">2.4.1节：聚焦单个构式 → 网络视角缺失</p>
+                        </div>
+                    </div>
+                    <div class="support-item">
+                        <div class="support-icon">✓</div>
+                        <div>
+                            <strong>空白4的回应</strong>
+                            <p style="color: #aaa; font-size: 0.85em;">2.4.2节：构式网络系统分析 → Q2设计依据</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="question-section q3">
+                <div class="question-header">
+                    <div class="question-icon">Q3</div>
+                    <div>
+                        <div class="question-text">汉语系表隐喻构式的认知编码机制是什么？</div>
+                        <div style="color: #aaa; margin-top: 5px;">解释充分性（WHY - 机制）| CFMC层次1+2</div>
+                    </div>
+                </div>
+                <div class="support-list">
+                    <div class="support-item">
+                        <div class="support-icon">✓</div>
+                        <div>
+                            <strong>Sullivan两步程序</strong>
+                            <p style="color: #aaa; font-size: 0.85em;">2.1.1节：概念结构→自主-依存 → 四阶段扩展基础</p>
+                        </div>
+                    </div>
+                    <div class="support-item">
+                        <div class="support-icon">✓</div>
+                        <div>
+                            <strong>Langacker认知参照点</strong>
+                            <p style="color: #aaa; font-size: 0.85em;">2.2.1节：R→T认知路径 → 阶段2机制</p>
+                        </div>
+                    </div>
+                    <div class="support-item">
+                        <div class="support-icon">✓</div>
+                        <div>
+                            <strong>具身认知基础</strong>
+                            <p style="color: #aaa; font-size: 0.85em;">2.2.3节：Lakoff具身隐喻 → 阶段1机制</p>
+                        </div>
+                    </div>
+                    <div class="support-item">
+                        <div class="support-icon">✓</div>
+                        <div>
+                            <strong>空白3的回应</strong>
+                            <p style="color: #aaa; font-size: 0.85em;">2.4.2节：编码链条不完整 → Q3设计依据</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px; margin-top: 30px;">
+                <h3 style="color: #00d9ff; margin-bottom: 15px;">Q1-Q2-Q3关系模式</h3>
+                <p style="line-height: 1.8;">
+                    <strong style="color: #ff6b6b;">核心递进（Sullivan主线）：</strong>Q1（描述充分性）→ Q3（解释充分性），共享Sullivan自主-依存原则<br/>
+                    <strong style="color: #ffe66d;">横向扩展（Goldberg维度）：</strong>Q2基于Q1类型划分，从类型学横向扩展至网络学<br/>
+                    <strong style="color: #00ff88;">整合关系：</strong>Q1为Q2提供网络节点，Q3为Q2的网络涌现特性提供机制解释
+                </p>
+            </div>
+        </div>
+
+        <!-- View 5: Interactive -->
+        <div id="interactive" class="view-section">
+            <h2 style="text-align: center; color: #00d9ff; margin-bottom: 30px;">交互式探索</h2>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div class="chapter-card" onclick="showModal('sullivan')">
+                    <div class="chapter-header">
+                        <span class="chapter-title" style="color: #ff6b6b;">Sullivan理论详解</span>
+                    </div>
+                    <p>点击查看自主-依存原则、三个约束、两步程序的详细内容</p>
+                </div>
+
+                <div class="chapter-card" onclick="showModal('langacker')">
+                    <div class="chapter-header">
+                        <span class="chapter-title" style="color: #4ecdc4;">Langacker概念工具</span>
+                    </div>
+                    <p>点击查看认知域、认知参照点、侧显/基底等概念详解</p>
+                </div>
+
+                <div class="chapter-card" onclick="showModal('goldberg')">
+                    <div class="chapter-header">
+                        <span class="chapter-title" style="color: #ffe66d;">Goldberg构式网络</span>
+                    </div>
+                    <p>点击查看四类链接关系、小世界性质的详细说明</p>
+                </div>
+
+                <div class="chapter-card" onclick="showModal('chinese')">
+                    <div class="chapter-header">
+                        <span class="chapter-title" style="color: #a855f7;">汉语类型学特色</span>
+                    </div>
+                    <p>点击查看零系词现象、整体性意象、关系性思维等特征</p>
+                </div>
+
+                <div class="chapter-card" onclick="showModal('cfmc')">
+                    <div class="chapter-header">
+                        <span class="chapter-title" style="color: #00ff88;">CFMC框架整合</span>
+                    </div>
+                    <p>点击查看三向整合的整合逻辑与三层次结构</p>
+                </div>
+
+                <div class="chapter-card" onclick="showModal('method')">
+                    <div class="chapter-header">
+                        <span class="chapter-title" style="color: #00d9ff;">研究方法支撑</span>
+                    </div>
+                    <p>点击查看GMM聚类、网络分析、SEM路径分析的文献支撑</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">详细信息</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // View switching
+        function showView(viewId) {
+            document.querySelectorAll('.view-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(viewId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Section toggle
+        function toggleSection(card) {
+            const sectionList = card.querySelector('.section-list');
+            if (sectionList) {
+                sectionList.classList.toggle('expanded');
+            }
+        }
+
+        // Modal content
+        const modalContents = {
+            sullivan: {
+                title: 'Sullivan (2013) 隐喻构式理论',
+                body: `
+                    <h4 style="color: #ff6b6b; margin-bottom: 15px;">核心论题</h4>
+                    <p style="margin-bottom: 20px;">隐喻如何在构式中编码（How metaphor is encoded in constructions）</p>
+
+                    <h4 style="color: #ff6b6b; margin-bottom: 15px;">自主-依存原则</h4>
+                    <blockquote style="border-left: 3px solid #ff6b6b; padding-left: 15px; color: #aaa; margin-bottom: 20px;">
+                        "Conceptually dependent elements provide source-domain material, and conceptually autonomous elements provide target-domain material." (p. 9)
+                    </blockquote>
+
+                    <h4 style="color: #ff6b6b; margin-bottom: 15px;">三个形式化约束</h4>
+                    <ol style="line-height: 2; margin-left: 20px;">
+                        <li><strong>自主-依存约束</strong>：源域项必须相对于自主的目标域项是依存的</li>
+                        <li><strong>推论</strong>：隐喻短语可填充同一隐喻的另一构式槽位</li>
+                        <li><strong>隐喻嵌入约束</strong>：组合不同隐喻的规则</li>
+                    </ol>
+
+                    <h4 style="color: #ff6b6b; margin-top: 20px; margin-bottom: 15px;">两步分析程序</h4>
+                    <p><strong>第一步</strong>：表征概念结构（识别源域/目标域）</p>
+                    <p><strong>第二步</strong>：表征自主-依存关系（验证自主-依存原则）</p>
+
+                    <h4 style="color: #ff6b6b; margin-top: 20px; margin-bottom: 15px;">系词构式的双层结构</h4>
+                    <p>第一层：NP₁（主语）自主 ← [系词 + NP₂] 依存</p>
+                    <p>第二层：系词be依存 ← NP₂自主</p>
+                `
+            },
+            langacker: {
+                title: 'Langacker认知语法概念工具',
+                body: `
+                    <h4 style="color: #4ecdc4; margin-bottom: 15px;">认知域理论</h4>
+                    <p style="margin-bottom: 20px;">认知域是"任何可作为语义结构特征化背景的概念化过程"（Langacker, 1987: 147-154）</p>
+
+                    <h4 style="color: #4ecdc4; margin-bottom: 15px;">自主与依存性</h4>
+                    <blockquote style="border-left: 3px solid #4ecdc4; padding-left: 15px; color: #aaa; margin-bottom: 20px;">
+                        依存结构需要参照另一结构才能获得完整界定；自主结构可独立获得概念表征
+                    </blockquote>
+                    <p><strong>Thing</strong>（实体）= 自主 | <strong>Relation</strong>（关系）= 依存</p>
+
+                    <h4 style="color: #4ecdc4; margin-top: 20px; margin-bottom: 15px;">认知参照点模型</h4>
+                    <p style="margin-bottom: 10px;">三要素：参照点R → 目标T → 管辖域D</p>
+                    <p>在系词构式中：主语（射体）作为认知参照点</p>
+
+                    <h4 style="color: #4ecdc4; margin-top: 20px; margin-bottom: 15px;">侧显与基底</h4>
+                    <p><strong>基底（Base）</strong>：谓词的认知域或域矩阵</p>
+                    <p><strong>侧显（Profile）</strong>：基底内被表达式指称的子结构</p>
+
+                    <h4 style="color: #4ecdc4; margin-top: 20px; margin-bottom: 15px;">认知固化</h4>
+                    <p>语言单位通过反复使用在认知系统中逐渐固化的过程</p>
+                `
+            },
+            goldberg: {
+                title: 'Goldberg构式网络理论',
+                body: `
+                    <h4 style="color: #ffe66d; margin-bottom: 15px;">构式的形式化定义</h4>
+                    <blockquote style="border-left: 3px solid #ffe66d; padding-left: 15px; color: #aaa; margin-bottom: 20px;">
+                        C is a CONSTRUCTION iff C is a form-meaning pair such that some aspect of F or S is not strictly predictable from C's component parts.
+                    </blockquote>
+
+                    <h4 style="color: #ffe66d; margin-bottom: 15px;">四类继承链接</h4>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr style="background: rgba(255, 230, 109, 0.2);">
+                            <th style="padding: 10px; text-align: left;">链接类型</th>
+                            <th style="padding: 10px; text-align: left;">定义</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">多义链接</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">同一构式形式的多义扩展</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">隐喻扩展链接</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">基于概念隐喻的跨域扩展</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">子部分链接</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">构式与其组成部分的关系</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px;">实例链接</td>
+                            <td style="padding: 10px;">图式构式与具体实例的关系</td>
+                        </tr>
+                    </table>
+
+                    <h4 style="color: #ffe66d; margin-bottom: 15px;">小世界性质</h4>
+                    <p>高聚类系数（C ≥ 0.60）+ 短平均路径长度（L ≤ 3.0）+ σ > 1</p>
+                `
+            },
+            chinese: {
+                title: '汉语类型学特色',
+                body: `
+                    <h4 style="color: #a855f7; margin-bottom: 15px;">零系词现象</h4>
+                    <p style="margin-bottom: 15px;"><strong>古汉语</strong>："NP NP也"判断句（王力, 1980）</p>
+                    <p style="margin-bottom: 20px;"><strong>现代汉语</strong>：特定语境下系词省略（Chao, 1968; Li & Thompson, 1981）</p>
+
+                    <h4 style="color: #a855f7; margin-bottom: 15px;">整体性意象（holistic imaging）</h4>
+                    <p style="margin-bottom: 10px;">东亚被试更关注背景元素，呈现整体性认知方式（Nisbett, 2003）</p>
+                    <p style="margin-bottom: 20px;">沈家煊（2019）"名动包含"理论：汉语动词包含于名词范畴，反映整体性认知取向</p>
+
+                    <h4 style="color: #a855f7; margin-bottom: 15px;">关系性思维（relational thinking）</h4>
+                    <p style="margin-bottom: 10px;">中国被试在类比任务中更倾向于基于关系相似性进行判断（Ji et al., 2000）</p>
+                    <p>申小龙（2004）：汉语语法呈现关系性组织特征</p>
+
+                    <div style="background: rgba(168, 85, 247, 0.2); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                        <strong>研究意义</strong>：这些认知特色对Sullivan框架（基于英语建立）的跨语言适用性提出检验需求
+                    </div>
+                `
+            },
+            cfmc: {
+                title: 'CFMC框架整合逻辑',
+                body: `
+                    <h4 style="color: #00ff88; margin-bottom: 15px;">框架名称</h4>
+                    <p style="margin-bottom: 20px;">隐喻构式认知框架（Cognitive Framework for Metaphorical Constructions, CFMC）</p>
+
+                    <h4 style="color: #00ff88; margin-bottom: 15px;">三向整合策略</h4>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr style="background: rgba(0, 255, 136, 0.2);">
+                            <th style="padding: 10px;">修补方向</th>
+                            <th style="padding: 10px;">理论来源</th>
+                            <th style="padding: 10px;">具体内容</th>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">借鉴深化</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Langacker</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">认知参照点、侧显/基底</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">整合补充</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">Goldberg</td>
+                            <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">四类链接关系、构式网络</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px;">聚焦验证</td>
+                            <td style="padding: 10px;">本研究创新</td>
+                            <td style="padding: 10px;">零系词、整体性意象、关系性思维</td>
+                        </tr>
+                    </table>
+
+                    <h4 style="color: #00ff88; margin-bottom: 15px;">三层次结构</h4>
+                    <p><strong>层次1</strong>：映射机制层次 → Q1、Q3</p>
+                    <p><strong>层次2</strong>：语码实现层次 → Q1、Q3</p>
+                    <p><strong>层次3</strong>：网络关联层次 → Q2</p>
+                `
+            },
+            method: {
+                title: '研究方法的文献支撑',
+                body: `
+                    <h4 style="color: #00d9ff; margin-bottom: 15px;">Q1方法：GMM聚类分析</h4>
+                    <p style="margin-bottom: 20px;">文献支撑：Langacker认知固化理论 → 认知通达度连续体 → 聚类基础</p>
+
+                    <h4 style="color: #00d9ff; margin-bottom: 15px;">Q2方法：网络分析</h4>
+                    <ul style="line-height: 2; margin-left: 20px; margin-bottom: 20px;">
+                        <li>Goldberg四类链接关系 → 边的确定</li>
+                        <li>Diessel (2015) 小世界性质 → 网络指标</li>
+                        <li>Watts & Strogatz (1998) → 网络分析方法</li>
+                    </ul>
+
+                    <h4 style="color: #00d9ff; margin-bottom: 15px;">Q3方法：SEM路径分析</h4>
+                    <ul style="line-height: 2; margin-left: 20px;">
+                        <li>Sullivan两步程序 → 四阶段扩展</li>
+                        <li>Langacker认知参照点 → 阶段2机制</li>
+                        <li>具身认知理论 → 阶段1机制</li>
+                    </ul>
+
+                    <div style="background: rgba(0, 217, 255, 0.2); padding: 15px; border-radius: 10px; margin-top: 20px;">
+                        <strong>创新点</strong>：CFMC-33标注体系（41项字段）为方法论创新，整合定量与质性分析
+                    </div>
+                `
+            }
+        };
+
+        function showModal(contentId) {
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modal-title');
+            const body = document.getElementById('modal-body');
+
+            title.textContent = modalContents[contentId].title;
+            body.innerHTML = modalContents[contentId].body;
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // Close modal on outside click
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
