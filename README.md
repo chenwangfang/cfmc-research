@@ -6,7 +6,7 @@
 
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.XXXXXXX-blue)](https://doi.org/10.5281/zenodo.XXXXXXX)
 [![Corpus](https://img.shields.io/badge/Corpus-5989%20constructions-blue)](CFMC_5989.json)
-[![Scripts](https://img.shields.io/badge/Scripts-39%20Python-green)](scripts/)
+[![Scripts](https://img.shields.io/badge/Scripts-30%20Python-green)](scripts/)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey)](LICENSE)
 [![GitHub Pages](https://img.shields.io/badge/Demo-GitHub%20Pages-brightgreen)](https://chenwangfang.github.io/cfmc-research/visualization/)
 [![中文](https://img.shields.io/badge/中文-README-red)](README.md)
@@ -70,7 +70,7 @@ cfmc-research/
 │   ├── 图5_CFMC三层框架结构图.png
 │   └── ...
 │
-├── scripts/                     # Python分析脚本（39个）
+├── scripts/                     # Python分析脚本（30个）
 │   ├── Q1_01_描述统计.py
 │   ├── Q2_01_网络构建.py
 │   ├── Q3_01_描述统计.py
