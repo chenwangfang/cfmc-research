@@ -204,7 +204,7 @@ python Q3_03_SEM完整模型.py
 ```bibtex
 @phdthesis{chen2026cfmc,
   title     = {基于语料库的汉语系表隐喻构式网络认知机制研究},
-  author    = {陈芳},
+  author    = {陈放},
   school    = {北京师范大学},
   year      = {2026},
   type      = {博士学位论文}
@@ -225,12 +225,12 @@ python Q3_03_SEM完整模型.py
 
 ## 联系方式
 
-**第一作者**：陈芳 (Fang Chen)
+**第一作者**：陈放 (Fang Chen)
 - 单位：北京师范大学外国语言文学学院
 - 邮箱：15397647129@163.com
 - ORCID：[0009-0001-9317-7694](https://orcid.org/0009-0001-9317-7694)
 
-**通讯作者**：王德亮 (Deliang Wang)
+**指导老师**：王德亮 (Deliang Wang)
 - 单位：北京师范大学外国语言文学学院
 - 邮箱：wangdeliang@bnu.edu.cn
 - ORCID：[0000-0001-6142-1624](https://orcid.org/0000-0001-6142-1624)

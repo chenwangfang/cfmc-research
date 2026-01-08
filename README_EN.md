@@ -229,7 +229,7 @@ This project is licensed under [CC BY-NC 4.0](https://creativecommons.org/licens
 - Email: 15397647129@163.com
 - ORCID: [0009-0001-9317-7694](https://orcid.org/0009-0001-9317-7694)
 
-**Corresponding Author**: Deliang Wang
+**Supervisor**: Deliang Wang
 - Affiliation: School of Foreign Languages and Literature, Beijing Normal University
 - Email: wangdeliang@bnu.edu.cn
 - ORCID: [0000-0001-6142-1624](https://orcid.org/0000-0001-6142-1624)
