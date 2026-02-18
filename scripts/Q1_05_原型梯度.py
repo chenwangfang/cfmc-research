@@ -3,14 +3,22 @@
 """
 Q1_05_原型梯度.py
 ================
-计算马氏距离并划分原型梯度结构
+计算全局标准化欧氏距离并划分原型梯度结构
+
+方法说明：
+    采用全局标准化欧氏距离（distance from global center, standardized by global SD）。
+    12类构式由认知通达度（4级）和映射方向（4级）的离散组合界定，聚类内成员的
+    双维度取值完全相同或高度趋同，聚类内协方差矩阵为奇异矩阵，不满足马氏距离
+    或聚类内标准化距离的计算前提。全局距离测量每个构式偏离整体中心的程度，
+    反映其在双维度空间中的位置典型性。
 
 输出：
-- 图19: 原型梯度三组核心变量差异比较箱线图
-- 表66: 原型梯度分布
-- 表67: 原型梯度间差异检验
+- 图16: 原型梯度三组核心变量差异比较箱线图
+- 表63: 原型梯度分布
+- 表64: 原型梯度间差异检验
 
 创建日期：2025-12-05
+重写日期：2026-02-03（改为全局标准化欧氏距离）
 """
 
 import sys
@@ -24,8 +32,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 from scipy import stats
-from scipy.spatial.distance import mahalanobis
-from sklearn.covariance import EmpiricalCovariance
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -49,9 +55,15 @@ def load_clustered_data(paths: dict) -> pd.DataFrame:
     return df
 
 
-def calculate_mahalanobis_distance(df: pd.DataFrame) -> pd.DataFrame:
+def calculate_prototype_distance(df: pd.DataFrame) -> pd.DataFrame:
     """
-    计算马氏距离并划分原型梯度
+    计算全局标准化欧氏距离并划分原型梯度
+
+    使用全局均值和全局标准差对认知通达度和映射方向进行标准化，
+    然后计算每个样本到全局中心的欧氏距离。
+
+    距离公式: d = sqrt(Σ((x_i - μ_i) / σ_i)²)
+    其中 μ 和 σ 是全局均值和全局标准差。
 
     Parameters
     ----------
@@ -61,67 +73,97 @@ def calculate_mahalanobis_distance(df: pd.DataFrame) -> pd.DataFrame:
     Returns
     -------
     pd.DataFrame
-        添加了马氏距离和原型梯度的数据框
+        添加了原型距离和原型梯度的数据框
     """
-    # 特征与Q1_03分类维度一致：认知通达度x映射方向
     features = ['cognitive_accessibility', 'mapping_direction']
     df_result = df.copy()
 
-    # 对每个聚类计算马氏距离
-    all_distances = []
-    all_grades = []
+    # 全局均值和标准差
+    global_mean = df[features].mean()
+    global_sd = df[features].std()
 
-    for cluster in df['cluster_label'].unique():
-        mask = df['cluster_label'] == cluster
-        X_cluster = df.loc[mask, features].values
+    print(f"\n全局统计量:")
+    print(f"  认知通达度: M = {global_mean['cognitive_accessibility']:.4f}, SD = {global_sd['cognitive_accessibility']:.4f}")
+    print(f"  映射方向:   M = {global_mean['mapping_direction']:.4f}, SD = {global_sd['mapping_direction']:.4f}")
 
-        # 计算协方差矩阵
-        cov = EmpiricalCovariance().fit(X_cluster)
-        center = X_cluster.mean(axis=0)
+    # 检查全局协方差矩阵条件
+    cov_matrix = df[features].cov()
+    det = np.linalg.det(cov_matrix.values)
+    cond = np.linalg.cond(cov_matrix.values)
+    print(f"\n全局协方差矩阵:")
+    print(f"  行列式 det = {det:.4f}")
+    print(f"  条件数 cond = {cond:.2f}")
 
-        # 计算每个点到中心的马氏距离
-        distances = []
-        for x in X_cluster:
-            try:
-                d = mahalanobis(x, center, cov.precision_)
-            except:
-                # 如果协方差矩阵奇异，使用欧氏距离
-                d = np.linalg.norm(x - center)
-            distances.append(d)
+    # 计算全局标准化欧氏距离
+    # d_i = sqrt(Σ((x_ij - μ_j) / σ_j)²)
+    standardized = (df[features] - global_mean) / global_sd
+    distances = np.sqrt((standardized ** 2).sum(axis=1))
 
-        distances = np.array(distances)
+    df_result['prototype_distance'] = distances.values
 
-        # 基于百分位数划分原型梯度
-        p33 = np.percentile(distances, 33.33)
-        p67 = np.percentile(distances, 66.67)
+    # 检查唯一距离值数量
+    unique_dists = np.sort(np.unique(np.round(distances, 6)))
+    print(f"\n唯一距离值数量: {len(unique_dists)}")
+    print(f"  距离值列表: {[f'{d:.4f}' for d in unique_dists]}")
 
-        grades = np.where(distances <= p33, 1,  # 中心成员
-                         np.where(distances <= p67, 2,  # 次中心成员
-                                 3))  # 边缘成员
+    # 使用全局百分位 P33/P67 划分三级梯度（均衡分布）
+    p33 = np.percentile(distances, 33.33)
+    p67 = np.percentile(distances, 66.67)
 
-        # 存储结果
-        idx = df.index[mask]
-        for i, (idx_val, dist, grade) in enumerate(zip(idx, distances, grades)):
-            all_distances.append((idx_val, dist, grade))
+    print(f"\n[全局百分位法]")
+    print(f"  P33 断裂点: {p33:.4f}")
+    print(f"  P67 断裂点: {p67:.4f}")
 
-    # 添加到数据框
-    dist_df = pd.DataFrame(all_distances, columns=['index', 'mahalanobis_distance', 'prototype_grade'])
-    dist_df.set_index('index', inplace=True)
+    # 根据百分位划分三级梯度
+    df_result['prototype_grade'] = np.where(
+        distances <= p33, 1,  # 中心成员（距离最小的1/3）
+        np.where(distances <= p67, 2,  # 次中心成员
+                 3)  # 边缘成员（距离最大的1/3）
+    )
 
-    df_result['mahalanobis_distance'] = dist_df['mahalanobis_distance']
-    df_result['prototype_grade'] = dist_df['prototype_grade']
+    # 打印分布统计
+    print(f"\n全局标准化欧氏距离计算完成:")
+    print(f"  均值: {df_result['prototype_distance'].mean():.4f}")
+    print(f"  标准差: {df_result['prototype_distance'].std():.4f}")
+    print(f"  范围: [{df_result['prototype_distance'].min():.4f}, {df_result['prototype_distance'].max():.4f}]")
 
-    print(f"\n马氏距离计算完成:")
-    print(f"  均值: {df_result['mahalanobis_distance'].mean():.3f}")
-    print(f"  标准差: {df_result['mahalanobis_distance'].std():.3f}")
-    print(f"  范围: [{df_result['mahalanobis_distance'].min():.3f}, {df_result['mahalanobis_distance'].max():.3f}]")
+    print(f"\n三级梯度分布:")
+    for grade in [1, 2, 3]:
+        n = (df_result['prototype_grade'] == grade).sum()
+        pct = n / len(df_result) * 100
+        grade_dists = df_result[df_result['prototype_grade'] == grade]['prototype_distance']
+        if grade == 1:
+            print(f"  中心成员 (d ≤ {p33:.4f}): n={n} ({pct:.1f}%), dist M={grade_dists.mean():.4f}")
+        elif grade == 2:
+            print(f"  次中心成员 ({p33:.4f} < d ≤ {p67:.4f}): n={n} ({pct:.1f}%), dist M={grade_dists.mean():.4f}")
+        else:
+            print(f"  边缘成员 (d > {p67:.4f}): n={n} ({pct:.1f}%), dist M={grade_dists.mean():.4f}")
+
+    # 补充：聚类级别分析（N=12类型）
+    print(f"\n聚类级别分析（N=12类型）:")
+    cluster_stats = df_result.groupby('cluster_label').agg({
+        'prototype_distance': 'mean',
+        'cognitive_accessibility': 'mean',
+        'conventionality': 'mean',
+        'systematicity': 'mean'
+    }).rename(columns={
+        'prototype_distance': 'dist_mean',
+        'cognitive_accessibility': 'CA_mean',
+        'conventionality': 'conv_mean',
+        'systematicity': 'syst_mean'
+    })
+
+    # 类型级相关
+    for var, name in [('CA_mean', '认知通达度'), ('conv_mean', '常规度'), ('syst_mean', '系统性')]:
+        r, p = stats.pearsonr(cluster_stats['dist_mean'], cluster_stats[var])
+        print(f"  类型距离 × {name}: r = {r:.3f}, p = {p:.4f}")
 
     return df_result
 
 
 def create_prototype_distribution_table(df: pd.DataFrame) -> pd.DataFrame:
     """
-    创建原型梯度分布表（表66）
+    创建原型梯度分布表（表63）
 
     Parameters
     ----------
@@ -146,8 +188,8 @@ def create_prototype_distribution_table(df: pd.DataFrame) -> pd.DataFrame:
             '梯度编码': grade,
             '样本量': n,
             '占比(%)': round(n / total * 100, 2),
-            '马氏距离M': round(subset['mahalanobis_distance'].mean(), 3),
-            '马氏距离SD': round(subset['mahalanobis_distance'].std(), 3),
+            '原型距离M': round(subset['prototype_distance'].mean(), 3),
+            '原型距离SD': round(subset['prototype_distance'].std(), 3),
             '认知通达度M': round(subset['cognitive_accessibility'].mean(), 3),
             '映射方向M': round(subset['mapping_direction'].mean(), 3)
         })
@@ -157,7 +199,7 @@ def create_prototype_distribution_table(df: pd.DataFrame) -> pd.DataFrame:
 
 def perform_grade_comparison(df: pd.DataFrame) -> pd.DataFrame:
     """
-    进行原型梯度间差异检验（表67）
+    进行原型梯度间差异检验（表64）
 
     Parameters
     ----------
@@ -169,8 +211,8 @@ def perform_grade_comparison(df: pd.DataFrame) -> pd.DataFrame:
     pd.DataFrame
         差异检验结果表
     """
-    variables = ['cognitive_accessibility', 'mapping_direction', 'mahalanobis_distance']
-    var_names = ['认知通达度', '映射方向', '马氏距离']
+    variables = ['cognitive_accessibility', 'mapping_direction', 'prototype_distance']
+    var_names = ['认知通达度', '映射方向', '原型距离']
 
     results = []
 
@@ -224,7 +266,7 @@ def perform_grade_comparison(df: pd.DataFrame) -> pd.DataFrame:
 
 def plot_prototype_boxplot(df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
-    绘制原型梯度三组核心变量差异比较箱线图（图19）
+    绘制原型梯度三组核心变量差异比较箱线图（图16）
 
     Parameters
     ----------
@@ -246,14 +288,14 @@ def plot_prototype_boxplot(df: pd.DataFrame, paths: dict) -> plt.Figure:
     # 调整图表尺寸，减少垂直空白
     fig, axes = plt.subplots(1, 3, figsize=(14, 4.5))
 
-    variables = ['cognitive_accessibility', 'mapping_direction', 'mahalanobis_distance']
-    var_names = ['认知通达度', '映射方向', '马氏距离']
+    variables = ['cognitive_accessibility', 'mapping_direction', 'prototype_distance']
+    var_names = ['认知通达度', '映射方向', '原型距离']
 
     # 为每个子图设置优化的Y轴范围，减少空白
     ylim_settings = {
         'cognitive_accessibility': (0.5, 5.3),
         'mapping_direction': (0.5, 4.3),
-        'mahalanobis_distance': (-0.3, 5.5)
+        'prototype_distance': (-0.3, 2.5)
     }
 
     # 三组原型梯度使用不同颜色（与图16/5-6配色一致）
@@ -319,14 +361,16 @@ def plot_prototype_boxplot(df: pd.DataFrame, paths: dict) -> plt.Figure:
         sig_text = '***' if p_val < 0.001 else ('**' if p_val < 0.01 else ('*' if p_val < 0.05 else 'ns'))
 
         # 调整ANOVA标注位置，避免与数据重叠
-        ax.text(0.98, 0.98, f'ANOVA: F={f_stat:.1f}, {sig_text}',
-               transform=ax.transAxes, ha='right', va='top',
+        # 左图(认知通达度)文本框放右下角，避免遮挡边缘成员数据
+        if var == 'cognitive_accessibility':
+            text_y, text_va = 0.02, 'bottom'
+        else:
+            text_y, text_va = 0.98, 'top'
+        ax.text(0.98, text_y, f'ANOVA: F={f_stat:.1f}, {sig_text}',
+               transform=ax.transAxes, ha='right', va=text_va,
                fontsize=10, fontproperties=font_en,
                bbox=dict(boxstyle='round,pad=0.3', facecolor='white',
                         edgecolor='gray', alpha=0.9))
-
-    # plt.suptitle('图19 原型梯度三组核心变量差异比较箱线图',
-                # fontproperties=font_cn_title, fontsize=14, y=0.98)
 
     # 调整边距，减少空白
     plt.subplots_adjust(left=0.06, right=0.98, top=0.88, bottom=0.12, wspace=0.25)
@@ -334,11 +378,47 @@ def plot_prototype_boxplot(df: pd.DataFrame, paths: dict) -> plt.Figure:
     return fig
 
 
+def compute_correlation_summary(df: pd.DataFrame):
+    """
+    计算并打印原型距离与各指标的Pearson和Spearman相关（供Q3_02引用）
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        带原型梯度的数据
+    """
+    print(f"\n{'='*50}")
+    print("原型距离与核心指标的相关分析（成员级，N={})".format(len(df)))
+    print("="*50)
+
+    correlations = [
+        ('conventionality', '常规度', 'eta2指标'),
+        ('cognitive_accessibility', '认知通达度', 'eta2指标'),
+        ('systematicity', '系统性', 'eta3指标'),
+        ('entailment_richness', '蕴涵丰富度', 'eta3指标'),
+        ('mapping_direction', '映射方向', 'eta3指标')
+    ]
+
+    dist = df['prototype_distance']
+
+    print(f"\n{'指标':<20} {'Pearson r':>10} {'p':>10} {'Spearman ρ':>12} {'p':>10}")
+    print("-" * 65)
+
+    for var, name, latent in correlations:
+        if var in df.columns:
+            var_data = df[var]
+            r_p, p_p = stats.pearsonr(dist, var_data)
+            r_s, p_s = stats.spearmanr(dist, var_data)
+            p_p_str = '<.001' if p_p < 0.001 else f'{p_p:.3f}'
+            p_s_str = '<.001' if p_s < 0.001 else f'{p_s:.3f}'
+            print(f"  {name:<18} {r_p:>10.3f} {p_p_str:>10} {r_s:>12.3f} {p_s_str:>10}  [{latent}]")
+
+
 def main():
     """主函数"""
     print("=" * 60)
     print("Q1_05_原型梯度.py")
-    print("计算马氏距离并划分原型梯度结构")
+    print("计算全局标准化欧氏距离并划分原型梯度结构")
     print("=" * 60)
 
     # 获取路径
@@ -351,11 +431,11 @@ def main():
     df = load_clustered_data(paths)
     print(f"样本量: {len(df)}")
 
-    # 2. 计算马氏距离并划分原型梯度
+    # 2. 计算全局标准化欧氏距离并划分原型梯度
     print("\n" + "-" * 40)
-    print("2. 计算马氏距离并划分原型梯度")
+    print("2. 计算全局标准化欧氏距离并划分原型梯度")
     print("-" * 40)
-    df_with_grades = calculate_mahalanobis_distance(df)
+    df_with_grades = calculate_prototype_distance(df)
 
     # 原型梯度分布
     print("\n原型梯度分布:")
@@ -364,36 +444,39 @@ def main():
         pct = n / len(df_with_grades) * 100
         print(f"  {PROTOTYPE_DISTANCE_LABELS[grade]}: n={n} ({pct:.1f}%)")
 
-    # 3. 创建表66
+    # 3. 创建表63
     print("\n" + "-" * 40)
-    print("3. 保存表66: 原型梯度分布")
+    print("3. 保存表63: 原型梯度分布")
     print("-" * 40)
     dist_table = create_prototype_distribution_table(df_with_grades)
     print(dist_table.to_string(index=False))
-    save_table(dist_table, "原型梯度分布", global_num=66,
+    save_table(dist_table, "原型梯度分布", global_num=63,
                title="原型梯度分布", formats=['csv', 'json'])
 
-    # 4. 创建表67
+    # 4. 创建表64
     print("\n" + "-" * 40)
-    print("4. 保存表67: 原型梯度间差异检验")
+    print("4. 保存表64: 原型梯度间差异检验")
     print("-" * 40)
     comparison_table = perform_grade_comparison(df_with_grades)
     print(comparison_table.to_string(index=False))
-    save_table(comparison_table, "原型梯度间差异检验", global_num=67,
+    save_table(comparison_table, "原型梯度间差异检验", global_num=64,
                title="原型梯度间差异检验", formats=['csv', 'json'])
 
-    # 5. 绘制图19
+    # 5. 绘制图16
     print("\n" + "-" * 40)
-    print("5. 绘制图19: 原型梯度三组核心变量差异比较箱线图")
+    print("5. 绘制图16: 原型梯度三组核心变量差异比较箱线图")
     print("-" * 40)
     fig = plot_prototype_boxplot(df_with_grades, paths)
-    save_figure(fig, "原型梯度核心变量差异箱线图", global_num=19,
+    save_figure(fig, "原型梯度核心变量差异箱线图", global_num=15,
                 title="原型梯度三组核心变量差异比较箱线图")
 
     # 6. 保存带原型梯度的数据
     output_path = paths['output_data'] / 'CFMC_with_prototype_grades.csv'
     df_with_grades.to_csv(output_path, index=True, encoding='utf-8-sig')
     print(f"\n[OK] 已保存带原型梯度的数据: {output_path}")
+
+    # 7. 相关分析汇总（Pearson + Spearman）
+    compute_correlation_summary(df_with_grades)
 
     print("\n" + "=" * 60)
     print("Q1_05_原型梯度 完成")

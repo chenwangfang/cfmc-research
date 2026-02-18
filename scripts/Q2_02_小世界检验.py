@@ -6,8 +6,8 @@ Q2_02_小世界检验.py
 小世界性质检验（H2核心验证）
 
 输出：
-- 图22: 网络聚类系数与平均路径长度对比图
-- 表74: 小世界性质检验结果
+- 图19: 网络聚类系数与平均路径长度对比图
+- 表71: 小世界性质检验结果
 
 验证标准：C >= 0.60，L <= 3.0，sigma > 1
 
@@ -189,7 +189,7 @@ def verify_h2(metrics: dict) -> dict:
 
 def create_small_world_table(metrics: dict, h2_result: dict) -> pd.DataFrame:
     """
-    创建小世界性质检验结果表（表74）
+    创建小世界性质检验结果表（表71）
 
     Parameters
     ----------
@@ -223,7 +223,7 @@ def create_small_world_table(metrics: dict, h2_result: dict) -> pd.DataFrame:
 
 def plot_small_world_comparison(metrics: dict, paths: dict) -> plt.Figure:
     """
-    绘制网络聚类系数与平均路径长度对比图（图22）
+    绘制网络聚类系数与平均路径长度对比图（图19）
 
     优化设计：
     - 左图：水平条形图分两行展示C和L，各带阈值线和达标标记
@@ -346,17 +346,17 @@ def plot_small_world_comparison(metrics: dict, paths: dict) -> plt.Figure:
 
     # 非小世界区域（红色）
     ax2.axhspan(0, 1, alpha=0.25, color='#FADBD8', edgecolor='none')
-    ax2.text(0.5, 0.5, '非小世界区域\n(σ ≤ 1)', ha='center', va='center',
+    ax2.text(0.5, 0.5, '非小世界区域\n($\\sigma$ ≤ 1)', ha='center', va='center',
             fontsize=11, fontproperties=font_cn, color='#922B21', alpha=0.8)
 
     # 小世界区域（绿色）
     ax2.axhspan(1, y_max, alpha=0.25, color='#D5F5E3', edgecolor='none')
-    ax2.text(0.5, (1 + y_max) / 2, '小世界区域\n(σ > 1)', ha='center', va='center',
+    ax2.text(0.5, (1 + y_max) / 2, '小世界区域\n($\\sigma$ > 1)', ha='center', va='center',
             fontsize=11, fontproperties=font_cn, color='#1E8449', alpha=0.8)
 
     # 临界线（sigma=1）
     ax2.axhline(y=1, color='#2C3E50', linestyle='--', linewidth=2.5, alpha=0.8)
-    ax2.text(0.98, 1.05, 'σ = 1 (临界值)', ha='right', va='bottom',
+    ax2.text(0.98, 1.05, '$\\sigma$ = 1 (临界值)', ha='right', va='bottom',
             fontsize=10, fontproperties=font_cn, color='#2C3E50')
 
     # 实测值水平线
@@ -364,16 +364,16 @@ def plot_small_world_comparison(metrics: dict, paths: dict) -> plt.Figure:
 
     # 实测点（大号星形）
     ax2.scatter([0.5], [sigma], s=400, c='#2980B9', marker='*', zorder=5, edgecolors='#1A5276', linewidths=1.5)
-    ax2.text(0.58, sigma, f'σ = {sigma:.2f}', ha='left', va='center',
+    ax2.text(0.58, sigma, f'$\\sigma$ = {sigma:.2f}', ha='left', va='center',
             fontsize=14, fontweight='bold', color='#1A5276')
 
     # 判断结果框
     if sigma > 1:
-        result_text = f'σ = {sigma:.2f} > 1\n✓ 支持小世界性质'
+        result_text = f'$\\sigma$ = {sigma:.2f} > 1\n✓ 支持小世界性质'
         box_color = '#27AE60'
         box_bg = '#D5F5E3'
     else:
-        result_text = f'σ = {sigma:.2f} ≤ 1\n✗ 不支持小世界性质'
+        result_text = f'$\\sigma$ = {sigma:.2f} ≤ 1\n✗ 不支持小世界性质'
         box_color = '#E74C3C'
         box_bg = '#FADBD8'
 
@@ -386,22 +386,22 @@ def plot_small_world_comparison(metrics: dict, paths: dict) -> plt.Figure:
     from matplotlib.patches import Patch
     from matplotlib.lines import Line2D
     legend_elements = [
-        Patch(facecolor='#FADBD8', edgecolor='#922B21', alpha=0.5, label='非小世界 (σ≤1)'),
-        Patch(facecolor='#D5F5E3', edgecolor='#1E8449', alpha=0.5, label='小世界 (σ>1)'),
-        Line2D([0], [0], marker='*', color='w', markerfacecolor='#2980B9', markersize=15, label=f'实测σ={sigma:.2f}')
+        Patch(facecolor='#FADBD8', edgecolor='#922B21', alpha=0.5, label='非小世界 ($\\sigma$≤1)'),
+        Patch(facecolor='#D5F5E3', edgecolor='#1E8449', alpha=0.5, label='小世界 ($\\sigma$>1)'),
+        Line2D([0], [0], marker='*', color='w', markerfacecolor='#2980B9', markersize=15, label=f'实测$\\sigma$={sigma:.2f}')
     ]
     ax2.legend(handles=legend_elements, loc='lower right', prop=font_cn, framealpha=0.95)
 
     ax2.set_xlim(0, 1)
     ax2.set_ylim(0, y_max)
-    ax2.set_ylabel('小世界系数 σ', fontproperties=font_cn, fontsize=11)
+    ax2.set_ylabel('小世界系数 $\\sigma$', fontproperties=font_cn, fontsize=11)
     ax2.set_xticks([])
-    ax2.set_title('（c）小世界系数 σ 检验', fontproperties=font_cn, fontsize=11)
+    ax2.set_title('（c）小世界系数 $\\sigma$ 检验', fontproperties=font_cn, fontsize=11)
     ax2.spines['top'].set_visible(False)
     ax2.spines['right'].set_visible(False)
     ax2.spines['bottom'].set_visible(False)
 
-    # plt.suptitle('图22 小世界性质检验结果',
+    # plt.suptitle('图16 小世界性质检验结果',
                 # fontproperties=font_cn_title, fontsize=14, y=0.98)
 
     return fig
@@ -526,30 +526,30 @@ def main():
     print(f"  实测: C={metrics['聚类系数C']:.4f}, L={metrics['平均路径长度L']:.4f}, sigma={metrics['小世界系数sigma']:.4f}")
     print(f"  结论: {h2_result['验证结论']} ({h2_result['支持程度']})")
 
-    # 4. 创建表74
+    # 4. 创建表68
     print("\n" + "-" * 40)
-    print("4. 保存表74: 小世界性质检验结果")
+    print("4. 保存表71: 小世界性质检验结果")
     print("-" * 40)
     result_table = create_small_world_table(metrics, h2_result)
     print(result_table.to_string(index=False))
-    save_table(result_table, "小世界性质检验结果", global_num=74,
+    save_table(result_table, "小世界性质检验结果", global_num=71,
                title="小世界性质检验结果", formats=['csv', 'json'])
 
-    # 5. 敏感性分析
+    # 5. 敏感性分析（表F-5，附录F用）
     print("\n" + "-" * 40)
-    print("5. 敏感性分析（表76）")
+    print("5. 敏感性分析（表F-5，附录F）")
     print("-" * 40)
-    sensitivity_df = sensitivity_analysis(G, metrics, n_trials=20)
+    sensitivity_df = sensitivity_analysis(G, metrics, n_trials=100)
     print(sensitivity_df.to_string(index=False))
-    save_table(sensitivity_df, "敏感性分析结果汇总", global_num=76,
+    save_table(sensitivity_df, "小世界敏感性分析_附录F", global_num='F5',
                title="小世界性质敏感性分析结果", formats=['csv', 'json'])
 
-    # 6. 绘制图22
+    # 6. 绘制图16
     print("\n" + "-" * 40)
-    print("6. 绘制图22: 网络聚类系数与平均路径长度对比图")
+    print("6. 绘制图19: 网络聚类系数与平均路径长度对比图")
     print("-" * 40)
     fig = plot_small_world_comparison(metrics, paths)
-    save_figure(fig, "小世界性质对比图", global_num=22,
+    save_figure(fig, "小世界性质对比图", global_num=18,
                 title="网络聚类系数与平均路径长度对比图")
 
     print("\n" + "=" * 60)

@@ -6,12 +6,12 @@ Q2_03_链接分析.py
 四类链接关系分析（Goldberg构式网络理论）
 
 输出：
-- 图23: 四类链接关系分布桑基图
-- 表75: 四类链接关系频率分布
+- 图20: 四类链接关系分布桑基图
+- 表72: 四类链接关系频率分布
 - 表77: Cohen's κ信度结果
-- 表78: 四类链接典型语例
-- 表79: 链接删除影响分析
-- 表80: 构式类型组的链接偏好分布（原表76）
+- 表73: 四类链接典型语例
+- 表74: 链接删除影响分析
+- 表75: 构式类型组的链接偏好分布（原表76）
 
 创建日期：2025-12-05
 """
@@ -154,7 +154,7 @@ def get_link_description(link_code: int) -> str:
 
 def create_link_construction_crosstab(df: pd.DataFrame) -> pd.DataFrame:
     """
-    创建链接类型与构式类型交叉表（表80）
+    创建链接类型与构式类型交叉表（表75）
 
     Parameters
     ----------
@@ -186,7 +186,7 @@ def create_link_construction_crosstab(df: pd.DataFrame) -> pd.DataFrame:
 
 def plot_link_sankey(df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
-    绘制四类链接关系分布图（图23）
+    绘制四类链接关系分布图（图20）
 
     Parameters
     ----------
@@ -288,7 +288,7 @@ def plot_link_sankey(df: pd.DataFrame, paths: dict) -> plt.Figure:
     cbar = plt.colorbar(im, ax=ax2, shrink=0.8)
     cbar.set_label('占比（%）', fontproperties=font_cn)
 
-    # plt.suptitle('图23 四类链接关系分布', fontproperties=font_cn_title, fontsize=14, y=1.02)
+    # plt.suptitle('图17 四类链接关系分布', fontproperties=font_cn_title, fontsize=14, y=1.02)
     plt.tight_layout()
 
     return fig
@@ -296,7 +296,7 @@ def plot_link_sankey(df: pd.DataFrame, paths: dict) -> plt.Figure:
 
 def plot_link_type_heatmap(df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
-    绘制12类构式间链接类型热力图（图24）
+    绘制12类构式间链接类型热力图（图21）
 
     Parameters
     ----------
@@ -420,7 +420,7 @@ def plot_link_type_heatmap(df: pd.DataFrame, paths: dict) -> plt.Figure:
     ax.legend(handles=legend_elements, loc='upper left', bbox_to_anchor=(1.02, 1),
               prop=font_cn, frameon=True, fancybox=True, shadow=True)
 
-    # plt.title('图24 12类构式间链接类型热力图', fontproperties=font_cn_title, fontsize=14, pad=20)
+    # plt.title('图18 12类构式间链接类型热力图', fontproperties=font_cn_title, fontsize=14, pad=20)
     plt.tight_layout()
 
     return fig
@@ -503,7 +503,7 @@ def calculate_cohen_kappa(df: pd.DataFrame) -> pd.DataFrame:
 
 def get_typical_examples(df: pd.DataFrame, n_per_type: int = 3) -> pd.DataFrame:
     """
-    获取四类链接的典型语例（表78）
+    获取四类链接的典型语例（表73）
 
     Parameters
     ----------
@@ -555,7 +555,7 @@ def get_typical_examples(df: pd.DataFrame, n_per_type: int = 3) -> pd.DataFrame:
 
 def analyze_link_removal_impact(df: pd.DataFrame, G: nx.Graph = None) -> pd.DataFrame:
     """
-    链接删除影响分析（表79）
+    链接删除影响分析（表74）
 
     分析删除不同类型链接对网络拓扑的影响
 
@@ -703,38 +703,38 @@ def main():
 
     # 2. 分析链接类型分布
     print("\n" + "-" * 40)
-    print("2. 保存表75: 四类链接关系频率分布")
+    print("2. 保存表72: 四类链接关系频率分布")
     print("-" * 40)
     link_table = analyze_link_types(df)
     print(link_table.to_string(index=False))
-    save_table(link_table, "四类链接关系频率分布", global_num=75,
+    save_table(link_table, "四类链接关系频率分布", global_num=72,
                title="四类链接关系频率分布", formats=['csv', 'json'])
 
     # 3. 创建交叉表
     print("\n" + "-" * 40)
-    print("3. 保存表80: 构式类型组的链接偏好分布")
+    print("3. 保存表75: 构式类型组的链接偏好分布")
     print("-" * 40)
     if 'link_type' not in df.columns:
         df = infer_link_types(df)
     crosstab = create_link_construction_crosstab(df)
     print(crosstab.to_string())
-    save_table(crosstab.reset_index(), "构式类型组的链接偏好分布", global_num=80,
+    save_table(crosstab.reset_index(), "构式类型组的链接偏好分布", global_num=75,
                title="构式类型组的链接偏好分布", formats=['csv', 'json'])
 
-    # 4. 绘制图23
+    # 4. 绘制图17
     print("\n" + "-" * 40)
-    print("4. 绘制图23: 四类链接关系分布桑基图")
+    print("4. 绘制图20: 四类链接关系分布桑基图")
     print("-" * 40)
     fig = plot_link_sankey(df, paths)
-    save_figure(fig, "四类链接关系分布图", global_num=23,
+    save_figure(fig, "四类链接关系分布图", global_num=19,
                 title="四类链接关系分布")
 
-    # 4a. 绘制图24: 12类构式间链接类型热力图
+    # 4a. 绘制图21: 12类构式间链接类型热力图
     print("\n" + "-" * 40)
-    print("4a. 绘制图24: 12类构式间链接类型热力图")
+    print("4a. 绘制图21: 12类构式间链接类型热力图")
     print("-" * 40)
     fig_heatmap = plot_link_type_heatmap(df, paths)
-    save_figure(fig_heatmap, "12类构式间链接类型热力图", global_num=24,
+    save_figure(fig_heatmap, "12类构式间链接类型热力图", global_num=20,
                 title="12类构式间链接类型热力图")
 
     # 5. 详细模式分析
@@ -754,20 +754,20 @@ def main():
 
     # 7. 典型语例
     print("\n" + "-" * 40)
-    print("7. 保存表78: 四类链接典型语例")
+    print("7. 保存表73: 四类链接典型语例")
     print("-" * 40)
     examples_table = get_typical_examples(df, n_per_type=3)
     print(examples_table.to_string(index=False))
-    save_table(examples_table, "四类链接典型语例", global_num=78,
+    save_table(examples_table, "四类链接典型语例", global_num="73aux",
                title="四类链接关系典型语例", formats=['csv', 'json'])
 
     # 8. 链接删除影响分析
     print("\n" + "-" * 40)
-    print("8. 保存表79: 链接删除影响分析")
+    print("8. 保存表74: 链接删除影响分析")
     print("-" * 40)
     impact_table = analyze_link_removal_impact(df)
     print(impact_table.to_string(index=False))
-    save_table(impact_table, "链接删除影响分析", global_num=79,
+    save_table(impact_table, "链接删除影响分析", global_num=74,
                title="链接删除对网络拓扑的影响分析", formats=['csv', 'json'])
 
     # 保存带链接类型的数据

@@ -6,9 +6,9 @@ Q1_06_类型特征.py
 12类构式的详细特征分析
 
 输出：
-- 图20: 12类构式在认知通达度x映射类型空间的分布热力图
-- 表69: 12类构式频率分布与核心特征
-- 表70: 代表性构式类型语例分析
+- 图17: 12类构式在认知通达度x映射类型空间的分布热力图
+- 表66: 12类构式频率分布与核心特征
+- 表67: 代表性构式类型语例分析
 
 创建日期：2025-12-05
 """
@@ -29,7 +29,7 @@ warnings.filterwarnings('ignore')
 
 from utils_公共函数 import (
     get_paths, load_cfmc_data, get_font_paths,
-    save_figure, save_table, MAPPING_DIRECTION_CODES,
+    save_figure, save_table, MAPPING_DIRECTION_CODES, MAPPING_DIRECTION_SHORT,
     PROTOTYPE_DISTANCE_LABELS, CONSTRUCTION_COLORS
 )
 
@@ -54,7 +54,7 @@ def load_prototype_data(paths: dict) -> pd.DataFrame:
 
 def create_type_frequency_table(df: pd.DataFrame) -> pd.DataFrame:
     """
-    创建12类构式频率分布与核心特征表（表69）
+    创建12类构式频率分布与核心特征表（表66）
 
     Parameters
     ----------
@@ -126,7 +126,7 @@ def create_type_frequency_table(df: pd.DataFrame) -> pd.DataFrame:
 
 def create_representative_examples_table(df: pd.DataFrame) -> pd.DataFrame:
     """
-    创建代表性构式类型语例分析表（表70）
+    创建代表性构式类型语例分析表（表67）
 
     Parameters
     ----------
@@ -145,9 +145,9 @@ def create_representative_examples_table(df: pd.DataFrame) -> pd.DataFrame:
         subset = df[mask]
 
         # 选择代表性语例（最接近聚类中心的）
-        if 'mahalanobis_distance' in subset.columns:
-            # 选择马氏距离最小的
-            best_idx = subset['mahalanobis_distance'].idxmin()
+        if 'prototype_distance' in subset.columns:
+            # 选择原型距离最小的
+            best_idx = subset['prototype_distance'].idxmin()
         else:
             # 随机选择
             best_idx = subset.index[0]
@@ -183,7 +183,7 @@ def create_representative_examples_table(df: pd.DataFrame) -> pd.DataFrame:
 
 def plot_type_heatmap(df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
-    绘制12类构式在认知通达度x映射类型空间的分布热力图（图20）
+    绘制12类构式在认知通达度x映射类型空间的分布热力图（图17）
 
     Parameters
     ----------
@@ -221,7 +221,7 @@ def plot_type_heatmap(df: pd.DataFrame, paths: dict) -> plt.Figure:
     # 通达度：1=极低→低, 2=低, 3=中, 4=高, 5=极高→高
     ca_level_names = {1: '低', 2: '低', 3: '中', 4: '高', 5: '高'}
     # 映射类型简称
-    md_short_names = {1: '具具', 2: '具抽', 3: '抽抽', 4: '抽具'}
+    md_short_names = MAPPING_DIRECTION_SHORT  # 使用utils常量
 
     # 绘制热力图（添加网格线）
     im = ax.imshow(heatmap_data, cmap='YlOrRd', aspect='auto')
@@ -277,7 +277,7 @@ def plot_type_heatmap(df: pd.DataFrame, paths: dict) -> plt.Figure:
 
     ax.set_xlabel('认知通达度', fontproperties=font_cn, fontsize=12)
     ax.set_ylabel('映射类型', fontproperties=font_cn, fontsize=12)
-    # ax.set_title('图20 12类构式空间分布热力图',
+    # ax.set_title('图17 12类构式空间分布热力图',
                 # fontproperties=font_cn_title, fontsize=14, pad=15)
 
     plt.tight_layout()
@@ -341,30 +341,30 @@ def main():
     print(f"样本量: {len(df)}")
     print(f"类型数: {df['cluster_label'].nunique()}")
 
-    # 2. 创建表69
+    # 2. 创建表63
     print("\n" + "-" * 40)
-    print("2. 保存表69: 12类构式频率分布与核心特征")
+    print("2. 保存表66: 12类构式频率分布与核心特征")
     print("-" * 40)
     freq_table = create_type_frequency_table(df)
     print(freq_table.to_string(index=False))
-    save_table(freq_table, "12类构式频率分布与核心特征", global_num=69,
+    save_table(freq_table, "12类构式频率分布与核心特征", global_num=66,
                title="12类构式频率分布与核心特征", formats=['csv', 'json'])
 
-    # 3. 创建表70
+    # 3. 创建表64
     print("\n" + "-" * 40)
-    print("3. 保存表70: 代表性构式类型语例分析")
+    print("3. 保存表67: 代表性构式类型语例分析")
     print("-" * 40)
     examples_table = create_representative_examples_table(df)
     print(examples_table.to_string(index=False))
-    save_table(examples_table, "代表性构式类型语例分析", global_num=70,
+    save_table(examples_table, "代表性构式类型语例分析", global_num=67,
                title="代表性构式类型语例分析", formats=['csv', 'json'])
 
-    # 4. 绘制图20
+    # 4. 绘制图17
     print("\n" + "-" * 40)
-    print("4. 绘制图20: 认知通达度x映射类型空间分布热力图")
+    print("4. 绘制图17: 认知通达度x映射类型空间分布热力图")
     print("-" * 40)
     fig = plot_type_heatmap(df, paths)
-    save_figure(fig, "类型空间分布热力图", global_num=20,
+    save_figure(fig, "类型空间分布热力图", global_num=16,
                 title="12类构式在认知通达度x映射类型空间的分布热力图")
 
     # 5. 详细特征分析

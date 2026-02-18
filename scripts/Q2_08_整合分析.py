@@ -7,10 +7,10 @@ Q2网络组织分析整合与假设验证汇总
 
 输出：
 - 表86: Q2网络特征综合汇总
-- 表82: 四类链接与构式特征关联分析
-- 表83: 网络中心性与认知维度相关分析
-- 表84: 社区结构与类型体系对应分析
-- 表88: Q2假设验证结果汇总
+- 表77: 四类链接与构式特征关联分析
+- 表78: 网络中心性与认知维度相关分析
+- 表79: 社区结构与类型体系对应分析
+- 表81: Q2假设验证结果汇总
 
 创建日期：2025-12-05
 """
@@ -53,42 +53,42 @@ def load_previous_results(paths: dict) -> dict:
     data_dir = paths['output_data']
 
     # 加载网络基本参数
-    params_file = data_dir / '表73_两层网络基本参数.json'
+    params_file = data_dir / '表67_两层网络基本参数.json'
     if params_file.exists():
         with open(params_file, 'r', encoding='utf-8') as f:
             results['network_params'] = json.load(f)
             print(f"[OK] 加载网络参数: {params_file}")
 
     # 加载小世界检验结果
-    sw_file = data_dir / '表74_小世界性质检验结果.json'
+    sw_file = data_dir / '表68_小世界性质检验结果.json'
     if sw_file.exists():
         with open(sw_file, 'r', encoding='utf-8') as f:
             results['small_world'] = json.load(f)
             print(f"[OK] 加载小世界结果: {sw_file}")
 
     # 加载链接类型分布
-    link_file = data_dir / '表75_四类链接关系频率分布.json'
+    link_file = data_dir / '表69_四类链接关系频率分布.json'
     if link_file.exists():
         with open(link_file, 'r', encoding='utf-8') as f:
             results['link_types'] = json.load(f)
             print(f"[OK] 加载链接类型: {link_file}")
 
     # 加载中心性指标
-    cent_file = data_dir / '表81_12类构式类型中心性指标.json'
+    cent_file = data_dir / '表76_12类构式类型中心性指标.json'
     if cent_file.exists():
         with open(cent_file, 'r', encoding='utf-8') as f:
             results['centrality'] = json.load(f)
             print(f"[OK] 加载中心性指标: {cent_file}")
 
     # 加载社区检测结果
-    comm_file = data_dir / '表82_社区检测结果.json'
+    comm_file = data_dir / '表77_社区检测结果.json'
     if comm_file.exists():
         with open(comm_file, 'r', encoding='utf-8') as f:
             results['community'] = json.load(f)
             print(f"[OK] 加载社区检测: {comm_file}")
 
     # 加载度分布统计
-    degree_file = data_dir / '表84_度分布统计.json'
+    degree_file = data_dir / '表74_度分布统计.json'
     if degree_file.exists():
         with open(degree_file, 'r', encoding='utf-8') as f:
             results['degree'] = json.load(f)
@@ -105,7 +105,7 @@ def load_previous_results(paths: dict) -> dict:
 
 def create_network_summary_table(results: dict) -> pd.DataFrame:
     """
-    创建Q2网络特征综合汇总表（表81）
+    创建Q2网络特征综合汇总表（表76）
 
     Parameters
     ----------
@@ -165,7 +165,7 @@ def create_network_summary_table(results: dict) -> pd.DataFrame:
 
 def create_link_feature_analysis(results: dict) -> pd.DataFrame:
     """
-    创建四类链接与构式特征关联分析表（表82）
+    创建四类链接与构式特征关联分析表（表77）
 
     Parameters
     ----------
@@ -211,7 +211,7 @@ def get_link_characteristics(link_name: str) -> str:
 
 def create_centrality_cognitive_correlation(results: dict) -> pd.DataFrame:
     """
-    创建网络中心性与认知维度相关分析表（表83）
+    创建网络中心性与认知维度相关分析表（表78）
 
     Parameters
     ----------
@@ -279,7 +279,7 @@ def interpret_correlation(r: float, c_col: str, cog_col: str) -> str:
 
 def create_community_type_analysis(results: dict) -> pd.DataFrame:
     """
-    创建社区结构与类型体系对应分析表（表84）
+    创建社区结构与类型体系对应分析表（表79）
 
     Parameters
     ----------
@@ -334,7 +334,7 @@ def infer_community_characteristic(item: dict) -> str:
 
 def create_h2_verification_summary(results: dict) -> pd.DataFrame:
     """
-    创建Q2假设验证结果汇总表（表85）
+    创建Q2假设验证结果汇总表（表80）
 
     Parameters
     ----------
@@ -479,21 +479,21 @@ def main():
     print("-" * 40)
     summary_table = create_network_summary_table(results)
     print(summary_table.to_string(index=False))
-    save_table(summary_table, "Q2网络特征综合汇总", global_num=87,
+    save_table(summary_table, "Q2网络特征综合汇总", global_num="87aux",
                title="Q2网络特征综合汇总", formats=['csv', 'json'])
 
-    # 3. 创建表82
+    # 3. 创建表77
     print("\n" + "-" * 40)
-    print("3. 保存表82: 四类链接与构式特征关联分析")
+    print("3. 保存表77: 四类链接与构式特征关联分析")
     print("-" * 40)
     link_analysis = create_link_feature_analysis(results)
     print(link_analysis.to_string(index=False))
     save_table(link_analysis, "四类链接与构式特征关联分析", global_num="82a",  # 补充分析
                title="四类链接与构式特征关联分析", formats=['csv', 'json'])
 
-    # 4. 创建表83
+    # 4. 创建表73
     print("\n" + "-" * 40)
-    print("4. 保存表83: 网络中心性与认知维度相关分析")
+    print("4. 保存表78: 网络中心性与认知维度相关分析")
     print("-" * 40)
     corr_analysis = create_centrality_cognitive_correlation(results)
     if len(corr_analysis) > 0:
@@ -503,22 +503,22 @@ def main():
     # [已删除] 网络中心性与认知维度相关分析 - 与Q2_04重复
 #                title="网络中心性与认知维度相关分析", formats=['csv', 'json'])
 
-    # 5. 创建表84
+    # 5. 创建表74
     print("\n" + "-" * 40)
-    print("5. 保存表84: 社区结构与类型体系对应分析")
+    print("5. 保存表79: 社区结构与类型体系对应分析")
     print("-" * 40)
     comm_analysis = create_community_type_analysis(results)
     print(comm_analysis.to_string(index=False))
     # [已删除] 社区结构与类型体系对应分析 - 与Q2_05重复
 #                title="社区结构与类型体系对应分析", formats=['csv', 'json'])
 
-    # 6. 创建表88
+    # 6. 创建表76
     print("\n" + "-" * 40)
-    print("6. 保存表88: Q2假设验证结果汇总")
+    print("6. 保存表81: Q2假设验证结果汇总")
     print("-" * 40)
     h2_summary = create_h2_verification_summary(results)
     print(h2_summary.to_string(index=False))
-    save_table(h2_summary, "Q2假设验证结果汇总", global_num=88,
+    save_table(h2_summary, "Q2假设验证结果汇总", global_num=81,
                title="Q2假设验证结果汇总", formats=['csv', 'json'])
 
     # 7. 打印整体结论

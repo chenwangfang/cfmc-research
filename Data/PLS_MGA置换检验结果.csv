@@ -1,0 +1,7 @@
+﻿,组1,组2,n1,n2,路径,β1,β2,|Δβ|,p值(置换),显著性,有效置换次数
+0,attributive,equative,2881,2399,eta1→eta2,0.2552,0.2849,0.0297,0.3160,,1000
+1,attributive,equative,2881,2399,eta2→eta3,0.7249,0.6472,0.0777,0.0130,*,1000
+2,attributive,identificational,2881,709,eta1→eta2,0.2552,0.4107,0.1556,0.0060,**,1000
+3,attributive,identificational,2881,709,eta2→eta3,0.7249,0.7738,0.0489,0.2680,,1000
+4,equative,identificational,2399,709,eta1→eta2,0.2849,0.4107,0.1259,0.0030,**,1000
+5,equative,identificational,2399,709,eta2→eta3,0.6472,0.7738,0.1266,0.0040,**,1000

@@ -6,8 +6,8 @@ Q2_01_网络构建.py
 构建两层构式网络（类型层+实例层）
 
 输出：
-- 图21: 两层网络结构示意图
-- 表73: 两层网络基本参数
+- 图18: 两层网络结构示意图
+- 表70: 两层网络基本参数
 
 创建日期：2025-12-05
 """
@@ -105,13 +105,13 @@ def build_type_network(df: pd.DataFrame) -> nx.Graph:
             # 阈值1.7确保中→高的连接（CA差约1.5-1.6）能够建立
             if md_same and ca_diff <= 1.7:
                 G_type.add_edge(node1, node2,
-                              link_type='metaphorical_extension',
+                              link_type=1,
                               weight=1.0 / (1 + ca_diff))
 
             # 多义链接：认知通达度相近，映射方向不同
             elif not md_same and ca_diff <= 1.0:
                 G_type.add_edge(node1, node2,
-                              link_type='polysemy',
+                              link_type=2,
                               weight=0.8 / (1 + ca_diff))
 
     print(f"\n类型层网络构建完成:")
@@ -168,7 +168,7 @@ def build_instance_network(df: pd.DataFrame) -> nx.Graph:
                     if ca_sim > 0.6 and cc_sim > 0.6:
                         G_instance.add_edge(
                             str(idx1), str(idx2),
-                            link_type='subpart',
+                            link_type=3,
                             weight=(ca_sim + cc_sim) / 2
                         )
 
@@ -225,7 +225,7 @@ def build_two_layer_network(df: pd.DataFrame) -> tuple:
         cluster = row.get('cluster_label', 0)
         type_node = f'T{cluster + 1}'
         if type_node in G_full.nodes():
-            G_full.add_edge(node_id, type_node, link_type='instance', weight=1.0)
+            G_full.add_edge(node_id, type_node, link_type=4, weight=1.0)
 
     print(f"\n整合网络构建完成:")
     print(f"  总节点数: {G_full.number_of_nodes()}")
@@ -237,7 +237,7 @@ def build_two_layer_network(df: pd.DataFrame) -> tuple:
 def create_network_params_table(G_type: nx.Graph, G_instance: nx.Graph,
                                  G_full: nx.Graph, df: pd.DataFrame) -> pd.DataFrame:
     """
-    创建两层网络基本参数表（表73）
+    创建两层网络基本参数表（表70）
 
     Parameters
     ----------
@@ -311,7 +311,7 @@ def get_ca_level(ca_mean: float) -> int:
 def plot_two_layer_network(G_type: nx.Graph, G_full: nx.Graph,
                            paths: dict) -> plt.Figure:
     """
-    绘制两层网络结构示意图（图21）
+    绘制两层网络结构示意图（图18）
 
     Parameters
     ----------
@@ -393,9 +393,9 @@ def plot_two_layer_network(G_type: nx.Graph, G_full: nx.Graph,
 
     # 绘制边（按类型着色）- 先绘制边
     me_edges = [(u, v) for u, v, d in G_type.edges(data=True)
-                if d.get('link_type') == 'metaphorical_extension']
+                if d.get('link_type') == 1]
     poly_edges = [(u, v) for u, v, d in G_type.edges(data=True)
-                  if d.get('link_type') == 'polysemy']
+                  if d.get('link_type') == 2]
 
     # 隐喻扩展链接 - 红色
     nx.draw_networkx_edges(G_type, pos_type, ax=ax1,
@@ -599,7 +599,7 @@ def plot_two_layer_network(G_type: nx.Graph, G_full: nx.Graph,
             transform=ax2.transAxes, ha='center', fontproperties=font_cn_small,
             fontsize=9, color='#7F8C8D')
 
-    # plt.suptitle('图21 两层网络结构示意图', fontproperties=font_cn_title, fontsize=16, y=0.98)
+    # plt.suptitle('图18 两层网络结构示意图', fontproperties=font_cn_title, fontsize=16, y=0.98)
     plt.tight_layout(rect=[0, 0.02, 1, 0.96])
 
     return fig
@@ -665,21 +665,21 @@ def main():
     print("-" * 40)
     G_type, G_instance, G_full = build_two_layer_network(df)
 
-    # 3. 创建表73
+    # 3. 创建表67
     print("\n" + "-" * 40)
-    print("3. 保存表73: 两层网络基本参数")
+    print("3. 保存表70: 两层网络基本参数")
     print("-" * 40)
     params_table = create_network_params_table(G_type, G_instance, G_full, df)
     print(params_table.to_string(index=False))
-    save_table(params_table, "两层网络基本参数", global_num=73,
+    save_table(params_table, "两层网络基本参数", global_num=70,
                title="两层网络基本参数", formats=['csv', 'json'])
 
-    # 4. 绘制图21
+    # 4. 绘制图18
     print("\n" + "-" * 40)
-    print("4. 绘制图21: 两层网络结构示意图")
+    print("4. 绘制图18: 两层网络结构示意图")
     print("-" * 40)
     fig = plot_two_layer_network(G_type, G_full, paths)
-    save_figure(fig, "两层网络结构示意图", global_num=21,
+    save_figure(fig, "两层网络结构示意图", global_num=17,
                 title="两层网络结构示意图")
 
     # 5. 保存网络数据

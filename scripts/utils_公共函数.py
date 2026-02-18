@@ -54,10 +54,10 @@ def get_paths() -> Dict[str, Path]:
 
     if is_wsl or not is_windows:
         # WSL或Linux环境
-        base_path = Path('/mnt/e/博士毕业论文/大论文/论文撰写/统计分析')
+        base_path = Path('/home/tomja/projects/博士毕业论文/大论文/论文撰写/统计分析')
     else:
         # Windows环境
-        base_path = Path('E:/博士毕业论文/大论文/论文撰写/统计分析')
+        base_path = Path('/home/tomja/projects/博士毕业论文/大论文/论文撰写/统计分析')
 
     paths = {
         'base': base_path,
@@ -957,18 +957,23 @@ def get_construction_type_12(ca_value: float, md_value: float) -> str:
 # 常用常量
 # =============================================================================
 
-# 源域编码（15类）
-SOURCE_DOMAIN_CODES = {
+# 域编码（25类，源域和目标域共享）
+# 验证日期：2026-02-01
+# 说明：实际数据中源域和目标域可以交叉使用，故合并为统一编码
+DOMAIN_CODES = {
+    # 原SOURCE_DOMAIN典型类别（15类）
     'SP': '空间', 'MV': '运动', 'OB': '物体', 'LV': '生命', 'BD': '身体',
     'SN': '感知', 'FC': '力量', 'NT': '自然', 'HM': '人类活动', 'WR': '战争',
-    'EC': '经济', 'TR': '旅行', 'FD': '食物', 'MC': '机器', 'GM': '游戏'
-}
-
-# 目标域编码（10类）
-TARGET_DOMAIN_CODES = {
+    'EC': '经济', 'TR': '旅行', 'FD': '食物', 'MC': '机器', 'GM': '游戏',
+    # 原TARGET_DOMAIN典型类别（10类）
     'TM': '时间', 'LF': '人生', 'EM': '情感', 'TH': '思维', 'SC': '社会',
     'MR': '道德', 'AB': '抽象', 'CM': '语言', 'ST': '状态', 'EV': '事件'
 }
+
+# 向后兼容别名（保留原常量名供旧代码使用）
+SOURCE_DOMAIN_CODES = DOMAIN_CODES  # 别名，向后兼容
+TARGET_DOMAIN_CODES = DOMAIN_CODES  # 别名，向后兼容
+
 
 # 映射方向编码
 MAPPING_DIRECTION_CODES = {
@@ -1175,8 +1180,9 @@ if __name__ == "__main__":
 
     # 显示常量定义
     print("\n7. 常量定义检查:")
-    print(f"  SOURCE_DOMAIN_CODES: {len(SOURCE_DOMAIN_CODES)}类")
-    print(f"  TARGET_DOMAIN_CODES: {len(TARGET_DOMAIN_CODES)}类")
+    print(f"  DOMAIN_CODES: {len(DOMAIN_CODES)}类（统一域编码）")
+    print(f"  SOURCE_DOMAIN_CODES: {len(SOURCE_DOMAIN_CODES)}类（别名）")
+    print(f"  TARGET_DOMAIN_CODES: {len(TARGET_DOMAIN_CODES)}类（别名）")
     print(f"  MAPPING_DIRECTION_CODES: {len(MAPPING_DIRECTION_CODES)}类")
     print(f"  MAPPING_DIRECTION_SHORT: {len(MAPPING_DIRECTION_SHORT)}类")
     print(f"  COGNITIVE_ACCESSIBILITY_LEVELS: {len(COGNITIVE_ACCESSIBILITY_LEVELS)}级→3级")

@@ -1,0 +1,20 @@
+{
+  "KMO": 0.5533,
+  "Bartlett_chi2": 9428.87,
+  "Bartlett_df": 45,
+  "Bartlett_p": 0.0,
+  "n": 5989,
+  "k": 10,
+  "variables": [
+    "embodied_experience",
+    "source_domain_num",
+    "target_domain_num",
+    "conventionality",
+    "cognitive_accessibility",
+    "prototype_distance",
+    "mapping_direction",
+    "systematicity",
+    "entailment_richness",
+    "copula_function_num"
+  ]
+}

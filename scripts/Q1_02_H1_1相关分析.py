@@ -8,8 +8,8 @@ Q1_02_H1-1相关分析.py
 假设H1-1: 认知通达度与概念复杂度呈显著负相关（r ~= -0.40至-0.60）
 
 输出：
-- 图14: 认知通达度x概念复杂度散点图（含95%置信区间）
-- 表60: 双维度相关分析
+- 图13: 认知通达度x概念复杂度散点图（含95%置信区间）
+- 表59: 双维度相关分析
 
 验证标准：r ~= -0.40至-0.60，p < 0.001
 
@@ -142,7 +142,7 @@ def verify_h1_1(results: dict) -> dict:
 
 def create_correlation_table(df: pd.DataFrame, results: dict) -> pd.DataFrame:
     """
-    创建双维度相关分析表（表60）
+    创建双维度相关分析表（表59）
 
     Parameters
     ----------
@@ -213,7 +213,7 @@ def create_correlation_table(df: pd.DataFrame, results: dict) -> pd.DataFrame:
 
 def plot_scatter_with_ci(df: pd.DataFrame, results: dict, paths: dict) -> plt.Figure:
     """
-    绘制认知通达度x概念复杂度散点图（含95%置信区间）（图14）
+    绘制认知通达度x概念复杂度散点图（含95%置信区间）（图13）
 
     Parameters
     ----------
@@ -305,7 +305,7 @@ def plot_scatter_with_ci(df: pd.DataFrame, results: dict, paths: dict) -> plt.Fi
     # 设置坐标轴
     ax.set_xlabel('认知通达度', fontproperties=font_cn, fontsize=12)
     ax.set_ylabel('概念复杂度', fontproperties=font_cn, fontsize=12)
-    # ax.set_title('图14 认知通达度x概念复杂度散点图（含95%置信区间）',
+    # ax.set_title('图12 认知通达度x概念复杂度散点图（含95%置信区间）',
                 # fontproperties=font_cn_title, fontsize=14, pad=15)
 
     ax.set_xlim(0.5, 5.5)
@@ -385,20 +385,20 @@ def main():
     print(f"\n验证结论: {verification['验证结论']}")
     print(f"支持程度: {verification['支持程度']}")
 
-    # 3. 创建并保存表60
+    # 3. 创建并保存表58
     print("\n" + "-" * 40)
-    print("3. 保存表60: 双维度相关分析")
+    print("3. 保存表59: 双维度相关分析")
     print("-" * 40)
     corr_table = create_correlation_table(df, results)
-    save_table(corr_table, "双维度相关分析", global_num=60,
+    save_table(corr_table, "双维度相关分析", global_num=59,
                title="双维度相关分析", formats=['csv', 'json'])
 
-    # 4. 绘制并保存图14
+    # 4. 绘制并保存图12
     print("\n" + "-" * 40)
-    print("4. 保存图14: 认知通达度x概念复杂度散点图")
+    print("4. 保存图13: 认知通达度x概念复杂度散点图")
     print("-" * 40)
     fig = plot_scatter_with_ci(df, results, paths)
-    save_figure(fig, "认知通达度概念复杂度散点图", global_num=14,
+    save_figure(fig, "认知通达度概念复杂度散点图", global_num=12,
                 title="认知通达度x概念复杂度散点图（含95%置信区间）")
 
     # 5. 保存验证结果

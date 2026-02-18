@@ -6,10 +6,10 @@ Q3_01_描述统计.py
 认知加工指标的描述统计分析
 
 输出：
-- 表93: 认知编码机制相关变量描述统计
+- 表86: 认知编码机制相关变量描述统计
 - 表93b: 四阶段指标相关矩阵
-- 图32: 四阶段指标分布图
-- 图33: 四阶段指标相关矩阵热力图
+- 图27: 四阶段指标分布图
+- 图28: 四阶段指标相关矩阵热力图
 
 创建日期：2025-12-05
 """
@@ -138,6 +138,24 @@ def prepare_sem_data(df: pd.DataFrame) -> pd.DataFrame:
             sem_df['copula_function_num'] = sem_df['copula_function'].map(
                 lambda x: COPULA_FUNCTION_CODES.get(str(x).lower(), 1) if pd.notna(x) else 1
             )
+
+    # 4.5 用Q1_05输出的连续马氏距离替换JSON中的等级值（1/2/3→连续值）
+    from pathlib import Path as _Path
+    grades_path = _Path(__file__).resolve().parent.parent / '结果_输出' / 'Data' / 'CFMC_with_prototype_grades.csv'
+    if grades_path.exists():
+        grades_df = pd.read_csv(str(grades_path))
+        id_to_dist = dict(zip(grades_df['id'], grades_df['prototype_distance']))
+        id_to_grade = dict(zip(grades_df['id'], grades_df['prototype_grade']))
+        if 'id' in sem_df.columns:
+            sem_df['prototype_distance'] = sem_df['id'].map(id_to_dist)
+            sem_df['prototype_grade'] = sem_df['id'].map(id_to_grade)
+        else:
+            sem_df['prototype_distance'] = sem_df.index.map(id_to_dist)
+            sem_df['prototype_grade'] = sem_df.index.map(id_to_grade)
+        print(f"  [OK] prototype_distance已替换为连续马氏距离 (from {grades_path.name})")
+        print(f"       prototype_grade分布: {sem_df['prototype_grade'].value_counts().sort_index().to_dict()}")
+    else:
+        print(f"  [WARN] {grades_path}不存在，prototype_distance保留原值")
 
     # 5. 处理其他数值字段中的缺失值
     numeric_fields = ['conventionality', 'cognitive_accessibility', 'prototype_distance',
@@ -293,7 +311,7 @@ def calculate_correlation_matrix(df: pd.DataFrame) -> tuple:
 
 def plot_stage_distributions(df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
-    绘制四阶段指标分布图（图32）
+    绘制四阶段指标分布图（图27）
 
     Parameters
     ----------
@@ -389,7 +407,7 @@ def plot_stage_distributions(df: pd.DataFrame, paths: dict) -> plt.Figure:
                     fancybox=True, shadow=True,
                     title='阶段说明', title_fontproperties=font_cn_legend)
 
-    # plt.suptitle('图32 四阶段认知编码指标分布图',
+    # plt.suptitle('图27 四阶段认知编码指标分布图',
                 # fontproperties=font_cn_title, fontsize=14, y=0.98)
 
     return fig
@@ -461,7 +479,7 @@ def plot_correlation_heatmap(corr_matrix: pd.DataFrame, p_matrix: pd.DataFrame,
     ax.set_yticklabels(corr_matrix.index, fontproperties=font_cn, rotation=0)
 
     # 标题中p使用斜体（LaTeX格式）
-    # ax.set_title(r'图33 四阶段指标相关矩阵热力图' + '\n' + r'(*$p$<.05, **$p$<.01, ***$p$<.001)',
+    # ax.set_title(r'图28 四阶段指标相关矩阵热力图' + '\n' + r'(*$p$<.05, **$p$<.01, ***$p$<.001)',
                 # fontproperties=font_cn_title, fontsize=12, pad=20)
 
     plt.tight_layout()
@@ -525,6 +543,75 @@ def analyze_stage_relationships(df: pd.DataFrame) -> None:
                     print(f"  {s1} ↔ {s2}: r={r:.3f}{sig}")
 
 
+
+def calculate_kmo_bartlett(df: pd.DataFrame):
+    """计算KMO检验和Bartlett球形检验，保存结果到Data目录。
+
+    KMO采用反映像相关矩阵方法手动计算，不依赖factor_analyzer库。
+    """
+    import json
+
+    paths = get_paths()
+
+    # 使用PLS-SEM模型A的10个指标变量（与Q3_02 build_model_A一致）
+    all_vars = [
+        'embodied_experience', 'source_domain_num', 'target_domain_num',  # η₁
+        'conventionality', 'cognitive_accessibility', 'prototype_distance',  # η₂
+        'mapping_direction', 'systematicity', 'entailment_richness',  # η₃
+        'copula_function_num'  # Y
+    ]
+
+    X = df[all_vars].dropna().astype(float)
+    n, k = X.shape
+
+    # 相关矩阵
+    R = np.corrcoef(X.values, rowvar=False)
+
+    # --- KMO ---
+    # 反映像矩阵 = diag(R_inv)^{-1/2} @ R_inv @ diag(R_inv)^{-1/2}
+    R_inv = np.linalg.inv(R)
+    D = np.diag(1.0 / np.sqrt(np.diag(R_inv)))
+    anti_image = D @ R_inv @ D  # 偏相关矩阵
+
+    # KMO = sum(r_ij^2) / (sum(r_ij^2) + sum(a_ij^2))，仅取非对角元素
+    np.fill_diagonal(R, 0)
+    np.fill_diagonal(anti_image, 0)
+    sum_r2 = np.sum(R ** 2)
+    sum_a2 = np.sum(anti_image ** 2)
+    kmo_overall = sum_r2 / (sum_r2 + sum_a2)
+
+    # --- Bartlett球形检验 ---
+    # 恢复对角线
+    np.fill_diagonal(R, 1.0)
+    det_R = np.linalg.det(R)
+    chi2 = -(n - 1 - (2 * k + 5) / 6) * np.log(det_R)
+    dof = k * (k - 1) / 2
+    p_value = 1 - stats.chi2.cdf(chi2, dof)
+
+    # 输出结果
+    print(f"  KMO = {kmo_overall:.4f}")
+    print(f"  Bartlett χ² = {chi2:.2f}, df = {int(dof)}, p < .001" if p_value < 0.001
+          else f"  Bartlett χ² = {chi2:.2f}, df = {int(dof)}, p = {p_value:.4f}")
+
+    # 保存为JSON
+    result = {
+        'KMO': round(kmo_overall, 4),
+        'Bartlett_chi2': round(chi2, 2),
+        'Bartlett_df': int(dof),
+        'Bartlett_p': round(p_value, 6),
+        'n': int(n),
+        'k': int(k),
+        'variables': all_vars
+    }
+
+    output_path = paths['output_data'] / '表85b_KMO与Bartlett检验.json'
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+    print(f"  [OK] 已保存: {output_path.name}")
+
+    return result
+
+
 def main():
     """主函数"""
     print("=" * 60)
@@ -576,8 +663,8 @@ def main():
     desc_stats = calculate_descriptive_stats(sem_df)
     print(desc_stats.to_string(index=False))
 
-    # 保存表93
-    save_table(desc_stats, "认知编码机制相关变量描述统计", global_num=92,
+    # 保存表86
+    save_table(desc_stats, "认知编码机制相关变量描述统计", global_num=85,
                title="认知编码机制相关变量描述统计", formats=['csv', 'json'])
 
     # 4. 相关分析
@@ -593,17 +680,17 @@ def main():
         save_table(corr_matrix.round(3), "四阶段指标相关矩阵", global_num="92b",
                    title="四阶段指标相关矩阵", formats=['csv', 'json'])
 
-        # 绘制相关热力图（图33）
+        # 绘制相关热力图（图28）
         fig_corr = plot_correlation_heatmap(corr_matrix, p_matrix, paths)
-        save_figure(fig_corr, "四阶段指标相关矩阵热力图", global_num=33,
+        save_figure(fig_corr, "四阶段指标相关矩阵热力图", global_num=27,
                     title="四阶段指标相关矩阵")
 
-    # 5. 绘制图32
+    # 5. 绘制图27
     print("\n" + "-" * 40)
-    print("5. 绘制图32: 四阶段指标分布图")
+    print("5. 绘制图27: 四阶段指标分布图")
     print("-" * 40)
     fig = plot_stage_distributions(sem_df, paths)
-    save_figure(fig, "四阶段指标分布图", global_num=32,
+    save_figure(fig, "四阶段指标分布图", global_num=26,
                 title="四阶段认知编码指标分布图")
 
     # 6. 阶段间关系分析
@@ -611,6 +698,13 @@ def main():
     print("6. 阶段间关系分析")
     print("-" * 40)
     analyze_stage_relationships(sem_df)
+
+
+    # 7. KMO与Bartlett检验
+    print("\n" + "-" * 40)
+    print("7. KMO与Bartlett检验")
+    print("-" * 40)
+    calculate_kmo_bartlett(sem_df)
 
     print("\n" + "=" * 60)
     print("Q3_01_描述统计 完成")

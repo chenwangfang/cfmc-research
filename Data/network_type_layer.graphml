@@ -1,0 +1,245 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"><key id="d6" for="edge" attr.name="weight" attr.type="float"/>
+<key id="d5" for="edge" attr.name="link_type" attr.type="long"/>
+<key id="d4" for="node" attr.name="md_mode" attr.type="int"/>
+<key id="d3" for="node" attr.name="cc_mean" attr.type="float"/>
+<key id="d2" for="node" attr.name="ca_mean" attr.type="float"/>
+<key id="d1" for="node" attr.name="size" attr.type="long"/>
+<key id="d0" for="node" attr.name="node_type" attr.type="string"/>
+<graph edgedefault="undirected"><node id="T1">
+  <data key="d0">type</data>
+  <data key="d1">15</data>
+  <data key="d2">2.0</data>
+  <data key="d3">2.2</data>
+  <data key="d4">1</data>
+</node>
+<node id="T2">
+  <data key="d0">type</data>
+  <data key="d1">6</data>
+  <data key="d2">2.0</data>
+  <data key="d3">2.3333333333333335</data>
+  <data key="d4">2</data>
+</node>
+<node id="T3">
+  <data key="d0">type</data>
+  <data key="d1">30</data>
+  <data key="d2">2.0</data>
+  <data key="d3">3.066666666666667</data>
+  <data key="d4">3</data>
+</node>
+<node id="T4">
+  <data key="d0">type</data>
+  <data key="d1">9</data>
+  <data key="d2">2.0</data>
+  <data key="d3">3.3333333333333335</data>
+  <data key="d4">4</data>
+</node>
+<node id="T5">
+  <data key="d0">type</data>
+  <data key="d1">151</data>
+  <data key="d2">3.0</data>
+  <data key="d3">2.1059602649006623</data>
+  <data key="d4">1</data>
+</node>
+<node id="T6">
+  <data key="d0">type</data>
+  <data key="d1">337</data>
+  <data key="d2">3.0</data>
+  <data key="d3">2.28486646884273</data>
+  <data key="d4">2</data>
+</node>
+<node id="T7">
+  <data key="d0">type</data>
+  <data key="d1">644</data>
+  <data key="d2">3.0</data>
+  <data key="d3">3.0885093167701863</data>
+  <data key="d4">3</data>
+</node>
+<node id="T8">
+  <data key="d0">type</data>
+  <data key="d1">693</data>
+  <data key="d2">3.0</data>
+  <data key="d3">3.9696969696969697</data>
+  <data key="d4">4</data>
+</node>
+<node id="T9">
+  <data key="d0">type</data>
+  <data key="d1">1524</data>
+  <data key="d2">4.082677165354331</data>
+  <data key="d3">1.9101049868766404</data>
+  <data key="d4">1</data>
+</node>
+<node id="T10">
+  <data key="d0">type</data>
+  <data key="d1">1208</data>
+  <data key="d2">4.167218543046357</data>
+  <data key="d3">1.929635761589404</data>
+  <data key="d4">2</data>
+</node>
+<node id="T11">
+  <data key="d0">type</data>
+  <data key="d1">1327</data>
+  <data key="d2">4.001507159005275</data>
+  <data key="d3">2.9517709118311983</data>
+  <data key="d4">3</data>
+</node>
+<node id="T12">
+  <data key="d0">type</data>
+  <data key="d1">45</data>
+  <data key="d2">4.066666666666666</data>
+  <data key="d3">2.2666666666666666</data>
+  <data key="d4">4</data>
+</node>
+<edge source="T1" target="T2">
+  <data key="d5">2</data>
+  <data key="d6">0.8</data>
+</edge>
+<edge source="T1" target="T3">
+  <data key="d5">2</data>
+  <data key="d6">0.8</data>
+</edge>
+<edge source="T1" target="T4">
+  <data key="d5">2</data>
+  <data key="d6">0.8</data>
+</edge>
+<edge source="T1" target="T5">
+  <data key="d5">1</data>
+  <data key="d6">0.5</data>
+</edge>
+<edge source="T1" target="T6">
+  <data key="d5">2</data>
+  <data key="d6">0.4</data>
+</edge>
+<edge source="T1" target="T7">
+  <data key="d5">2</data>
+  <data key="d6">0.4</data>
+</edge>
+<edge source="T1" target="T8">
+  <data key="d5">2</data>
+  <data key="d6">0.4</data>
+</edge>
+<edge source="T2" target="T3">
+  <data key="d5">2</data>
+  <data key="d6">0.8</data>
+</edge>
+<edge source="T2" target="T4">
+  <data key="d5">2</data>
+  <data key="d6">0.8</data>
+</edge>
+<edge source="T2" target="T5">
+  <data key="d5">2</data>
+  <data key="d6">0.4</data>
+</edge>
+<edge source="T2" target="T6">
+  <data key="d5">1</data>
+  <data key="d6">0.5</data>
+</edge>
+<edge source="T2" target="T7">
+  <data key="d5">2</data>
+  <data key="d6">0.4</data>
+</edge>
+<edge source="T2" target="T8">
+  <data key="d5">2</data>
+  <data key="d6">0.4</data>
+</edge>
+<edge source="T3" target="T4">
+  <data key="d5">2</data>
+  <data key="d6">0.8</data>
+</edge>
+<edge source="T3" target="T5">
+  <data key="d5">2</data>
+  <data key="d6">0.4</data>
+</edge>
+<edge source="T3" target="T6">
+  <data key="d5">2</data>
+  <data key="d6">0.4</data>
+</edge>
+<edge source="T3" target="T7">
+  <data key="d5">1</data>
+  <data key="d6">0.5</data>
+</edge>
+<edge source="T3" target="T8">
+  <data key="d5">2</data>
+  <data key="d6">0.4</data>
+</edge>
+<edge source="T4" target="T5">
+  <data key="d5">2</data>
+  <data key="d6">0.4</data>
+</edge>
+<edge source="T4" target="T6">
+  <data key="d5">2</data>
+  <data key="d6">0.4</data>
+</edge>
+<edge source="T4" target="T7">
+  <data key="d5">2</data>
+  <data key="d6">0.4</data>
+</edge>
+<edge source="T4" target="T8">
+  <data key="d5">1</data>
+  <data key="d6">0.5</data>
+</edge>
+<edge source="T5" target="T6">
+  <data key="d5">2</data>
+  <data key="d6">0.8</data>
+</edge>
+<edge source="T5" target="T7">
+  <data key="d5">2</data>
+  <data key="d6">0.8</data>
+</edge>
+<edge source="T5" target="T8">
+  <data key="d5">2</data>
+  <data key="d6">0.8</data>
+</edge>
+<edge source="T5" target="T9">
+  <data key="d5">1</data>
+  <data key="d6">0.4801512287334594</data>
+</edge>
+<edge source="T6" target="T7">
+  <data key="d5">2</data>
+  <data key="d6">0.8</data>
+</edge>
+<edge source="T6" target="T8">
+  <data key="d5">2</data>
+  <data key="d6">0.8</data>
+</edge>
+<edge source="T6" target="T10">
+  <data key="d5">1</data>
+  <data key="d6">0.4614209320091674</data>
+</edge>
+<edge source="T7" target="T8">
+  <data key="d5">2</data>
+  <data key="d6">0.8</data>
+</edge>
+<edge source="T7" target="T11">
+  <data key="d5">1</data>
+  <data key="d6">0.49962349397590367</data>
+</edge>
+<edge source="T8" target="T12">
+  <data key="d5">1</data>
+  <data key="d6">0.48387096774193555</data>
+</edge>
+<edge source="T9" target="T10">
+  <data key="d5">2</data>
+  <data key="d6">0.7376389840491389</data>
+</edge>
+<edge source="T9" target="T11">
+  <data key="d5">2</data>
+  <data key="d6">0.7399391356605208</data>
+</edge>
+<edge source="T9" target="T12">
+  <data key="d5">2</data>
+  <data key="d6">0.7873934383880135</data>
+</edge>
+<edge source="T10" target="T11">
+  <data key="d5">2</data>
+  <data key="d6">0.6862762180692628</data>
+</edge>
+<edge source="T10" target="T12">
+  <data key="d5">2</data>
+  <data key="d6">0.7269080332965601</data>
+</edge>
+<edge source="T11" target="T12">
+  <data key="d5">2</data>
+  <data key="d6">0.7510612206395624</data>
+</edge>
+</graph></graphml>

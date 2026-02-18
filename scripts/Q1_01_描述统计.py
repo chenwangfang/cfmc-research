@@ -7,9 +7,9 @@ Q1_01_描述统计.py
 
 输出：
 - 图12: 认知通达度分布直方图
-- 图13: 映射类型分布条形图
+- 图12: 映射类型分布条形图
 - 表58: 认知通达度分布
-- 表59: 映射类型分布与概念复杂度对应
+- 表58: 映射类型分布与概念复杂度对应
 
 创建日期：2025-12-05
 """
@@ -28,6 +28,8 @@ import matplotlib.font_manager as fm
 from scipy import stats
 
 from utils_公共函数 import (
+    CONSTRUCTION_TYPE_12, MAPPING_DIRECTION_SHORT,
+    DOMAIN_CODES,
     get_paths, load_cfmc_data, get_font_paths,
     save_figure, save_table, format_stats,
     MAPPING_DIRECTION_CODES, setup_matplotlib_chinese
@@ -145,6 +147,380 @@ def analyze_mapping_direction(df: pd.DataFrame) -> pd.DataFrame:
     return dist_df
 
 
+
+
+
+
+def analyze_source_domain(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    分析源域分布
+    
+    Parameters
+    ----------
+    df : pd.DataFrame
+        构式数据
+        
+    Returns
+    -------
+    pd.DataFrame
+        源域分布统计表
+    """
+    sd = df['source_domain'].dropna()
+    total = len(sd)
+    
+    # 频率分布
+    value_counts = sd.value_counts()
+    
+    dist_data = []
+    cum_pct = 0
+    for domain, count in value_counts.items():
+        pct = count / total * 100
+        cum_pct += pct
+        label = DOMAIN_CODES.get(domain, domain)
+        
+        dist_data.append({
+            '源域代码': domain,
+            '源域名称': label,
+            '频数': count,
+            '百分比(%)': round(pct, 2),
+            '累计百分比(%)': round(cum_pct, 2)
+        })
+    
+    dist_df = pd.DataFrame(dist_data)
+    
+    print(f"\n源域分布 (共{len(value_counts)}类):")
+    for _, row in dist_df.head(10).iterrows():
+        print(f"  {row['源域名称']}({row['源域代码']}): n={row['频数']} ({row['百分比(%)']:.1f}%)")
+    if len(dist_df) > 10:
+        print(f"  ... 等共{len(dist_df)}类")
+    
+    return dist_df
+
+
+def analyze_target_domain(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    分析目标域分布
+    
+    Parameters
+    ----------
+    df : pd.DataFrame
+        构式数据
+        
+    Returns
+    -------
+    pd.DataFrame
+        目标域分布统计表
+    """
+    td = df['target_domain'].dropna()
+    total = len(td)
+    
+    # 频率分布
+    value_counts = td.value_counts()
+    
+    dist_data = []
+    cum_pct = 0
+    for domain, count in value_counts.items():
+        pct = count / total * 100
+        cum_pct += pct
+        label = DOMAIN_CODES.get(domain, domain)
+        
+        dist_data.append({
+            '目标域代码': domain,
+            '目标域名称': label,
+            '频数': count,
+            '百分比(%)': round(pct, 2),
+            '累计百分比(%)': round(cum_pct, 2)
+        })
+    
+    dist_df = pd.DataFrame(dist_data)
+    
+    print(f"\n目标域分布 (共{len(value_counts)}类):")
+    for _, row in dist_df.head(10).iterrows():
+        print(f"  {row['目标域名称']}({row['目标域代码']}): n={row['频数']} ({row['百分比(%)']:.1f}%)")
+    if len(dist_df) > 10:
+        print(f"  ... 等共{len(dist_df)}类")
+    
+    return dist_df
+
+
+def analyze_domain_mapping_matrix(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    分析源域→目标域映射矩阵（交叉分布）
+    
+    Parameters
+    ----------
+    df : pd.DataFrame
+        构式数据
+        
+    Returns
+    -------
+    pd.DataFrame
+        源域×目标域交叉表
+    """
+    # 创建交叉表
+    cross_tab = pd.crosstab(
+        df['source_domain'].map(lambda x: DOMAIN_CODES.get(x, x)),
+        df['target_domain'].map(lambda x: DOMAIN_CODES.get(x, x)),
+        margins=True,
+        margins_name='合计'
+    )
+    
+    # 打印主要映射关系（频数>=50）
+    print("\n主要源域→目标域映射关系 (频数≥50):")
+    for sd in cross_tab.index[:-1]:  # 排除'合计'行
+        for td in cross_tab.columns[:-1]:  # 排除'合计'列
+            count = cross_tab.loc[sd, td]
+            if count >= 50:
+                pct = count / len(df) * 100
+                print(f"  {sd}→{td}: n={count} ({pct:.1f}%)")
+    
+    return cross_tab
+
+
+
+
+def get_construction_type_label(ca: int, md: int) -> str:
+    """
+    根据认知通达度和映射方向生成12类构式标签
+    
+    Parameters
+    ----------
+    ca : int
+        认知通达度 (1-5)
+    md : int
+        映射方向 (1-4)
+        
+    Returns
+    -------
+    str
+        构式类型标签，如 '高_具抽'
+    """
+    # 认知通达度分组
+    if ca <= 2:
+        ca_label = '低'
+    elif ca == 3:
+        ca_label = '中'
+    else:
+        ca_label = '高'
+    
+    # 映射方向简称
+    md_short = MAPPING_DIRECTION_SHORT.get(md, str(md))
+    
+    return f'{ca_label}_{md_short}'
+
+
+def analyze_domain_by_construction_type(df: pd.DataFrame) -> tuple:
+    """
+    按12类构式分析源域/目标域分布
+    
+    Parameters
+    ----------
+    df : pd.DataFrame
+        构式数据
+        
+    Returns
+    -------
+    tuple
+        (源域分布DataFrame, 目标域分布DataFrame)
+    """
+    # 生成构式类型标签
+    df = df.copy()
+    df['construction_type'] = df.apply(
+        lambda row: get_construction_type_label(
+            int(row['cognitive_accessibility']), 
+            int(row['mapping_direction'])
+        ), axis=1
+    )
+    
+    # 按12类构式统计源域分布
+    print("\n按12类构式统计源域分布:")
+    source_data = []
+    for ctype in CONSTRUCTION_TYPE_12:
+        subset = df[df['construction_type'] == ctype]
+        if len(subset) == 0:
+            continue
+        
+        # 该类型的源域分布（Top 5）
+        sd_counts = subset['source_domain'].value_counts()
+        top5_sd = []
+        for domain, count in sd_counts.head(5).items():
+            pct = count / len(subset) * 100
+            label = DOMAIN_CODES.get(domain, domain)
+            top5_sd.append(f'{label}({pct:.0f}%)')
+        
+        source_data.append({
+            '构式类型': ctype,
+            '样本量': len(subset),
+            '源域种类数': len(sd_counts),
+            '主要源域(Top5)': ', '.join(top5_sd)
+        })
+        
+        print(f"  {ctype} (n={len(subset)}): {', '.join(top5_sd[:3])}")
+    
+    source_df = pd.DataFrame(source_data)
+    
+    # 按12类构式统计目标域分布
+    print("\n按12类构式统计目标域分布:")
+    target_data = []
+    for ctype in CONSTRUCTION_TYPE_12:
+        subset = df[df['construction_type'] == ctype]
+        if len(subset) == 0:
+            continue
+        
+        # 该类型的目标域分布（Top 5）
+        td_counts = subset['target_domain'].value_counts()
+        top5_td = []
+        for domain, count in td_counts.head(5).items():
+            pct = count / len(subset) * 100
+            label = DOMAIN_CODES.get(domain, domain)
+            top5_td.append(f'{label}({pct:.0f}%)')
+        
+        target_data.append({
+            '构式类型': ctype,
+            '样本量': len(subset),
+            '目标域种类数': len(td_counts),
+            '主要目标域(Top5)': ', '.join(top5_td)
+        })
+        
+        print(f"  {ctype} (n={len(subset)}): {', '.join(top5_td[:3])}")
+    
+    target_df = pd.DataFrame(target_data)
+    
+    return source_df, target_df
+
+
+def analyze_domain_diversity_by_type(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    分析12类构式的源域/目标域多样性
+    
+    Parameters
+    ----------
+    df : pd.DataFrame
+        构式数据
+        
+    Returns
+    -------
+    pd.DataFrame
+        多样性统计表
+    """
+    from scipy.stats import entropy
+    
+    df = df.copy()
+    df['construction_type'] = df.apply(
+        lambda row: get_construction_type_label(
+            int(row['cognitive_accessibility']), 
+            int(row['mapping_direction'])
+        ), axis=1
+    )
+    
+    diversity_data = []
+    for ctype in CONSTRUCTION_TYPE_12:
+        subset = df[df['construction_type'] == ctype]
+        if len(subset) == 0:
+            continue
+        
+        # 源域多样性（Shannon熵）
+        sd_counts = subset['source_domain'].value_counts()
+        sd_probs = sd_counts / sd_counts.sum()
+        sd_entropy = entropy(sd_probs, base=2)
+        
+        # 目标域多样性
+        td_counts = subset['target_domain'].value_counts()
+        td_probs = td_counts / td_counts.sum()
+        td_entropy = entropy(td_probs, base=2)
+        
+        diversity_data.append({
+            '构式类型': ctype,
+            '样本量': len(subset),
+            '源域种类': len(sd_counts),
+            '源域熵': round(sd_entropy, 3),
+            '目标域种类': len(td_counts),
+            '目标域熵': round(td_entropy, 3)
+        })
+    
+    diversity_df = pd.DataFrame(diversity_data)
+    
+    print("\n12类构式源域/目标域多样性:")
+    print(diversity_df.to_string(index=False))
+    
+    return diversity_df
+
+
+def analyze_md_cc_anova(df: pd.DataFrame) -> dict:
+    """
+    映射类型与概念复杂度的单因素方差分析
+    
+    Parameters
+    ----------
+    df : pd.DataFrame
+        构式数据
+        
+    Returns
+    -------
+    dict
+        ANOVA结果，包含F值、p值、η²、df等
+    """
+    from scipy.stats import f_oneway
+    
+    # 按映射类型分组
+    groups = []
+    group_labels = []
+    for code in [1, 2, 3, 4]:
+        mask = df['mapping_direction'] == code
+        cc_data = df.loc[mask, 'conceptual_complexity'].dropna()
+        if len(cc_data) > 0:
+            groups.append(cc_data)
+            group_labels.append(code)
+    
+    # 单因素方差分析
+    f_stat, p_value = f_oneway(*groups)
+    
+    # 计算η² (eta squared)
+    # η² = SS_between / SS_total
+    all_cc = df['conceptual_complexity'].dropna()
+    grand_mean = all_cc.mean()
+    
+    # SS_between: 组间平方和
+    ss_between = sum(len(g) * (g.mean() - grand_mean)**2 for g in groups)
+    
+    # SS_total: 总平方和
+    ss_total = sum((all_cc - grand_mean)**2)
+    
+    eta_squared = ss_between / ss_total
+    
+    # 自由度
+    k = len(groups)  # 组数
+    n = sum(len(g) for g in groups)  # 总样本量
+    df_between = k - 1
+    df_within = n - k
+    
+    result = {
+        'F': f_stat,
+        'p': p_value,
+        'eta_squared': eta_squared,
+        'df_between': df_between,
+        'df_within': df_within,
+        'k': k,
+        'n': n
+    }
+    
+    print("\n映射类型与概念复杂度ANOVA分析:")
+    print(f"  F({df_between}, {df_within}) = {f_stat:.3f}")
+    print(f"  p < .001" if p_value < 0.001 else f"  p = {p_value:.4f}")
+    print(f"  η² = {eta_squared:.4f}")
+    print(f"  效应量解释: ", end="")
+    if eta_squared < 0.01:
+        print("极小效应")
+    elif eta_squared < 0.06:
+        print("小效应")
+    elif eta_squared < 0.14:
+        print("中等效应")
+    else:
+        print("大效应")
+    
+    return result
+
+
 def plot_cognitive_accessibility_histogram(df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
     绘制认知通达度分布直方图（图12）
@@ -215,7 +591,7 @@ def plot_cognitive_accessibility_histogram(df: pd.DataFrame, paths: dict) -> plt
 
 def plot_mapping_direction_bar(df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
-    绘制映射类型分布条形图（图13）
+    绘制映射类型分布条形图（图12）
 
     Parameters
     ----------
@@ -270,7 +646,7 @@ def plot_mapping_direction_bar(df: pd.DataFrame, paths: dict) -> plt.Figure:
     # 设置主坐标轴
     ax1.set_xlabel('映射类型', fontproperties=font_cn, fontsize=12)
     ax1.set_ylabel('频数', fontproperties=font_cn, fontsize=12)
-    # ax1.set_title('图13 映射类型分布条形图', fontproperties=font_cn_title, fontsize=14, pad=15)
+    # ax1.set_title('图12 映射类型分布条形图', fontproperties=font_cn_title, fontsize=14, pad=15)
     ax1.set_xticks(x)
     ax1.set_xticklabels(labels, fontproperties=font_cn, fontsize=11)
     ax1.set_ylim(0, 3000)  # 设置Y轴范围，使柱子比例更合适
@@ -318,9 +694,15 @@ def main():
     print("-" * 40)
     ca_dist = analyze_cognitive_accessibility(df)
 
-    # 保存表58
-    save_table(ca_dist, "认知通达度分布", global_num=58,
+    # [已移至附录F] 保存表58
+    # [已移至附录F] save_table(ca_dist, "认知通达度分布", global_num=58,
+    # [已移至附录F] title="认知通达度分布", formats=['csv', 'json'])
+
+    # 输出附录F表格到Data目录
+    save_table(ca_dist, "认知通达度分布_附录F", global_num='F1',
                title="认知通达度分布", formats=['csv', 'json'])
+    print("[OK] 表F-1 已保存")
+
 
     # 2. 映射类型分布分析
     print("\n" + "-" * 40)
@@ -328,25 +710,91 @@ def main():
     print("-" * 40)
     md_dist = analyze_mapping_direction(df)
 
-    # 保存表59
-    save_table(md_dist, "映射类型分布与概念复杂度对应", global_num=59,
+    # 保存表58
+    save_table(md_dist, "映射类型分布与概念复杂度对应", global_num=58,
                title="映射类型分布与概念复杂度对应", formats=['csv', 'json'])
 
-    # 3. 绘制图12
-    print("\n" + "-" * 40)
-    print("3. 绘制图12: 认知通达度分布直方图")
-    print("-" * 40)
-    fig1 = plot_cognitive_accessibility_histogram(df, paths)
-    save_figure(fig1, "认知通达度分布直方图", global_num=12,
-                title="认知通达度分布直方图")
+    # [已移至附录F] 3. 绘制图12: 认知通达度分布直方图
+    # [已移至附录F] print("\n" + "-" * 40)
+    # [已移至附录F] print("3. 绘制图12: 认知通达度分布直方图")
+    # [已移至附录F] print("-" * 40)
+    # [已移至附录F] fig1 = plot_cognitive_accessibility_histogram(df, paths)
+    # [已移至附录F] save_figure(fig1, "认知通达度分布直方图", global_num=12,
+    # [已移至附录F] title="认知通达度分布直方图")
 
-    # 4. 绘制图13
+
+    # 2.1 源域分布分析
     print("\n" + "-" * 40)
-    print("4. 绘制图13: 映射类型分布条形图")
+    print("2.1 源域分布分析")
+    print("-" * 40)
+    sd_dist = analyze_source_domain(df)
+    save_table(sd_dist, "源域分布", global_num="57a",
+               title="源域分布统计", formats=['csv', 'json'])
+    
+    # 2.2 目标域分布分析
+    print("\n" + "-" * 40)
+    print("2.2 目标域分布分析")
+    print("-" * 40)
+    td_dist = analyze_target_domain(df)
+    save_table(td_dist, "目标域分布", global_num="57b",
+               title="目标域分布统计", formats=['csv', 'json'])
+    
+    # 2.3 源域×目标域交叉分布
+    print("\n" + "-" * 40)
+    print("2.3 源域×目标域交叉分布")
+    print("-" * 40)
+    cross_matrix = analyze_domain_mapping_matrix(df)
+    save_table(cross_matrix, "源域目标域交叉分布", global_num="57c",
+               title="源域×目标域交叉分布矩阵", formats=['csv', 'json'])
+
+
+    # 4. 绘制图12
+    print("\n" + "-" * 40)
+    print("4. 绘制图12: 映射类型分布条形图")
     print("-" * 40)
     fig2 = plot_mapping_direction_bar(df, paths)
-    save_figure(fig2, "映射类型分布条形图", global_num=13,
+    save_figure(fig2, "映射类型分布条形图", global_num=11,
                 title="映射类型分布条形图")
+
+
+
+    # 2.4 按12类构式分析源域/目标域分布
+    print("\n" + "-" * 40)
+    print("2.4 按12类构式分析源域/目标域分布")
+    print("-" * 40)
+    sd_by_type, td_by_type = analyze_domain_by_construction_type(df)
+    save_table(sd_by_type, "12类构式源域分布", global_num="57d",
+               title="12类构式源域分布", formats=['csv', 'json'])
+    save_table(td_by_type, "12类构式目标域分布", global_num="57e",
+               title="12类构式目标域分布", formats=['csv', 'json'])
+    
+    # 2.5 源域/目标域多样性分析
+    print("\n" + "-" * 40)
+    print("2.5 源域/目标域多样性分析")
+    print("-" * 40)
+    diversity_df = analyze_domain_diversity_by_type(df)
+    save_table(diversity_df, "12类构式域多样性", global_num="57f",
+               title="12类构式源域目标域多样性", formats=['csv', 'json'])
+
+
+    # 2.7 映射类型与概念复杂度ANOVA分析
+    print("\n" + "-" * 40)
+    print("2.7 映射类型与概念复杂度ANOVA分析")
+    print("-" * 40)
+    anova_result = analyze_md_cc_anova(df)
+    
+    # 保存ANOVA结果
+    anova_df = pd.DataFrame([{
+        '分析项目': '映射类型→概念复杂度',
+        'df_between': anova_result['df_between'],
+        'df_within': anova_result['df_within'],
+        'F': round(anova_result['F'], 3),
+        'p': '<.001' if anova_result['p'] < 0.001 else f"{anova_result['p']:.4f}",
+        'η²': round(anova_result['eta_squared'], 4)
+    }])
+    save_table(anova_df, "映射类型与概念复杂度ANOVA", global_num="58_anova",
+               title="映射类型与概念复杂度单因素方差分析", formats=['csv', 'json'])
+
 
     # 5. 汇总描述统计
     print("\n" + "-" * 40)

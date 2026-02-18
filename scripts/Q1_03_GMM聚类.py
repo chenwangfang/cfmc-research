@@ -14,11 +14,11 @@ Q1_03_12类构式分类.py
 - 格式：{通达度}_{映射方向}，如"高_具抽"表示高通达+具体->抽象
 
 输出：
-- 图15: 理论12类构式分布验证图
-- 图16: 12类构式二维分布图
-- 表61: 12类构式理论分组与GMM验证对比
+- 图14: 理论12类构式分布验证图
+- 图15: 12类构式二维分布图
+- 表60: 12类构式理论分组与GMM验证对比
 - 表62: 12类构式聚类中心参数
-- 表63: 分类稳定性检验汇总（Bootstrap）
+- 表61: 分类稳定性检验汇总（Bootstrap）
 
 验证标准：
 - 理论12类均有样本覆盖
@@ -356,7 +356,7 @@ def analyze_12_types_distribution(df: pd.DataFrame) -> pd.DataFrame:
 def create_gmm_comparison_table(df_theory: pd.DataFrame, gmm_labels: np.ndarray,
                                   valid_idx: pd.Index) -> pd.DataFrame:
     """
-    创建理论分组与GMM验证对比表（表61）
+    创建理论分组与GMM验证对比表（表60）
 
     Parameters
     ----------
@@ -406,7 +406,7 @@ def create_gmm_comparison_table(df_theory: pd.DataFrame, gmm_labels: np.ndarray,
 
 def plot_bic_curve(k_results: dict, paths: dict) -> plt.Figure:
     """
-    绘制k值选择BIC曲线图（图15）
+    绘制k值选择BIC曲线图（图14）
 
     Parameters
     ----------
@@ -469,7 +469,7 @@ def plot_bic_curve(k_results: dict, paths: dict) -> plt.Figure:
                 fontsize=10, fontproperties=font_en,
                 arrowprops=dict(arrowstyle='->', color='gray'))
 
-    # plt.suptitle('图15 k值选择BIC曲线图（k=8至k=16）',
+    # plt.suptitle('图13 k值选择BIC曲线图（k=8至k=16）',
                 # fontproperties=font_cn_title, fontsize=14, y=1.02)
     plt.tight_layout()
 
@@ -478,7 +478,7 @@ def plot_bic_curve(k_results: dict, paths: dict) -> plt.Figure:
 
 def plot_12_types_distribution(df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
-    绘制12类构式二维分布气泡图（图16）
+    绘制12类构式二维分布气泡图（图15）
 
     Parameters
     ----------
@@ -580,7 +580,7 @@ def plot_12_types_distribution(df: pd.DataFrame, paths: dict) -> plt.Figure:
     # 设置坐标轴
     ax.set_xlabel('认知通达度', fontproperties=font_cn, fontsize=12)
     ax.set_ylabel('映射方向', fontproperties=font_cn, fontsize=12)
-    # ax.set_title('图16 12类构式二维分布图',
+    # ax.set_title('图14 12类构式二维分布图',
                 # fontproperties=font_cn_title, fontsize=14, pad=15)
 
     # 添加认知通达度区域标签（顶部）
@@ -602,7 +602,7 @@ def plot_12_types_distribution(df: pd.DataFrame, paths: dict) -> plt.Figure:
     ax.set_xticklabels(['1-2级\n(低)', '3级\n(中)', '4-5级\n(高)'],
                        fontproperties=font_cn, fontsize=10)
     ax.set_yticks([1, 2, 3, 4])
-    ax.set_yticklabels(['具体→具体', '具体→抽象', '抽象→抽象', '抽象→具体'],
+    ax.set_yticklabels([MAPPING_DIRECTION_CODES[i] for i in range(1, 5)],
                        fontproperties=font_cn, fontsize=10)
 
     # 添加图例说明气泡大小（缩小图例气泡）
@@ -623,7 +623,7 @@ def plot_12_types_distribution(df: pd.DataFrame, paths: dict) -> plt.Figure:
 def plot_theory_validation(df: pd.DataFrame, type_stats: pd.DataFrame,
                             paths: dict) -> plt.Figure:
     """
-    绘制理论12类构式分布验证图（图15）
+    绘制理论12类构式分布验证图（图14）
 
     Parameters
     ----------
@@ -697,7 +697,7 @@ def plot_theory_validation(df: pd.DataFrame, type_stats: pd.DataFrame,
     cbar = plt.colorbar(im, ax=ax2)
     cbar.set_label('样本量', fontproperties=font_cn)
 
-    # plt.suptitle('图15 理论12类构式分布验证图',
+    # plt.suptitle('图13 理论12类构式分布验证图',
                 # fontproperties=font_cn_title, fontsize=14, y=1.02)
     plt.tight_layout()
 
@@ -731,8 +731,8 @@ def main():
     type_stats = analyze_12_types_distribution(df_classified)
     print("\n" + type_stats.to_string(index=False))
 
-    save_table(type_stats, "12类构式聚类中心参数", global_num=62,
-               title="12类构式聚类中心参数", formats=['csv', 'json'])
+    # [已移至附录F] save_table(type_stats, "12类构式聚类中心参数", global_num=62,
+               # [已移至附录F] title="12类构式聚类中心参数", formats=['csv', 'json'])
 
     # 验证H1-2：理论12类是否均有样本覆盖
     n_types_with_data = (type_stats['样本量'] > 0).sum()
@@ -757,13 +757,13 @@ def main():
     print(f"  标准: >= 0.30")
     print(f"  结论: {'[OK] 达标' if sil_score >= 0.30 else '[X] 未达标'}")
 
-    # 4. 理论分组与GMM验证对比（表61）
+    # 4. 理论分组与GMM验证对比（表60）
     print("\n" + "-" * 40)
     print("4. 理论分组与GMM验证对比")
     print("-" * 40)
     comparison_table = create_gmm_comparison_table(df_classified, labels, valid_idx)
 
-    save_table(comparison_table, "12类构式理论分组与GMM验证对比", global_num=61,
+    save_table(comparison_table, "12类构式理论分组与GMM验证对比", global_num=60,
                title="12类构式理论分组与GMM验证对比", formats=['csv', 'json'])
 
     # 5. Bootstrap稳定性检验
@@ -781,23 +781,23 @@ def main():
         '95% CI上限': round(bootstrap_results['ci_upper'], 4),
         '稳定性': '良好' if bootstrap_results['ci_lower'] >= 0.25 else '一般'
     }])
-    save_table(bootstrap_table, "分类稳定性检验汇总", global_num=63,
+    save_table(bootstrap_table, "分类稳定性检验汇总", global_num=61,
                title="分类稳定性检验汇总（Bootstrap）", formats=['csv', 'json'])
 
-    # 6. 绘制图15：理论12类构式分布验证图
+    # 6. 绘制图14：理论12类构式分布验证图
     print("\n" + "-" * 40)
-    print("6. 绘制图15: 理论12类构式分布验证图")
+    print("6. 绘制图14: 理论12类构式分布验证图")
     print("-" * 40)
     fig4 = plot_theory_validation(df_classified, type_stats, paths)
-    save_figure(fig4, "理论12类构式分布验证图", global_num=15,
+    save_figure(fig4, "理论12类构式分布验证图", global_num=13,
                 title="理论12类构式分布验证图")
 
-    # 7. 绘制图16：12类构式二维分布图
+    # 7. 绘制图15：12类构式二维分布图
     print("\n" + "-" * 40)
-    print("7. 绘制图16: 12类构式二维分布图")
+    print("7. 绘制图15: 12类构式二维分布图")
     print("-" * 40)
     fig5 = plot_12_types_distribution(df_classified, paths)
-    save_figure(fig5, "12类构式二维分布图", global_num=16,
+    save_figure(fig5, "12类构式二维分布图", global_num=14,
                 title="12类构式二维分布图")
 
     # 8. 保存分类结果数据

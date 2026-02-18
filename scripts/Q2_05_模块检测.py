@@ -6,9 +6,9 @@ Q2_05_模块检测.py
 社区/模块检测（Louvain算法）
 
 输出：
-- 图26: 网络社区结构可视化图（补充图）
-- 表82: 五大模块组成特征（原表78）
-- 表82a: 社区与构式类型对应表（原表79）
+- 图23: 网络社区结构可视化图（补充图）
+- 表77: 五大模块组成特征（原表73）
+- 表82a: 社区与构式类型对应表（原表74）
 
 验证标准：模块度Q >= 0.40
 
@@ -101,7 +101,7 @@ def detect_communities(G: nx.Graph) -> tuple:
 def create_community_table(G: nx.Graph, partition: dict,
                            modularity: float) -> pd.DataFrame:
     """
-    创建社区检测结果表（表82）
+    创建社区检测结果表（表77）
 
     Parameters
     ----------
@@ -198,7 +198,7 @@ def create_community_type_mapping(partition: dict) -> pd.DataFrame:
 def plot_community_structure(G: nx.Graph, partition: dict,
                             modularity: float, paths: dict) -> plt.Figure:
     """
-    绘制网络社区结构可视化图（图25）
+    绘制网络社区结构可视化图（图22）
 
     Parameters
     ----------
@@ -330,7 +330,7 @@ def plot_community_structure(G: nx.Graph, partition: dict,
     ax2.text(0.5, avg_size + 0.3, f'平均规模={avg_size:.1f}',
              fontproperties=font_cn, fontsize=10, color='#c0392b', ha='center')
 
-    # plt.suptitle('图26 网络社区结构可视化图',
+    # plt.suptitle('图20 网络社区结构可视化图',
                 # fontproperties=font_cn_title, fontsize=14, y=1.02)
     plt.tight_layout()
 
@@ -405,13 +405,13 @@ def main():
     print(f"  实际: Q = {modularity:.4f}")
     print(f"  结论: {'[OK] 达标' if modularity >= 0.40 else '[X] 未达标'}")
 
-    # 3. 创建表82
+    # 3. 创建表77
     print("\n" + "-" * 40)
-    print("3. 保存表82: 五大模块组成特征")
+    print("3. 保存表77: 五大模块组成特征")
     print("-" * 40)
     community_table = create_community_table(G, partition, modularity)
     print(community_table.to_string(index=False))
-    save_table(community_table, "五大模块组成特征", global_num=82,
+    save_table(community_table, "五大模块组成特征", global_num=77,
                title="社区检测结果", formats=['csv', 'json'])
 
     # 4. 创建表82b
@@ -423,12 +423,12 @@ def main():
     save_table(mapping_table, "社区结构与类型体系对应分析", global_num="82a",
                title="社区结构与类型体系对应分析", formats=['csv', 'json'])
 
-    # 5. 绘制图26
+    # 5. 绘制图20
     print("\n" + "-" * 40)
-    print("5. 绘制图26: 网络社区结构可视化图")
+    print("5. 绘制图23: 网络社区结构可视化图")
     print("-" * 40)
     fig = plot_community_structure(G, partition, modularity, paths)
-    save_figure(fig, "网络社区结构可视化图", global_num=26,
+    save_figure(fig, "网络社区结构可视化图", global_num=22,
                 title="网络社区结构可视化图")
 
     # 6. 社区特征分析

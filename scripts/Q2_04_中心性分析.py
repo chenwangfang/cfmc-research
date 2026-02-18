@@ -6,8 +6,8 @@ Q2_04_中心性分析.py
 网络中心性分析（度中心性、中介中心性、特征向量中心性）
 
 输出：
-- 图25: 构式类型组三种中心性指标对比（原图24）
-- 表81: 构式类型组网络中心性指标（原表77）
+- 图22: 构式类型组三种中心性指标对比（原图21）
+- 表76: 构式类型组网络中心性指标（原表77）
 
 创建日期：2025-12-05
 """
@@ -160,7 +160,7 @@ def analyze_hub_nodes(centrality_df: pd.DataFrame) -> dict:
 
 def plot_centrality_comparison(centrality_df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
-    绘制三种中心性指标分布对比图（图25）
+    绘制三种中心性指标分布对比图（图22）
 
     颜色编码：按认知通达度等级分组（与图21一致）
     认知通达度1-5级：1=最难通达，5=最易通达
@@ -289,7 +289,7 @@ def plot_centrality_comparison(centrality_df: pd.DataFrame, paths: dict) -> plt.
     ax4.set_title('（d）中心性指标相关矩阵', fontproperties=font_cn, fontsize=12)
     plt.colorbar(im, ax=ax4, shrink=0.8)
 
-    # plt.suptitle('图25 构式类型组三种中心性指标对比',
+    # plt.suptitle('图19 构式类型组三种中心性指标对比',
                 # fontproperties=font_cn_title, fontsize=14, y=1.02)
     plt.tight_layout()
 
@@ -524,42 +524,42 @@ def main():
         for node in nodes:
             print(f"    {node[0]}: {node[1]:.4f} (n={int(node[2]) if isinstance(node[2], (int, float)) else node[2]})")
 
-    # 4. 保存表81
+    # 4. 保存表76
     print("\n" + "-" * 40)
-    print("4. 保存表81: 构式类型组网络中心性指标")
+    print("4. 保存表76: 构式类型组网络中心性指标")
     print("-" * 40)
     # 选择主要列
     output_cols = ['构式类型', '样本量', '度数', '度中心性', '中介中心性',
                   '特征向量中心性', '接近中心性', '认知通达度均值', '概念复杂度均值']
     output_df = centrality_df[output_cols].copy()
     print(output_df.to_string(index=False))
-    save_table(output_df, "构式类型组网络中心性指标", global_num=81,
+    save_table(output_df, "构式类型组网络中心性指标", global_num=76,
                title="构式类型组网络中心性指标", formats=['csv', 'json'])
 
-    # 5. 绘制图25
+    # 5. 绘制图19
     print("\n" + "-" * 40)
-    print("5. 绘制图25: 构式类型组三种中心性指标对比")
+    print("5. 绘制图22: 构式类型组三种中心性指标对比")
     print("-" * 40)
     fig = plot_centrality_comparison(centrality_df, paths)
-    save_figure(fig, "构式类型组三种中心性指标对比", global_num=25,
+    save_figure(fig, "构式类型组三种中心性指标对比", global_num=21,
                 title="构式类型组三种中心性指标对比")
 
     # 6. 中心性与特征的相关分析
     print("\n" + "-" * 40)
-    print("6. 保存表82a: 网络中心性与认知维度相关分析")
+    print("6. 保存表79: 网络中心性与认知维度相关分析")
     print("-" * 40)
     corr_results = correlate_centrality_with_features(centrality_df)
     print(corr_results.to_string(index=False))
-    save_table(corr_results, "网络中心性与认知维度相关分析", global_num=83,
+    save_table(corr_results, "网络中心性与认知维度相关分析", global_num=78,
                title="网络中心性与认知维度相关分析", formats=['csv', 'json'])
 
     # 7. 节点功能角色分布分析（表81a）
     print("\n" + "-" * 40)
-    print("7. 保存表81a: 节点功能角色分布")
+    print("7. 保存表78: 节点功能角色分布")
     print("-" * 40)
     func_dist = analyze_function_in_network(paths)
     if not func_dist.empty:
-        save_table(func_dist, "节点功能角色分布", global_num=83,
+        save_table(func_dist, "节点功能角色分布", global_num=78,
                    title="节点功能角色分布", formats=['csv', 'json'])
 
     # 8. 功能角色与中心性一致性分析（表81b）

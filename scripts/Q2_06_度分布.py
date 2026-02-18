@@ -7,8 +7,8 @@ Q2_06_度分布.py
 
 输出：
 - 图27: 度分布直方图
-- 图29: 度分布对数-对数图（幂律检验）
-- 表83: 度分布拟合结果
+- 图24: 度分布对数-对数图（幂律检验）
+- 表78: 度分布拟合结果
 
 创建日期：2025-12-05
 """
@@ -139,7 +139,7 @@ def fit_power_law(degrees: list) -> tuple:
 
 def create_degree_stats_table(results: dict, G: nx.Graph) -> pd.DataFrame:
     """
-    创建度分布拟合结果表（表83）
+    创建度分布拟合结果表（表78）
 
     Parameters
     ----------
@@ -269,7 +269,7 @@ def plot_degree_histogram(results: dict, paths: dict) -> plt.Figure:
                     xytext=(8, 0), fontsize=9, color='#2c3e50')
 
     ax2.set_xlabel('度 (k)', fontproperties=font_cn, fontsize=11)
-    ax2.set_ylabel('累积概率 P(X ≥ k)', fontproperties=font_cn, fontsize=11)
+    ax2.set_ylabel('累积概率 P(X $\\geq$ k)', fontproperties=font_cn, fontsize=11)
     ax2.set_title('（b）累积度分布', fontproperties=font_cn, fontsize=12)
     ax2.set_xticks(k_all)  # 与左图X轴刻度统一
     ax2.set_ylim(0, 1.1)
@@ -284,7 +284,7 @@ def plot_degree_histogram(results: dict, paths: dict) -> plt.Figure:
 
 def plot_degree_log_log(results: dict, paths: dict) -> plt.Figure:
     """
-    绘制度分布对数-对数图（图29）
+    绘制度分布对数-对数图（图24）
 
     Parameters
     ----------
@@ -432,30 +432,74 @@ def main():
     dist_type = test_degree_distribution_type(results)
     print(f"\n分布类型判断: {dist_type}")
 
-    # 3. 创建表83
-    print("\n" + "-" * 40)
-    print("3. 保存表83: 度分布拟合结果")
-    print("-" * 40)
-    stats_table = create_degree_stats_table(results, G)
-    print(stats_table.to_string(index=False))
-    save_table(stats_table, "度分布拟合结果", global_num=84,
-               title="度分布拟合结果", formats=['csv', 'json'])
+    # [已移至附录F] 3. 创建表73
+    # [已移至附录F] print("\n" + "-" * 40)
+    # [已移至附录F] print("3. 保存表78: 度分布拟合结果")
+    # [已移至附录F] print("-" * 40)
+    # [已移至附录F] stats_table = create_degree_stats_table(results, G)
+    # [已移至附录F] print(stats_table.to_string(index=False))
+    # [已移至附录F] save_table(stats_table, "度分布拟合结果", global_num=79,
+               # [已移至附录F] title="度分布拟合结果", formats=['csv', 'json'])
 
-    # 4. 绘制图27
-    print("\n" + "-" * 40)
-    print("4. 绘制图27: 度分布直方图")
-    print("-" * 40)
-    fig6 = plot_degree_histogram(results, paths)
-    save_figure(fig6, "度分布直方图", global_num=27,
-                title="度分布直方图")
+    # [已移至附录F] 4. 绘制图27
+    # [已移至附录F] print("\n" + "-" * 40)
+    # [已移至附录F] print("4. 绘制图27: 度分布直方图")
+    # [已移至附录F] print("-" * 40)
+    # [已移至附录F] fig6 = plot_degree_histogram(results, paths)
+    # [已移至附录F] save_figure(fig6, "度分布直方图", global_num=27,
+                # [已移至附录F] title="度分布直方图")
 
-    # 5. 绘制图28
+    # [已移至附录F] 5. 绘制图28
+    # [已移至附录F] print("\n" + "-" * 40)
+    # [已移至附录F] print("5. 绘制图28: 度分布对数-对数图")
+    # [已移至附录F] print("-" * 40)
+    # [已移至附录F] fig7 = plot_degree_log_log(results, paths)
+    # [已移至附录F] save_figure(fig7, "度分布对数对数图", global_num=28,
+                # [已移至附录F] title="度分布对数-对数图（幂律检验）")
+
+
+    # 6. 输出附录F表格到Data目录
     print("\n" + "-" * 40)
-    print("5. 绘制图28: 度分布对数-对数图")
+    print("6. 输出附录F度分布表格")
     print("-" * 40)
-    fig7 = plot_degree_log_log(results, paths)
-    save_figure(fig7, "度分布对数对数图", global_num=28,
-                title="度分布对数-对数图（幂律检验）")
+
+    # 表F-6: 度分布统计
+    stats_data = {
+        '节点数': [results['节点数']],
+        '边数': [results['边数']],
+        '平均度': [round(results['平均度'], 2)],
+        '标准差': [round(results['度标准差'], 2)],
+        '最小度': [results['最小度']],
+        '最大度': [results['最大度']],
+        '度中位数': [results['度中位数']],
+        '偏度': [round(results.get('偏度', 0), 3)],
+        '峰度': [round(results.get('峰度', 0), 3)]
+    }
+    df_f6 = pd.DataFrame(stats_data)
+    save_table(df_f6, "度分布统计_附录F", global_num='F6',
+               title="度分布统计", formats=['csv', 'json'])
+    print("[OK] 表F-6 已保存")
+
+    # 表F-7: 各度数的节点分布
+    degree_dict = dict(G.degree())
+    degree_groups = {}
+    for node, deg in degree_dict.items():
+        if deg not in degree_groups:
+            degree_groups[deg] = []
+        degree_groups[deg].append(node)
+
+    f7_rows = []
+    for deg in sorted(degree_groups.keys(), reverse=True):
+        nodes = sorted(degree_groups[deg])
+        f7_rows.append({
+            '度数': deg,
+            '节点数': len(nodes),
+            '构式类型': ', '.join(nodes)
+        })
+    df_f7 = pd.DataFrame(f7_rows)
+    save_table(df_f7, "各度数节点分布_附录F", global_num='F7',
+               title="各度数的节点分布", formats=['csv', 'json'])
+    print("[OK] 表F-7 已保存")
 
     print("\n" + "=" * 60)
     print("Q2_06_度分布 完成")

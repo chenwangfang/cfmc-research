@@ -27,6 +27,7 @@ import subprocess
 import sys
 import os
 import time
+import platform
 from datetime import datetime
 from pathlib import Path
 
@@ -35,14 +36,22 @@ from pathlib import Path
 # 配置
 # =============================================================================
 
+# 全局统一Python路径（m_s虚拟环境，含plspm及所有分析依赖）
+# 自动检测运行环境：Windows直接运行 vs WSL运行
+if platform.system() == 'Windows':
+    PYTHON_EXE = r'/home/tomja/miniconda3/envs/m_s/bin/python'
+else:
+    PYTHON_EXE = '/home/tomja/miniconda3/envs/m_s/bin/python'
+
 # 脚本运行顺序定义
 SCRIPTS = {
     'Q1': [
         ('Q1_01_描述统计.py', '认知通达度与映射类型描述统计'),
+        ('Q1_01b_补充描述统计.py', '基础描述统计补充（含SD、占比、交叉分布）'),
         ('Q1_02_H1_1相关分析.py', 'H1-1假设验证：双维度相关分析'),
         ('Q1_03_GMM聚类.py', 'GMM聚类识别12类构式'),
         ('Q1_04_LDA判别.py', 'LDA判别分析验证聚类结果'),
-        ('Q1_05_原型梯度.py', '马氏距离计算与原型梯度划分'),
+        ('Q1_05_原型梯度.py', '标准化欧氏距离计算与原型梯度划分'),
         ('Q1_06_类型特征.py', '12类构式详细特征分析'),
         ('Q1_07_假设汇总.py', 'Q1假设验证结果汇总'),
     ],
@@ -58,22 +67,19 @@ SCRIPTS = {
     ],
     'Q3': [
         ('Q3_01_描述统计.py', 'SEM变量描述统计'),
-        ('Q3_02_SEM基础模型.py', 'SEM模型拟合与模型比较'),
-        ('Q3_03_SEM完整模型.py', '路径系数与效度检验'),
-        ('Q3_04_多组比较.py', '测量不变性检验'),
-        ('Q3_05_中介效应.py', 'Bootstrap中介效应检验'),
-        ('Q3_06_调节效应.py', '汉语认知特色调节效应'),
-        ('Q3_07_假设汇总.py', 'Q3假设验证结果汇总'),
+        ('Q3_02_PLS_SEM基础模型.py', 'PLS-SEM形成性模型拟合与分析'),
+        ('Q3_04_PLS_多组比较.py', 'PLS多组比较分析'),
+        ('Q3_06_PLS_调节效应.py', 'PLS调节效应分析'),
+        ('Q3_07_PLS_假设汇总.py', 'Q3假设验证结果汇总'),
     ],
     '综合': [
         ('综合分析报告.py', 'Q1-Q3综合分析报告生成'),
     ],
     '图表': [
-        ('图31_整合关系示意图.py', 'Q2与Q1/Q3整合关系示意图'),
-        ('图35_路径系数比较图.py', 'Q3总体路径系数比较'),
-        ('图39_Q1Q2Q3整合框架图.py', 'Q1-Q2-Q3研究发现整合框架'),
-        ('图40_本研究与相关理论关系图.py', '本研究与相关理论关系'),
-        ('图41_Sullivan理论修补层级图.py', 'Sullivan理论修补层级'),
+        ('图25_整合关系示意图.py', 'Q2与Q1/Q3整合关系示意图'),
+        ('图33_Q1Q2Q3整合框架图.py', 'Q1-Q2-Q3研究发现整合框架'),
+        ('图34_本研究与相关理论关系图.py', '本研究与相关理论关系'),
+        ('图35_Sullivan理论修补层级图.py', 'Sullivan理论修补层级'),
     ]
 }
 
@@ -95,7 +101,7 @@ def get_terminal_width():
     """获取终端宽度"""
     try:
         return os.get_terminal_size().columns
-    except:
+    except Exception:
         return 80
 
 
@@ -137,29 +143,35 @@ def print_progress(current, total, script_name, status='运行中'):
 
 
 def run_script(script_path, script_dir):
-    """运行单个脚本"""
+    """运行单个脚本
+
+    不捕获stdout（直接输出到终端），避免plspm多进程Pool与管道死锁。
+    仅捕获stderr用于错误报告。
+    """
     try:
-        # 使用UTF-8编码以支持中文输出（解决Windows cp1252编码问题）
+        # stdout直接输出到终端（避免多进程管道死锁）
+        # stderr捕获用于错误报告
         result = subprocess.run(
-            [sys.executable, script_path],
+            [PYTHON_EXE, script_path],
             cwd=script_dir,
-            capture_output=True,
+            stdout=None,  # 直接输出到终端
+            stderr=subprocess.PIPE,
             text=True,
             encoding='utf-8',
-            errors='replace',  # 遇到无法解码的字符时替换而非报错
-            timeout=600  # 10分钟超时
+            errors='replace',
+            timeout=3600  # 1小时超时（Bootstrap 5000次需要较长时间）
         )
         return {
             'success': result.returncode == 0,
-            'stdout': result.stdout,
-            'stderr': result.stderr,
+            'stdout': '',
+            'stderr': result.stderr or '',
             'returncode': result.returncode
         }
     except subprocess.TimeoutExpired:
         return {
             'success': False,
             'stdout': '',
-            'stderr': '脚本执行超时（超过10分钟）',
+            'stderr': '脚本执行超时（超过1小时）',
             'returncode': -1
         }
     except Exception as e:
@@ -211,17 +223,20 @@ def run_module(module_name, scripts, script_dir, dry_run=False):
             })
             continue
 
-        # 运行脚本
-        print(f"\n  [{i}/{total}] ◐ {script_name} ... ", end='', flush=True)
+        # 运行脚本 - 显示进度条
+        print()  # 换行
+        print_progress(i, total, script_name, '运行中')
 
         start_time = time.time()
         result = run_script(script_path, script_dir)
         elapsed = time.time() - start_time
 
+        # 清除进度条行，显示结果
+        print(f"\r  [{i}/{total}] ", end='')
         if result['success']:
-            print(f"[OK] 完成 ({format_time(elapsed)})")
+            print(f"[OK] {script_name} ({format_time(elapsed)})")
         else:
-            print(f"[X] 失败 ({format_time(elapsed)})")
+            print(f"[X] {script_name} ({format_time(elapsed)})")
             if result['stderr']:
                 # 只显示错误的最后几行
                 error_lines = result['stderr'].strip().split('\n')

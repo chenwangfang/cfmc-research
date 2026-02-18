@@ -69,7 +69,7 @@ CFMC-33的字段设计遵循"理论驱动+研究问题导向"原则。Level 1核
 | mapping_direction | 映射方向 | 1-4定类 | MD值：1=具→具，2=具→抽，3=抽→抽，4=抽→具（阶段3指标） |
 | metaphor_type | 隐喻类型 | String | 概念隐喻分类 |
 | thematic_role | 题元角色 | String | 主语的语义角色 |
-| copula_function | 系词功能 | 1-3定序 | 系词功能类型：1=equative等同，2=predicational述谓，3=specificational指称（阶段4结果变量X₁₁） |
+| copula_function | 系词功能 | 1-3定类 | 系词功能类型：1=equative等同，2=attributive属性，3=identificational识别（阶段4结果变量X₁₁） |
 | constructional_meaning | 构式义 | String | 构式整体意义 |
 
 ##### C_认知机制（3项）

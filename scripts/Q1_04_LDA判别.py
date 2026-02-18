@@ -8,7 +8,7 @@ Q1_04_LDA判别.py
 输出：
 - 图17: LDA判别函数二维投影图（LD1xLD2）
 - 图18: 12类构式LDA分类混淆矩阵热力图
-- 表64: LDA判别分析结果
+- 表62: LDA判别分析结果
 - 表65: 各类型LDA分类准确率
 
 验证标准：10折交叉验证准确率 >= 85%
@@ -172,7 +172,7 @@ def create_classification_report(X: np.ndarray, y: np.ndarray, lda) -> tuple:
 
 def create_lda_summary_table(lda, cv_scores: np.ndarray, X: np.ndarray, y: np.ndarray) -> pd.DataFrame:
     """
-    创建LDA判别分析结果汇总表（表64）
+    创建LDA判别分析结果汇总表（表62）
 
     Parameters
     ----------
@@ -451,36 +451,36 @@ def main():
     print("\n各类型分类准确率:")
     print(class_report.to_string(index=False))
 
-    # 4. 保存表64
+    # 4. 保存表62
     print("\n" + "-" * 40)
-    print("4. 保存表64: LDA判别分析结果")
+    print("4. 保存表62: LDA判别分析结果")
     print("-" * 40)
     lda_summary = create_lda_summary_table(lda, cv_scores, X, y)
-    save_table(lda_summary, "LDA判别分析结果", global_num=64,
+    save_table(lda_summary, "LDA判别分析结果", global_num=62,
                title="LDA判别分析结果", formats=['csv', 'json'])
 
-    # 5. 保存表65
+    # 5. 保存表F-3: 各类型LDA分类准确率（附录F用）
     print("\n" + "-" * 40)
-    print("5. 保存表65: 各类型LDA分类准确率")
+    print("5. 保存表F-3: 各类型LDA分类准确率（附录F）")
     print("-" * 40)
-    save_table(class_report, "各类型LDA分类准确率", global_num=65,
+    save_table(class_report, "各类型LDA分类准确率_附录F", global_num='F3',
                title="各类型LDA分类准确率", formats=['csv', 'json'])
 
-    # 6. 绘制图17
-    print("\n" + "-" * 40)
-    print("6. 绘制图17: LDA判别函数二维投影图")
-    print("-" * 40)
-    fig6 = plot_lda_projection(X_lda, y, paths)
-    save_figure(fig6, "LDA判别函数二维投影图", global_num=17,
-                title="LDA判别函数二维投影图（LD1xLD2）")
+    # [已移至附录F] 6. 绘制图17
+    # [已移至附录F] print("\n" + "-" * 40)
+    # [已移至附录F] print("6. 绘制图17: LDA判别函数二维投影图")
+    # [已移至附录F] print("-" * 40)
+    # [已移至附录F] fig6 = plot_lda_projection(X_lda, y, paths)
+    # [已移至附录F] save_figure(fig6, "LDA判别函数二维投影图", global_num=17,
+                # [已移至附录F] title="LDA判别函数二维投影图（LD1xLD2）")
 
-    # 7. 绘制图18
-    print("\n" + "-" * 40)
-    print("7. 绘制图18: LDA分类混淆矩阵热力图")
-    print("-" * 40)
-    fig7 = plot_confusion_matrix(cm, paths)
-    save_figure(fig7, "LDA分类混淆矩阵热力图", global_num=18,
-                title="12类构式LDA分类混淆矩阵热力图")
+    # [已移至附录F] 7. 绘制图18
+    # [已移至附录F] print("\n" + "-" * 40)
+    # [已移至附录F] print("7. 绘制图18: LDA分类混淆矩阵热力图")
+    # [已移至附录F] print("-" * 40)
+    # [已移至附录F] fig7 = plot_confusion_matrix(cm, paths)
+    # [已移至附录F] save_figure(fig7, "LDA分类混淆矩阵热力图", global_num=18,
+                # [已移至附录F] title="12类构式LDA分类混淆矩阵热力图")
 
     print("\n" + "=" * 60)
     print("Q1_04_LDA判别 完成")

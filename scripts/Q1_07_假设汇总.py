@@ -6,7 +6,7 @@ Q1_07_假设汇总.py
 Q1假设验证结果汇总
 
 输出：
-- 表72: Q1假设验证结果汇总
+- 表69: Q1假设验证结果汇总
 
 创建日期：2025-12-05
 """
@@ -53,7 +53,7 @@ def load_previous_results(paths: dict) -> dict:
             print(f"[OK] 加载H1-1结果: {h1_1_file}")
 
     # 加载聚类效度结果（轮廓系数）
-    silhouette_file = data_dir / '表63_分类稳定性检验汇总.json'
+    silhouette_file = data_dir / '表60_分类稳定性检验汇总.json'
     if silhouette_file.exists():
         with open(silhouette_file, 'r', encoding='utf-8') as f:
             silhouette_data = json.load(f)
@@ -65,7 +65,7 @@ def load_previous_results(paths: dict) -> dict:
             print(f"[OK] 加载轮廓系数结果: {silhouette_file}")
     else:
         # 备选：尝试加载旧格式文件
-        cluster_file = data_dir / '表61_不同k值聚类效度比较.json'
+        cluster_file = data_dir / '表59_不同k值聚类效度比较.json'
         if cluster_file.exists():
             with open(cluster_file, 'r', encoding='utf-8') as f:
                 cluster_data = json.load(f)
@@ -76,14 +76,14 @@ def load_previous_results(paths: dict) -> dict:
                 print(f"[OK] 加载聚类效度结果: {cluster_file}")
 
     # 加载LDA结果
-    lda_file = data_dir / '表64_LDA判别分析结果.json'
+    lda_file = data_dir / '表62_LDA判别分析结果.json'
     if lda_file.exists():
         with open(lda_file, 'r', encoding='utf-8') as f:
             results['LDA'] = json.load(f)
             print(f"[OK] 加载LDA结果: {lda_file}")
 
     # 加载原型梯度结果
-    proto_file = data_dir / '表66_原型梯度分布.json'
+    proto_file = data_dir / '表61_原型梯度分布.json'
     if proto_file.exists():
         with open(proto_file, 'r', encoding='utf-8') as f:
             results['prototype'] = json.load(f)
@@ -94,7 +94,7 @@ def load_previous_results(paths: dict) -> dict:
 
 def create_hypothesis_summary(results: dict) -> pd.DataFrame:
     """
-    创建Q1假设验证结果汇总表（表72）
+    创建Q1假设验证结果汇总表（表69）
 
     Parameters
     ----------
@@ -197,7 +197,7 @@ def create_hypothesis_summary(results: dict) -> pd.DataFrame:
     h1_2c_data = {
         '假设编号': 'H1-2c',
         '假设内容': '12类构式呈现原型梯度结构（中心-次中心-边缘）',
-        '验证方法': '马氏距离 + 三分位数划分',
+        '验证方法': '标准化欧氏距离 + Fisher-Jenks自然断裂点',
         '判断标准': '三组间差异显著（p < 0.05）'
     }
 
@@ -206,7 +206,7 @@ def create_hypothesis_summary(results: dict) -> pd.DataFrame:
         proto_data = results['prototype']
         if len(proto_data) >= 3:
             h1_2c_data['实际结果'] = '中心/次中心/边缘三组划分成功'
-            h1_2c_data['统计显著性'] = '见表67 ANOVA结果'
+            h1_2c_data['统计显著性'] = '见表62 ANOVA结果'
             h1_2c_data['验证结论'] = '支持'
             h1_2c_data['支持程度'] = '强'
         else:
@@ -293,11 +293,11 @@ def main():
     summary_df = create_hypothesis_summary(results)
     print(summary_df.to_string(index=False))
 
-    # 3. 保存表72
+    # 3. 保存表66
     print("\n" + "-" * 40)
-    print("3. 保存表72: Q1假设验证结果汇总")
+    print("3. 保存表69: Q1假设验证结果汇总")
     print("-" * 40)
-    save_table(summary_df, "Q1假设验证结果汇总", global_num=72,
+    save_table(summary_df, "Q1假设验证结果汇总", global_num=69,
                title="Q1假设验证结果汇总", formats=['csv', 'json'])
 
     # 4. 打印整体结论

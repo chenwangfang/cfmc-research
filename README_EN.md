@@ -13,17 +13,17 @@
 
 ---
 
-> **Quick Links**: [Corpus](CFMC_5989.json) | [Framework](CFMC.md) | [Live Demo](https://chenwangfang.github.io/cfmc-research/visualization/) | [中文](README.md)
+> **Quick Links**: [Corpus](CFMC_5989.json) | [PLS-SEM Model Design](PLS-SEM形成性测量模型设计.md) | [Live Demo](https://chenwangfang.github.io/cfmc-research/visualization/) | [中文](README.md)
 
 ## Overview
 
-This research builds upon Sullivan's (2013) theory of metaphorical constructions to develop the **Cognitive Framework for Metaphorical Constructions (CFMC)** for Chinese copular metaphors. The framework is validated through a corpus of 5,989 annotated constructions, testing a four-stage cognitive encoding mechanism.
+This research builds upon Sullivan's (2013) theory of metaphorical constructions to develop the **Cognitive Framework for Metaphorical Constructions (CFMC)** for Chinese copular metaphors. The framework is validated through a corpus of 5,989 annotated constructions using a **PLS-SEM formative measurement model** to test a four-stage cognitive encoding mechanism.
 
 ### Research Objectives
 
-1. **Typological System**: Establish a 12-type classification based on cognitive accessibility and conceptual complexity
+1. **Typological System**: Establish a 12-type classification based on cognitive accessibility and mapping direction
 2. **Network Organization**: Reveal small-world structure characteristics and community organization patterns
-3. **Cognitive Mechanism**: Validate the four-stage cognitive encoding mechanism through Structural Equation Modeling (SEM)
+3. **Cognitive Mechanism**: Validate the four-stage cognitive encoding mechanism through PLS-SEM formative measurement modeling
 
 ### Key Contributions
 
@@ -31,7 +31,7 @@ This research builds upon Sullivan's (2013) theory of metaphorical constructions
 - **Field System**: CFMC-33 field system (33 required + 8 optional fields)
 - **Classification**: GMM clustering validation of 12 construction types
 - **Network Model**: Two-layer construction network (construction layer + type layer)
-- **Cognitive Model**: SEM validation of four-stage cognitive encoding mechanism
+- **Cognitive Model**: PLS-SEM formative measurement model validation of the four-stage cognitive encoding mechanism
 
 ---
 
@@ -41,7 +41,7 @@ This research builds upon Sullivan's (2013) theory of metaphorical constructions
 |:---------|:--------|:-----------|:--------|
 | **Q1** | Typological System | H1-1: Negative correlation between cognitive accessibility and conceptual complexity (*r* = -0.40 to -0.60)<br>H1-2: GMM clustering validates 12 types (*k*=12, silhouette coefficient ≥0.30) | Ch.5 |
 | **Q2** | Network Organization | H2: Construction network exhibits small-world properties (*C*≥0.60, *L*≤3.0, σ>1) | Ch.6 |
-| **Q3** | Cognitive Mechanism | H3-1: SEM validates four-stage pathways (CFI>0.90, RMSEA<0.08, *β*≥0.40)<br>H3-2: Type differences show moderation effects (*r*≥0.30, *p*<0.05) | Ch.7 |
+| **Q3** | Cognitive Mechanism | H3-1: PLS-SEM validates four-stage pathways (GoF>0.25, path coefficients significant at *p*<.05; PLS-MGA with 3 copula function groups tests cross-type sharing)<br>H3-2: Type differences show moderation effects (*r*≥0.30, *p*<0.05) | Ch.7 |
 
 ---
 
@@ -56,23 +56,24 @@ cfmc-research/
 ├── .gitignore                   # Git ignore configuration
 │
 ├── CFMC_5989.json               # Core corpus (5,989 entries, 13MB)
-├── CFMC.md                      # Theoretical framework
-├── SEM_modeling_design.md       # SEM modeling design
+├── PLS-SEM形成性测量模型设计.md  # PLS-SEM formative measurement model design
 │
-├── data/                        # Statistical results (59 CSV + 59 JSON)
-│   ├── 表58_认知通达度分布.*    # Table 58: Cognitive accessibility distribution
-│   ├── 表59_映射类型分布.*      # Table 59: Mapping type distribution
+├── Data/                        # Statistical results (67 CSV + 49 JSON + 2 GraphML)
+│   ├── 表57a_源域分布.*         # Table 57a: Source domain distribution
+│   ├── PLS_路径系数表.csv       # PLS path coefficients
+│   ├── PLS_模型拟合比较.csv     # PLS model fit comparison
 │   └── ...
 │
-├── figures/                     # Visualizations (41 PNG files)
-│   ├── 图1_研究路径图.png       # Figure 1: Research pathway
-│   ├── 图5_CFMC三层框架结构图.png  # Figure 5: CFMC three-layer framework
+├── figures/                     # Visualizations (39 PNG files)
+│   ├── 图1 研究路径图.png       # Figure 1: Research pathway
+│   ├── 图29_四阶段认知编码机制路径与中介效应图.png  # Figure 29: Four-stage path & mediation
+│   ├── PLS_路径模型图.png       # PLS path model diagram
 │   └── ...
 │
 ├── scripts/                     # Python analysis scripts (29 files)
 │   ├── Q1_01_描述统计.py        # Q1_01: Descriptive statistics
 │   ├── Q2_01_网络构建.py        # Q2_01: Network construction
-│   ├── Q3_01_描述统计.py        # Q3_01: Descriptive statistics
+│   ├── Q3_02_PLS_SEM基础模型.py # Q3_02: PLS-SEM base model
 │   └── 一键运行全部脚本.py      # Run all scripts
 │
 ├── appendix/                    # Appendix documents
@@ -80,12 +81,12 @@ cfmc-research/
 │   ├── CFMC-33字段体系_附录B.md # Appendix B: CFMC-33 field system
 │   ├── 认知通达度的构念界定与测量方案_附录C.md  # Appendix C: Cognitive accessibility
 │   ├── 概念复杂度的构念界定与测量方案_附录D.md  # Appendix D: Conceptual complexity
-│   └── 信度效度验证_附录E/      # Appendix E: Reliability and validity
+│   ├── 信度效度验证_附录E/      # Appendix E: Reliability and validity
+│   ├── 统计分析补充材料_附录F.md # Appendix F: Statistical supplements
+│   └── 概念复杂度和认知通达度快速取值手册.md  # Quick reference for CC & CA scoring
 │
 └── visualization/               # Interactive visualizations
-    ├── index.html
-    ├── research_flowchart.html
-    └── literature_review.html
+    └── index.html
 ```
 
 ---
@@ -191,11 +192,36 @@ Calculation: *D*abstract = 0.25×0.80 + 0.50×0.33 + 0.25×0.40 = 0.465, *D*proc
 
 ### Data Tables Index
 
-- **Q1 Typological Analysis (Chapter 5)**: Tables 58-72
-- **Q2 Network Analysis (Chapter 6)**: Tables 73-88
-- **Q3 Cognitive Mechanism Analysis (Chapter 7)**: Tables 92-110
+- **Q1 Typological Analysis (Chapter 5)**: Tables 57-72 + Supplementary Tables S1-S6
+- **Q2 Network Analysis (Chapter 6)**: Tables 73-87
+- **Q3 Cognitive Mechanism Analysis (Chapter 7)**: Table 92 + PLS-SEM data files (path coefficients, model fit comparison, outer weights & VIF, effect decomposition, bootstrap results, MGA permutation tests, moderation tests, etc.)
+- **Appendix F Statistical Supplements**: Tables F1-F7
 
-See `data/` directory for details.
+See `Data/` directory for details.
+
+---
+
+## PLS-SEM Formative Measurement Model
+
+This study employs a **PLS-SEM formative measurement model** to validate the four-stage cognitive encoding mechanism (η₁ Domain Activation → η₂ Reference Point Anchoring → η₃ Cross-domain Mapping → Y Linguistic Encoding).
+
+### Why Formative Measurement
+
+CFMC annotation fields are independently coded multidimensional attributes. Each indicator jointly **constitutes** the cognitive stage rather than being an interchangeable **reflection** of it. All three criteria for formative measurement are satisfied: causal direction from indicators to constructs, indicator independence, and indicator non-deletability.
+
+### Three-Model Comparison
+
+| Model | Structure | Purpose |
+|:------|:----------|:--------|
+| Model A | η₁→η₂→η₃→Y (full four-stage) | Test core hypothesis |
+| Model B | η₂→η₃→Y (three-stage control) | Test whether η₁ stage is necessary |
+| Model C | Four-stage + direct skip paths | Test whether intermediate stages can be bypassed |
+
+### Multi-Group Analysis (PLS-MGA)
+
+Groups are defined by copula function (attributive/equative/identificational). PLS-MGA permutation tests verify that the four-stage path structure is shared across copula function types.
+
+See [`PLS-SEM形成性测量模型设计.md`](PLS-SEM形成性测量模型设计.md) for details.
 
 ---
 
@@ -207,7 +233,7 @@ See `data/` directory for details.
 - Dependencies:
 
 ```bash
-pip install pandas numpy scipy scikit-learn matplotlib seaborn networkx semopy statsmodels
+pip install -r requirements.txt
 ```
 
 ### Running Scripts
@@ -231,10 +257,11 @@ python Q1_03_GMM聚类.py
 python Q2_01_网络构建.py
 python Q2_02_小世界检验.py
 
-# Q3: Cognitive mechanism analysis
+# Q3: Cognitive mechanism analysis (PLS-SEM)
 python Q3_01_描述统计.py
-python Q3_02_SEM基础模型.py
-python Q3_03_SEM完整模型.py
+python Q3_02_PLS_SEM基础模型.py
+python Q3_04_PLS_多组比较.py
+python Q3_06_PLS_调节效应.py
 ```
 
 **Execution Order**:
@@ -304,4 +331,4 @@ We thank the School of Foreign Languages and Literature at Beijing Normal Univer
 
 ---
 
-*Last updated: January 2026*
+*Last updated: February 2026*

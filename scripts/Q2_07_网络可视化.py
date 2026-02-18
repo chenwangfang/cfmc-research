@@ -6,7 +6,7 @@ Q2_07_网络可视化.py
 综合网络可视化
 
 输出：
-- 图30: 构式网络综合可视化图（含多视角）
+- 图25: 构式网络综合可视化图（含多视角）
 
 创建日期：2025-12-05
 """
@@ -61,7 +61,7 @@ def load_network_and_data(paths: dict) -> tuple:
 
 def plot_comprehensive_network(G: nx.Graph, df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
-    绘制构式网络综合可视化图（图30）
+    绘制构式网络综合可视化图（图25）
 
     Parameters
     ----------
@@ -209,9 +209,9 @@ def plot_comprehensive_network(G: nx.Graph, df: pd.DataFrame, paths: dict) -> pl
     edge_colors_by_type = []
     for u, v, d in G.edges(data=True):
         link_type = d.get('link_type', 'unknown')
-        if link_type == 'metaphorical_extension':
+        if link_type == 1:
             edge_colors_by_type.append('#e74c3c')
-        elif link_type == 'polysemy':
+        elif link_type == 2:
             edge_colors_by_type.append('#3498db')
         else:
             edge_colors_by_type.append('#95a5a6')
@@ -295,7 +295,7 @@ def plot_comprehensive_network(G: nx.Graph, df: pd.DataFrame, paths: dict) -> pl
     cbar2 = plt.colorbar(sm2, ax=ax4, shrink=0.6, aspect=20)
     cbar2.set_label('概念复杂度', fontproperties=font_cn, fontsize=16)
 
-    # plt.suptitle('图30 构式网络综合可视化图',
+    # plt.suptitle('图22 构式网络综合可视化图',
                 # fontproperties=font_cn_title, fontsize=16, y=0.98)
 
     return fig
@@ -303,7 +303,7 @@ def plot_comprehensive_network(G: nx.Graph, df: pd.DataFrame, paths: dict) -> pl
 
 def plot_forceatlas2_layout(G: nx.Graph, df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
-    绘制ForceAtlas2布局可视化图（图29）
+    绘制ForceAtlas2布局可视化图（图24）
 
     ForceAtlas2是一种力导向布局算法，特别适合展示社区结构
 
@@ -438,7 +438,7 @@ def plot_forceatlas2_layout(G: nx.Graph, df: pd.DataFrame, paths: dict) -> plt.F
     cbar = plt.colorbar(sm, ax=ax2, shrink=0.7, aspect=20)
     cbar.set_label('中介中心性', fontproperties=font_cn, fontsize=20)
 
-    # plt.suptitle('图29 ForceAtlas2布局网络可视化',
+    # plt.suptitle('图21 ForceAtlas2布局网络可视化',
                 # fontproperties=font_cn_title, fontsize=16, y=0.98)
     plt.tight_layout()
 
@@ -525,20 +525,20 @@ def main():
     print("-" * 40)
     create_network_summary(G, df)
 
-    # 3. 绘制图29: ForceAtlas2布局
+    # 3. 绘制图24: ForceAtlas2布局
     print("\n" + "-" * 40)
-    print("3. 绘制图29: ForceAtlas2布局网络可视化")
+    print("3. 绘制图24: ForceAtlas2布局网络可视化")
     print("-" * 40)
     fig_fa2 = plot_forceatlas2_layout(G, df, paths)
-    save_figure(fig_fa2, "ForceAtlas2布局网络图", global_num=29,
+    save_figure(fig_fa2, "ForceAtlas2布局网络图", global_num=23,
                 title="ForceAtlas2布局网络可视化")
 
-    # 4. 绘制图30
+    # 4. 绘制图22
     print("\n" + "-" * 40)
-    print("4. 绘制图30: 构式网络综合可视化图")
+    print("4. 绘制图25: 构式网络综合可视化图")
     print("-" * 40)
     fig = plot_comprehensive_network(G, df, paths)
-    save_figure(fig, "构式网络综合可视化图", global_num=30,
+    save_figure(fig, "构式网络综合可视化图", global_num=24,
                 title="构式网络综合可视化图")
 
     print("\n" + "=" * 60)
