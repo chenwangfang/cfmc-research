@@ -135,7 +135,7 @@ def create_figure(data):
     q1_box = FancyBboxPatch((0.5, 6), 4, 2.5, boxstyle="round,pad=0.1",
                              facecolor=color_q1, edgecolor=border_q1, linewidth=2)
     ax.add_patch(q1_box)
-    ax.text(2.5, 7.8, '第5章 Q1类型体系', fontsize=18, fontproperties=font_prop_bold,
+    ax.text(2.5, 7.8, '第5章 Q1类型特征', fontsize=18, fontproperties=font_prop_bold,
             ha='center', va='center', color=border_q1)
     ax.text(2.5, 7.1, '12类构式', fontsize=16, fontproperties=font_prop, ha='center', va='center')
     ax.text(2.5, 6.5, '原型梯度', fontsize=16, fontproperties=font_prop, ha='center', va='center')

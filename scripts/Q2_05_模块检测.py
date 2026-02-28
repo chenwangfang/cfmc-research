@@ -416,12 +416,12 @@ def main():
 
     # 4. 创建表82b
     print("\n" + "-" * 40)
-    print("4. 保存表82b: 社区结构与类型体系对应分析")
+    print("4. 保存表82b: 社区结构与类型特征对应分析")
     print("-" * 40)
     mapping_table = create_community_type_mapping(partition)
     print(mapping_table.to_string(index=False))
-    save_table(mapping_table, "社区结构与类型体系对应分析", global_num="82a",
-               title="社区结构与类型体系对应分析", formats=['csv', 'json'])
+    save_table(mapping_table, "社区结构与类型特征对应分析", global_num="82a",
+               title="社区结构与类型特征对应分析", formats=['csv', 'json'])
 
     # 5. 绘制图20
     print("\n" + "-" * 40)

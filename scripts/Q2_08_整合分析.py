@@ -9,7 +9,7 @@ Q2网络组织分析整合与假设验证汇总
 - 表86: Q2网络特征综合汇总
 - 表77: 四类链接与构式特征关联分析
 - 表78: 网络中心性与认知维度相关分析
-- 表79: 社区结构与类型体系对应分析
+- 表79: 社区结构与类型特征对应分析
 - 表81: Q2假设验证结果汇总
 
 创建日期：2025-12-05
@@ -279,7 +279,7 @@ def interpret_correlation(r: float, c_col: str, cog_col: str) -> str:
 
 def create_community_type_analysis(results: dict) -> pd.DataFrame:
     """
-    创建社区结构与类型体系对应分析表（表79）
+    创建社区结构与类型特征对应分析表（表79）
 
     Parameters
     ----------
@@ -505,12 +505,12 @@ def main():
 
     # 5. 创建表74
     print("\n" + "-" * 40)
-    print("5. 保存表79: 社区结构与类型体系对应分析")
+    print("5. 保存表79: 社区结构与类型特征对应分析")
     print("-" * 40)
     comm_analysis = create_community_type_analysis(results)
     print(comm_analysis.to_string(index=False))
-    # [已删除] 社区结构与类型体系对应分析 - 与Q2_05重复
-#                title="社区结构与类型体系对应分析", formats=['csv', 'json'])
+    # [已删除] 社区结构与类型特征对应分析 - 与Q2_05重复
+#                title="社区结构与类型特征对应分析", formats=['csv', 'json'])
 
     # 6. 创建表76
     print("\n" + "-" * 40)

@@ -7,13 +7,15 @@ Q2_03_链接分析.py
 
 输出：
 - 图20: 四类链接关系分布桑基图
-- 表72: 四类链接关系频率分布
-- 表77: Cohen's κ信度结果
+- 表72: 四类链接关系频率分布（微观层面节点级统计）
 - 表73: 四类链接典型语例
-- 表74: 链接删除影响分析
+- 表74: 链接删除影响分析（基于真实网络删除实验）
 - 表75: 构式类型组的链接偏好分布（原表76）
 
+注：表77（Cohen's κ）已移除——链接类型由确定性算法分配，无需信度检验。
+
 创建日期：2025-12-05
+修改日期：2026-02-28（修复链接删除实验：真实删除替代线性估算）
 """
 
 import sys
@@ -426,79 +428,9 @@ def plot_link_type_heatmap(df: pd.DataFrame, paths: dict) -> plt.Figure:
     return fig
 
 
-def calculate_cohen_kappa(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    计算链接类型标注的Cohen's κ信度（表77）
-
-    基于两位标注者的独立标注结果计算一致性
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        构式数据
-
-    Returns
-    -------
-    pd.DataFrame
-        Cohen's κ信度结果表
-    """
-    from sklearn.metrics import cohen_kappa_score
-    import random
-
-    # 模拟双标注员标注结果（基于原始标注的一致性模拟）
-    # 实际应用中应使用真实的双标注数据
-    np.random.seed(42)
-
-    if 'link_type' not in df.columns:
-        df = infer_link_types(df)
-
-    rater1 = df['link_type'].values
-
-    # 模拟第二标注员：基于高一致性的模拟
-    # 实际研究中应使用真实的双标注数据
-    agreement_rate = 0.85
-    rater2 = rater1.copy()
-    n_change = int(len(rater2) * (1 - agreement_rate))
-    change_indices = random.sample(range(len(rater2)), n_change)
-    for idx in change_indices:
-        possible_types = [1, 2, 3, 4]
-        possible_types.remove(rater2[idx])
-        rater2[idx] = random.choice(possible_types)
-
-    # 计算总体κ
-    kappa_overall = cohen_kappa_score(rater1, rater2)
-
-    # 计算各类型的κ
-    results = []
-
-    # 总体κ
-    results.append({
-        '类别': '总体',
-        'Cohen\'s κ': round(kappa_overall, 3),
-        '一致率': f"{np.mean(rater1 == rater2)*100:.1f}%",
-        '信度判断': '良好' if kappa_overall >= 0.6 else ('中等' if kappa_overall >= 0.4 else '较差')
-    })
-
-    # 各链接类型的κ
-    for link_type in [1, 2, 3, 4]:
-        binary_r1 = (rater1 == link_type).astype(int)
-        binary_r2 = (rater2 == link_type).astype(int)
-        try:
-            kappa = cohen_kappa_score(binary_r1, binary_r2)
-        except:
-            kappa = np.nan
-
-        link_name = LINK_TYPE_CODES.get(link_type, f'类型{link_type}')
-        agree_rate = np.mean(binary_r1 == binary_r2)
-
-        results.append({
-            '类别': link_name,
-            'Cohen\'s κ': round(kappa, 3) if not np.isnan(kappa) else '-',
-            '一致率': f"{agree_rate*100:.1f}%",
-            '信度判断': '良好' if kappa >= 0.6 else ('中等' if kappa >= 0.4 else '较差') if not np.isnan(kappa) else '-'
-        })
-
-    return pd.DataFrame(results)
+# [已移除] calculate_cohen_kappa
+# 链接类型由 Q2_01 的确定性算法分配（基于认知通达度差和映射方向的阈值规则），
+# 不涉及人工主观判断，因此 Cohen's κ 标注者间一致性检验不适用。
 
 
 def get_typical_examples(df: pd.DataFrame, n_per_type: int = 3) -> pd.DataFrame:
@@ -553,91 +485,76 @@ def get_typical_examples(df: pd.DataFrame, n_per_type: int = 3) -> pd.DataFrame:
     return pd.DataFrame(examples)
 
 
-def analyze_link_removal_impact(df: pd.DataFrame, G: nx.Graph = None) -> pd.DataFrame:
+def analyze_link_removal_impact(G: nx.Graph) -> pd.DataFrame:
     """
     链接删除影响分析（表74）
 
-    分析删除不同类型链接对网络拓扑的影响
+    基于宏观层类型网络，实际删除不同类型链接后重新计算网络拓扑指标。
+    宏观网络包含两种边类型：
+    - type 1（隐喻扩展链接）：跨社区桥梁
+    - type 2（多义链接）：社区内密集连接
 
     Parameters
     ----------
-    df : pd.DataFrame
-        构式数据
     G : nx.Graph
-        网络图（如果不提供则重新构建）
+        宏观层类型网络（network_type_layer.graphml）
 
     Returns
     -------
     pd.DataFrame
         链接删除影响分析结果
     """
-    if 'link_type' not in df.columns:
-        df = infer_link_types(df)
-
-    # 如果没有提供网络，尝试加载
-    if G is None:
-        try:
-            from utils_公共函数 import get_paths
-            paths = get_paths()
-            network_file = paths['output_data'] / 'network_type_layer.graphml'
-            if network_file.exists():
-                G = nx.read_graphml(network_file)
-        except:
-            pass
-
-    # 如果仍无网络，创建简化版
-    if G is None:
-        G = nx.Graph()
-        for i in range(12):
-            G.add_node(f'T{i+1}')
-        # 添加基本边
-        for i in range(11):
-            G.add_edge(f'T{i+1}', f'T{i+2}')
-        for i in range(10):
-            G.add_edge(f'T{i+1}', f'T{i+3}')
-
     # 基线指标
-    if nx.is_connected(G):
-        baseline_L = nx.average_shortest_path_length(G)
-    else:
-        largest_cc = max(nx.connected_components(G), key=len)
-        G_cc = G.subgraph(largest_cc).copy()
-        baseline_L = nx.average_shortest_path_length(G_cc)
-
     baseline_C = nx.average_clustering(G)
+    baseline_L = nx.average_shortest_path_length(G) if nx.is_connected(G) else float('inf')
     baseline_edges = G.number_of_edges()
+
+    print(f"  基线: C={baseline_C:.4f}, L={baseline_L:.4f}, 边数={baseline_edges}")
+
+    # 统计实际边类型分布
+    edge_by_type = {}
+    for u, v, d in G.edges(data=True):
+        lt = d.get('link_type', 0)
+        if lt not in edge_by_type:
+            edge_by_type[lt] = []
+        edge_by_type[lt].append((u, v))
+
+    for lt in sorted(edge_by_type):
+        link_name = LINK_TYPE_CODES.get(lt, f'类型{lt}')
+        print(f"  {link_name}: {len(edge_by_type[lt])}条边")
 
     results = []
 
-    # 统计各链接类型对应的边数（模拟）
-    link_edge_counts = {
-        1: int(baseline_edges * 0.35),  # 隐喻扩展链接
-        2: int(baseline_edges * 0.25),  # 多义链接
-        3: int(baseline_edges * 0.20),  # 子部分链接
-        4: int(baseline_edges * 0.20)   # 实例链接
-    }
-
-    for link_type in [1, 2, 3, 4]:
+    for link_type in sorted(edge_by_type.keys()):
+        edges = edge_by_type[link_type]
+        edge_count = len(edges)
         link_name = LINK_TYPE_CODES.get(link_type, f'类型{link_type}')
-        edge_count = link_edge_counts[link_type]
 
-        # 模拟删除该类型链接的影响
-        # 删除比例越大，影响越大
-        removal_rate = edge_count / baseline_edges if baseline_edges > 0 else 0
+        # 真实删除并重新计算
+        G_copy = G.copy()
+        G_copy.remove_edges_from(edges)
 
-        # 估算删除后的指标变化
-        C_after = baseline_C * (1 - removal_rate * 0.5)  # 聚类系数下降
-        L_after = baseline_L * (1 + removal_rate * 0.8)  # 路径长度增加
+        C_after = nx.average_clustering(G_copy)
+
+        if nx.is_connected(G_copy):
+            L_after = nx.average_shortest_path_length(G_copy)
+            connectivity = '连通'
+        else:
+            components = list(nx.connected_components(G_copy))
+            n_comp = len(components)
+            comp_sizes = sorted([len(c) for c in components], reverse=True)
+            connectivity = f'断裂（{"+".join(str(s) for s in comp_sizes)}）'
+            L_after = float('inf')
 
         results.append({
             '链接类型': link_name,
             '边数': edge_count,
-            '占比': f"{removal_rate*100:.1f}%",
+            '占比': f"{edge_count/baseline_edges*100:.1f}%",
             '删除后C': round(C_after, 4),
             'ΔC': round(C_after - baseline_C, 4),
-            '删除后L': round(L_after, 4),
-            'ΔL': round(L_after - baseline_L, 4),
-            '影响程度': '高' if removal_rate > 0.30 else ('中' if removal_rate > 0.20 else '低')
+            '删除后连通性': connectivity,
+            '删除后L': round(L_after, 4) if L_after != float('inf') else '∞',
+            'ΔL': round(L_after - baseline_L, 4) if L_after != float('inf') else '—'
         })
 
     return pd.DataFrame(results)
@@ -743,14 +660,11 @@ def main():
     print("-" * 40)
     analyze_link_patterns(df)
 
-    # 6. Cohen's κ信度分析
+    # 6. [已移除] Cohen's κ信度分析
+    # 链接类型由确定性算法分配，不涉及人工判断，κ不适用
     print("\n" + "-" * 40)
-    print("6. 保存表77: Cohen's κ信度结果")
+    print("6. [跳过] Cohen's κ信度分析（链接类型为算法确定，无需信度检验）")
     print("-" * 40)
-    kappa_table = calculate_cohen_kappa(df)
-    print(kappa_table.to_string(index=False))
-    save_table(kappa_table, "Cohen_kappa信度结果", global_num=77,
-               title="链接类型标注Cohen's κ信度结果", formats=['csv', 'json'])
 
     # 7. 典型语例
     print("\n" + "-" * 40)
@@ -761,14 +675,21 @@ def main():
     save_table(examples_table, "四类链接典型语例", global_num="73aux",
                title="四类链接关系典型语例", formats=['csv', 'json'])
 
-    # 8. 链接删除影响分析
+    # 8. 链接删除影响分析（基于真实网络删除实验）
     print("\n" + "-" * 40)
     print("8. 保存表74: 链接删除影响分析")
     print("-" * 40)
-    impact_table = analyze_link_removal_impact(df)
-    print(impact_table.to_string(index=False))
-    save_table(impact_table, "链接删除影响分析", global_num=74,
-               title="链接删除对网络拓扑的影响分析", formats=['csv', 'json'])
+    # 加载宏观层类型网络
+    network_file = paths['output_data'] / 'network_type_layer.graphml'
+    if network_file.exists():
+        G_macro = nx.read_graphml(network_file)
+        print(f"  已加载宏观网络: {G_macro.number_of_nodes()}节点, {G_macro.number_of_edges()}条边")
+        impact_table = analyze_link_removal_impact(G_macro)
+        print(impact_table.to_string(index=False))
+        save_table(impact_table, "链接删除影响分析", global_num=74,
+                   title="链接删除对网络拓扑的影响分析", formats=['csv', 'json'])
+    else:
+        print(f"  [WARN] 未找到宏观网络文件: {network_file}")
 
     # 保存带链接类型的数据
     output_path = paths['output_data'] / 'CFMC_with_links.csv'

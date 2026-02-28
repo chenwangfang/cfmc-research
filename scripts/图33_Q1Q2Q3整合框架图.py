@@ -150,7 +150,7 @@ def create_figure_8_1(data):
         'core': '#C62828'
     }
 
-    # ========== Q1 类型体系框 ==========
+    # ========== Q1 类型特征框 ==========
     q1_y, q1_h = 5.6, 1.45
     q1_box = FancyBboxPatch((1.5, q1_y), 7, q1_h,
                             boxstyle="round,pad=0.02,rounding_size=0.1",
@@ -161,7 +161,7 @@ def create_figure_8_1(data):
 
     # Q1内容
     y = q1_y + q1_h - 0.25
-    ax.text(5, y, 'Q1 类型体系', fontsize=FONTS['box_title'], ha='center',
+    ax.text(5, y, 'Q1 类型特征', fontsize=FONTS['box_title'], ha='center',
             fontweight='bold', color=colors['border_q1'])
     y -= LINE_SPACE['title_to_subtitle']
     ax.text(5, y, '（描述充分性）', fontsize=FONTS['subtitle'], ha='center',
