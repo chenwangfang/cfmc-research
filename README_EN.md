@@ -84,6 +84,7 @@ cfmc-research/
 │   ├── 概念复杂度的构念界定与测量方案_附录D.md  # Appendix D: Conceptual complexity
 │   ├── 信度效度验证_附录E/      # Appendix E: Reliability and validity
 │   ├── 统计分析补充材料_附录F.md # Appendix F: Statistical supplements
+│   ├── 附录G_认知通达度客观指标预计算.py  # Appendix G: CA objective indicator pre-computation script
 │   └── 概念复杂度和认知通达度快速取值手册.md  # Quick reference for CC & CA scoring
 │
 └── visualization/               # Interactive visualizations
