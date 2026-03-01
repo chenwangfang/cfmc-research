@@ -80,6 +80,7 @@ cfmc-research/
 │   ├── 语料标注方案_附录A.md    # Appendix A: Annotation scheme
 │   ├── CFMC-33字段体系_附录B.md # Appendix B: CFMC-33 field system
 │   ├── 认知通达度的构念界定与测量方案_附录C.md  # Appendix C: Cognitive accessibility
+│   ├── 附录C_1.csv                              # Appendix C pilot study data (500 samples)
 │   ├── 概念复杂度的构念界定与测量方案_附录D.md  # Appendix D: Conceptual complexity
 │   ├── 信度效度验证_附录E/      # Appendix E: Reliability and validity
 │   ├── 统计分析补充材料_附录F.md # Appendix F: Statistical supplements
@@ -331,4 +332,4 @@ We thank the School of Foreign Languages and Literature at Beijing Normal Univer
 
 ---
 
-*Last updated: February 2026*
+*Last updated: March 2026*
