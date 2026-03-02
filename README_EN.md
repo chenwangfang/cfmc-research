@@ -82,6 +82,8 @@ cfmc-research/
 │   ├── 认知通达度的构念界定与测量方案_附录C.md  # Appendix C: Cognitive accessibility
 │   ├── 附录C_1.csv                              # Appendix C pilot study data (500 samples)
 │   ├── 概念复杂度的构念界定与测量方案_附录D.md  # Appendix D: Conceptual complexity
+│   ├── 附录D_1.py                              # Appendix D: CC pre-computation script
+│   ├── 附录D_1_预计算参考数据.csv               # Appendix D: Pre-computed reference data (5,989 entries)
 │   ├── 信度效度验证_附录E/      # Appendix E: Reliability and validity
 │   ├── 统计分析补充材料_附录F.md # Appendix F: Statistical supplements
 │   ├── 附录G_认知通达度客观指标预计算.py  # Appendix G: CA objective indicator pre-computation script
