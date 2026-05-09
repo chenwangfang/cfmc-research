@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use this corpus or code in your research, please cite it as below."
 type: dataset
 title: "CFMC-Research: A Corpus-Based Study on the Cognitive Mechanisms of Chinese Copular Metaphorical Constructions"
-abstract: "This research builds upon Sullivan's (2013) theory of metaphorical constructions to develop the Cognitive Framework for Metaphorical Constructions (CFMC) for Chinese copular metaphors. The framework is validated through a corpus of 5,989 annotated constructions, testing a four-stage cognitive encoding mechanism."
+abstract: "This research builds upon Sullivan's (2013) theory of metaphorical constructions to develop the Cognitive Framework for Metaphorical Constructions (CFMC) for Chinese copular metaphors. The framework is examined with 5,971 released annotated records, including 5,908 core metaphorical-construction cases, testing a four-stage cognitive encoding mechanism."
 authors:
   - family-names: "Chen"
     given-names: "Fang"

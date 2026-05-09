@@ -57,30 +57,30 @@
 </node>
 <node id="T8">
   <data key="d0">type</data>
-  <data key="d1">693</data>
+  <data key="d1">692</data>
   <data key="d2">3.0</data>
-  <data key="d3">3.9696969696969697</data>
+  <data key="d3">3.9696531791907512</data>
   <data key="d4">4</data>
 </node>
 <node id="T9">
   <data key="d0">type</data>
-  <data key="d1">1524</data>
-  <data key="d2">4.082677165354331</data>
-  <data key="d3">1.9101049868766404</data>
+  <data key="d1">1515</data>
+  <data key="d2">4.082508250825082</data>
+  <data key="d3">1.9095709570957096</data>
   <data key="d4">1</data>
 </node>
 <node id="T10">
   <data key="d0">type</data>
-  <data key="d1">1208</data>
-  <data key="d2">4.167218543046357</data>
-  <data key="d3">1.929635761589404</data>
+  <data key="d1">1206</data>
+  <data key="d2">4.167495854063018</data>
+  <data key="d3">1.929519071310116</data>
   <data key="d4">2</data>
 </node>
 <node id="T11">
   <data key="d0">type</data>
-  <data key="d1">1327</data>
-  <data key="d2">4.001507159005275</data>
-  <data key="d3">2.9517709118311983</data>
+  <data key="d1">1321</data>
+  <data key="d2">4.001514004542013</data>
+  <data key="d3">2.951551854655564</data>
   <data key="d4">3</data>
 </node>
 <node id="T12">
@@ -192,7 +192,7 @@
 </edge>
 <edge source="T5" target="T9">
   <data key="d5">1</data>
-  <data key="d6">0.4801512287334594</data>
+  <data key="d6">0.480190174326466</data>
 </edge>
 <edge source="T6" target="T7">
   <data key="d5">2</data>
@@ -204,7 +204,7 @@
 </edge>
 <edge source="T6" target="T10">
   <data key="d5">1</data>
-  <data key="d6">0.4614209320091674</data>
+  <data key="d6">0.4613618974751339</data>
 </edge>
 <edge source="T7" target="T8">
   <data key="d5">2</data>
@@ -212,7 +212,7 @@
 </edge>
 <edge source="T7" target="T11">
   <data key="d5">1</data>
-  <data key="d6">0.49962349397590367</data>
+  <data key="d6">0.4996217851739789</data>
 </edge>
 <edge source="T8" target="T12">
   <data key="d5">1</data>
@@ -220,26 +220,26 @@
 </edge>
 <edge source="T9" target="T10">
   <data key="d5">2</data>
-  <data key="d6">0.7376389840491389</data>
+  <data key="d6">0.7373356134324065</data>
 </edge>
 <edge source="T9" target="T11">
   <data key="d5">2</data>
-  <data key="d6">0.7399391356605208</data>
+  <data key="d6">0.7400594431938466</data>
 </edge>
 <edge source="T9" target="T12">
   <data key="d5">2</data>
-  <data key="d6">0.7873934383880135</data>
+  <data key="d6">0.787524366471735</data>
 </edge>
 <edge source="T10" target="T11">
   <data key="d5">2</data>
-  <data key="d6">0.6862762180692628</data>
+  <data key="d6">0.6861170268890949</data>
 </edge>
 <edge source="T10" target="T12">
   <data key="d5">2</data>
-  <data key="d6">0.7269080332965601</data>
+  <data key="d6">0.7267249171437179</data>
 </edge>
 <edge source="T11" target="T12">
   <data key="d5">2</data>
-  <data key="d6">0.7510612206395624</data>
+  <data key="d6">0.7510660475694114</data>
 </edge>
 </graph></graphml>

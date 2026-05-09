@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-图33 Q1-Q2-Q3研究发现整合与证据闭环框架
-极简版：左侧括号连接Q1-Q3，右侧只保留图例
+图33 Q1-Q2-Q3研究发现整合框架
+极简版：Q1-Q3为Sullivan主轴，Q2作为Goldberg横向结构参照
 数据：动态读取自 结果_输出/Data/ 目录
 """
 
@@ -121,15 +121,20 @@ def load_data():
     if not model_a_row.empty:
         data['gof'] = float(model_a_row.iloc[0]['GoF'])
 
-    # H3-2相关系数：从PLS_Q1_Q3相关分析.csv提取
+    # H3-2主指标：原型距离 × 认知通达度，成员级Spearman ρ
     if 'Spearman ρ' in pls_corr.columns:
-        rho_val = pls_corr.iloc[0]['Spearman ρ']
+        target = pls_corr[
+            pls_corr['分析内容'].astype(str).str.contains('原型距离.*认知通达度', regex=True, na=False)
+        ]
+        if target.empty:
+            raise ValueError('未找到H3-2主指标：原型距离 × 认知通达度')
+        rho_val = target.iloc[0]['Spearman ρ']
         data['h3_2_rho'] = abs(float(rho_val))
 
     return data
 
 def create_figure_8_1(data):
-    """创建极简版Q1-Q2-Q3框架图"""
+    """创建Q1-Q3主轴与Q2横向参照框架图"""
 
     fig, ax = plt.subplots(1, 1, figsize=(10, 8))
     ax.set_xlim(0, 10)
@@ -151,8 +156,9 @@ def create_figure_8_1(data):
     }
 
     # ========== Q1 类型特征框 ==========
-    q1_y, q1_h = 5.6, 1.45
-    q1_box = FancyBboxPatch((1.5, q1_y), 7, q1_h,
+    main_x, main_w = 0.9, 4.35
+    q1_y, q1_h = 5.35, 1.55
+    q1_box = FancyBboxPatch((main_x, q1_y), main_w, q1_h,
                             boxstyle="round,pad=0.02,rounding_size=0.1",
                             facecolor=colors['q1'],
                             edgecolor=colors['border_q1'],
@@ -161,22 +167,26 @@ def create_figure_8_1(data):
 
     # Q1内容
     y = q1_y + q1_h - 0.25
-    ax.text(5, y, 'Q1 类型特征', fontsize=FONTS['box_title'], ha='center',
+    main_center = main_x + main_w / 2
+    ax.text(main_center, y, 'Q1 类型特征', fontsize=FONTS['box_title'], ha='center',
             fontweight='bold', color=colors['border_q1'])
     y -= LINE_SPACE['title_to_subtitle']
-    ax.text(5, y, '（描述充分性）', fontsize=FONTS['subtitle'], ha='center',
+    ax.text(main_center, y, '（描述充分性 · Sullivan主线起点）', fontsize=FONTS['subtitle'], ha='center',
             color=colors['border_q1'])
     y -= LINE_SPACE['subtitle_to_content']
-    ax.text(1.8, y, '• 双维度分类体系   • 12类构式类型   • 原型梯度结构',
+    ax.text(main_x + 0.25, y, '• 双维度分类体系   • 12类构式类型',
+            fontsize=FONTS['content'], ha='left')
+    y -= LINE_SPACE['content_line']
+    ax.text(main_x + 0.25, y, '• 原型梯度结构',
             fontsize=FONTS['content'], ha='left')
     y -= LINE_SPACE['content_to_hypo']
-    # 动态数据：H1-1相关系数
-    ax.text(5, y, f'H1-1: r={data["h1_1_r"]:.2f} [√]    H1-2: 12类+梯度 [√]',
+    ax.text(main_center, y, f'H1-1: r={data["h1_1_r"]:.2f} 支持；H1-2: 限定支持',
             fontsize=FONTS['hypothesis'], ha='center', color='#0D47A1', style='italic')
 
     # ========== Q2 网络组织框 ==========
-    q2_y, q2_h = 3.0, 1.95
-    q2_box = FancyBboxPatch((1.5, q2_y), 7, q2_h,
+    q2_x, q2_w = 5.85, 3.7
+    q2_y, q2_h = 3.15, 2.05
+    q2_box = FancyBboxPatch((q2_x, q2_y), q2_w, q2_h,
                             boxstyle="round,pad=0.02,rounding_size=0.1",
                             facecolor=colors['q2'],
                             edgecolor=colors['border_q2'],
@@ -185,29 +195,28 @@ def create_figure_8_1(data):
 
     # Q2内容
     y = q2_y + q2_h - 0.25
-    ax.text(5, y, 'Q2 网络组织', fontsize=FONTS['box_title'], ha='center',
+    q2_center = q2_x + q2_w / 2
+    ax.text(q2_center, y, 'Q2 网络组织', fontsize=FONTS['box_title'], ha='center',
             fontweight='bold', color=colors['border_q2'])
     y -= LINE_SPACE['title_to_subtitle']
-    ax.text(5, y, '（独立研究维度 · Goldberg构式网络理论）', fontsize=FONTS['subtitle'],
+    ax.text(q2_center, y, '（横向扩展 · Goldberg构式网络）', fontsize=FONTS['subtitle'],
             ha='center', color=colors['border_q2'])
     y -= LINE_SPACE['subtitle_to_content']
-    # 动态数据：小世界性质
-    ax.text(1.8, y, f'• 小世界性质：C={data["C"]:.2f}, L={data["L"]:.2f}, $\\sigma$={data["sigma"]:.2f}',
+    ax.text(q2_x + 0.25, y, f'• 描述性小世界：C={data["C"]:.2f}, L={data["L"]:.2f}, $\\sigma$={data["sigma"]:.2f}',
             fontsize=FONTS['content'], ha='left')
     y -= LINE_SPACE['content_line']
-    # 动态数据：隐喻扩展占比
-    ax.text(1.8, y, f'• 四类链接：隐喻扩展{data["metaphor_pct"]:.2f}%   • 双社区结构',
+    ax.text(q2_x + 0.25, y, f'• 实例层链接：隐喻扩展{data["metaphor_pct"]:.2f}%',
             fontsize=FONTS['content'], ha='left')
     y -= LINE_SPACE['content_line']
-    ax.text(1.8, y, '• 中心性分析：枢纽节点连接各模块',
+    ax.text(q2_x + 0.25, y, '• 宏观类型社区与中心性趋势',
             fontsize=FONTS['content'], ha='left')
     y -= LINE_SPACE['content_to_hypo']
-    ax.text(5, y, 'H2: C≥0.60 [√], L≤3.0 [√], $\\sigma$>1 [√]',
+    ax.text(q2_center, y, 'H2: 描述性支持',
             fontsize=FONTS['hypothesis'], ha='center', color='#E65100', style='italic')
 
     # ========== Q3 认知机制框 ==========
-    q3_y, q3_h = 0.9, 1.45
-    q3_box = FancyBboxPatch((1.5, q3_y), 7, q3_h,
+    q3_y, q3_h = 0.85, 1.95
+    q3_box = FancyBboxPatch((main_x, q3_y), main_w, q3_h,
                             boxstyle="round,pad=0.02,rounding_size=0.1",
                             facecolor=colors['q3'],
                             edgecolor=colors['border_q3'],
@@ -216,68 +225,49 @@ def create_figure_8_1(data):
 
     # Q3内容
     y = q3_y + q3_h - 0.25
-    ax.text(5, y, 'Q3 认知机制', fontsize=FONTS['box_title'], ha='center',
+    ax.text(main_center, y, 'Q3 认知机制', fontsize=FONTS['box_title'], ha='center',
             fontweight='bold', color=colors['border_q3'])
     y -= LINE_SPACE['title_to_subtitle']
-    ax.text(5, y, '（解释充分性）', fontsize=FONTS['subtitle'], ha='center',
+    ax.text(main_center, y, '（解释充分性 · Sullivan主线深化）', fontsize=FONTS['subtitle'], ha='center',
             color=colors['border_q3'])
     y -= LINE_SPACE['subtitle_to_content']
-    ax.text(1.8, y, '• 四阶段编码机制   • 测量不变性验证   • 路径强度分析',
+    ax.text(main_x + 0.25, y, '• 四阶段编码机制   • PLS-MGA结构共享',
             fontsize=FONTS['content'], ha='left')
-    y -= LINE_SPACE['content_to_hypo']
-    # 动态数据：H3-1 GoF 和 H3-2 相关系数
-    ax.text(5, y, f'H3-1: GoF={data["gof"]:.3f} [√]    H3-2: |rho|={data["h3_2_rho"]:.2f} [√]',
+    y -= LINE_SPACE['content_line']
+    ax.text(main_x + 0.25, y, '• 路径强度分化',
+            fontsize=FONTS['content'], ha='left')
+    ax.text(main_center, q3_y + 0.48,
+            f'H3-1: GoF={data["gof"]:.3f} 前三阶段支持',
+            fontsize=FONTS['hypothesis'], ha='center', color='#1B5E20', style='italic')
+    ax.text(main_center, q3_y + 0.22,
+            f'H3-2: |ρ|={data["h3_2_rho"]:.2f} 限定性支持',
             fontsize=FONTS['hypothesis'], ha='center', color='#1B5E20', style='italic')
 
-    # ========== 左侧：Sullivan理论括号连接Q1和Q3 ==========
-    bracket_x = 1.1
-    # 上括号臂（Q1）
-    ax.plot([bracket_x, bracket_x - 0.15, bracket_x - 0.15],
-            [q1_y + q1_h - 0.1, q1_y + q1_h - 0.1, q1_y + 0.1],
-            color=colors['sullivan'], linewidth=2.5, solid_capstyle='round')
-    # 下括号臂（Q3）
-    ax.plot([bracket_x - 0.15, bracket_x - 0.15, bracket_x],
-            [q3_y + q3_h - 0.1, q3_y + 0.1, q3_y + 0.1],
-            color=colors['sullivan'], linewidth=2.5, solid_capstyle='round')
-    # 中间连接竖线
-    ax.plot([bracket_x - 0.15, bracket_x - 0.15],
-            [q1_y + 0.1, q3_y + q3_h - 0.1],
-            color=colors['sullivan'], linewidth=2.5, linestyle='--', alpha=0.5)
-    # Sullivan标注
-    ax.text(bracket_x - 0.4, (q1_y + q3_y + q3_h) / 2 + 0.8, 'Sullivan',
-            fontsize=10, ha='center', va='center', color=colors['sullivan'],
-            fontweight='bold', rotation=90)
-    ax.text(bracket_x - 0.4, (q1_y + q3_y + q3_h) / 2 + 0.1, '理论',
-            fontsize=10, ha='center', va='center', color=colors['sullivan'],
-            fontweight='bold', rotation=90)
-    ax.text(bracket_x - 0.4, (q1_y + q3_y + q3_h) / 2 - 0.6, '核心轴线',
-            fontsize=10, ha='center', va='center', color=colors['sullivan'],
-            fontweight='bold', rotation=90)
-
-    # ========== 垂直流程箭头 ==========
-    # Q1 → Q2
-    ax.annotate('', xy=(5, 5.05), xytext=(5, 5.5),
-                arrowprops=dict(arrowstyle='->,head_length=0.25,head_width=0.18',
-                               color=colors['arrow'], lw=2.5))
-    ax.text(5.5, 5.28, '输入依赖', fontsize=10, ha='left',
-            color=colors['arrow'], fontweight='bold')
-
-    # Q2 → Q3
-    ax.annotate('', xy=(5, 2.4), xytext=(5, 2.9),
-                arrowprops=dict(arrowstyle='->,head_length=0.25,head_width=0.18',
-                               color=colors['arrow'], lw=2.5))
-    ax.text(5.5, 2.65, '机制解释', fontsize=10, ha='left',
-            color=colors['arrow'], fontweight='bold')
-
-    # ========== 右侧：核心递进标注 ==========
-    ax.annotate('', xy=(8.9, 1.6), xytext=(8.9, 6.4),
+    # ========== Sullivan主轴：Q1 → Q3 ==========
+    axis_x = main_center
+    ax.annotate('', xy=(axis_x, q3_y + q3_h + 0.18), xytext=(axis_x, q1_y - 0.18),
                 arrowprops=dict(arrowstyle='->,head_length=0.35,head_width=0.2',
-                               color=colors['core'], lw=2.5))
-    ax.text(9.4, 4.0, '认识论递进', fontsize=10, ha='center', va='center',
-            color=colors['core'], fontweight='bold', rotation=270)
+                               color=colors['sullivan'], lw=2.8))
+    ax.text(axis_x - 0.35, 4.0, 'Sullivan核心递进', fontsize=10, ha='center', va='center',
+            color=colors['sullivan'], fontweight='bold', rotation=90)
+    ax.text(axis_x + 0.38, 4.0, '类型描述 → 机制解释', fontsize=9.5, ha='center', va='center',
+            color=colors['sullivan'], fontweight='bold', rotation=90)
 
-    # ========== 整体目标 ==========
-    ax.text(5, 0.35, '整体目标：Sullivan理论的汉语验证与本土化修补',
+    # ========== Q2侧向关系：输入依赖与结构参照 ==========
+    ax.annotate('', xy=(q2_x, q2_y + q2_h - 0.25), xytext=(main_x + main_w, q1_y + 0.45),
+                arrowprops=dict(arrowstyle='->,head_length=0.25,head_width=0.18',
+                               color=colors['arrow'], lw=2.2))
+    ax.text(5.55, 5.35, '输入依赖', fontsize=10, ha='center',
+            color=colors['arrow'], fontweight='bold')
+
+    ax.annotate('', xy=(main_x + main_w, q3_y + q3_h - 0.35), xytext=(q2_x, q2_y + 0.45),
+                arrowprops=dict(arrowstyle='->,head_length=0.25,head_width=0.18',
+                               color=colors['arrow'], lw=2.2))
+    ax.text(5.55, 2.98, '结构参照', fontsize=10, ha='center',
+            color=colors['arrow'], fontweight='bold')
+
+    # ========== 底部总结 ==========
+    ax.text(5, 0.35, 'Sullivan主线核心递进，Goldberg维度横向扩展',
             fontsize=FONTS['subtitle'], ha='center', fontweight='bold', color='#424242')
 
     # ========== 图例（右上角） ==========
@@ -295,17 +285,14 @@ def create_figure_8_1(data):
 
 def get_output_dir():
     """获取输出目录，兼容WSL和Windows"""
-    system = platform.system()
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.normpath(os.path.join(script_dir, '..', '结果_输出', 'Figures'))
 
-    if system == 'Windows':
-        return r'E:\博士毕业论文\大论文\论文撰写\统计分析\结果_输出\Figures'
-    elif system == 'Linux':
-        if os.path.exists('/mnt/c/Windows'):
-            return '/home/tomja/projects/博士毕业论文/大论文/论文撰写/统计分析/结果_输出/Figures'
-        else:
-            return os.path.dirname(os.path.abspath(__file__))
-    else:
-        return os.path.dirname(os.path.abspath(__file__))
+
+def get_hd_dir():
+    """获取高清图目录，自动适配 WSL 与 Windows UNC。"""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.normpath(os.path.join(script_dir, '..', '..', '正文', '毕业论文高清图'))
 
 def main():
     """主函数"""
@@ -324,10 +311,21 @@ def main():
 
     png_path = os.path.join(output_dir, "图33_Q1Q2Q3研究发现整合框架.png")
 
-    fig.savefig(png_path, dpi=1200, bbox_inches='tight', facecolor='white')
+    fig.savefig(png_path, dpi=300, bbox_inches='tight', facecolor='white')
+
+    # 高清输出（1200 DPI）
+    hd_dir = get_hd_dir()
+    os.makedirs(hd_dir, exist_ok=True)
+    hd_path = os.path.join(hd_dir, os.path.basename(png_path))
+    fig.savefig(hd_path, dpi=1200, bbox_inches='tight', facecolor='white')
+    svg_path = hd_path.replace('.png', '.svg')
+    fig.savefig(svg_path, format='svg', bbox_inches='tight', facecolor='white')
+
     plt.close(fig)
 
     print(f"✅ 图33已保存:\n  PNG: {png_path}")
+    print(f"  高清: {hd_path}")
+    print(f"  矢量: {svg_path}")
 
 if __name__ == "__main__":
     main()

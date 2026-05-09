@@ -124,9 +124,33 @@ def create_type_frequency_table(df: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
+
+# 表36代表性语例定义（论文正文权威来源）
+# 自动选择(prototype_distance最小)的语例仅3/12与表36一致，
+# 因此直接指定表36中人工筛选的12个代表性语例。
+# key = cluster_label (0-11), 对应 T1-T12
+TABLE_36_EXAMPLES = {
+    0:  {'construction': '山是地的乳头',                     'source_domain': 'BD', 'target_domain': 'NT', 'ca': 2, 'cc': 3},
+    1:  {'construction': '人民是建设共产主义的决定性力量',     'source_domain': 'FC', 'target_domain': 'SC', 'ca': 2, 'cc': 2},
+    2:  {'construction': '媒介是讯息',                       'source_domain': 'TH', 'target_domain': 'AB', 'ca': 2, 'cc': 3},
+    3:  {'construction': '虱子是革命虫',                     'source_domain': 'SC', 'target_domain': 'LV', 'ca': 2, 'cc': 2},
+    4:  {'construction': '地铁是文明的延伸线',               'source_domain': 'SP', 'target_domain': 'OB', 'ca': 3, 'cc': 2},
+    5:  {'construction': '工人阶级是革命队伍的先锋',         'source_domain': 'WR', 'target_domain': 'SC', 'ca': 3, 'cc': 2},
+    6:  {'construction': '服务行业是革命行业',               'source_domain': 'TR', 'target_domain': 'AB', 'ca': 3, 'cc': 3},
+    7:  {'construction': '枪是革命战士的第二条生命',         'source_domain': 'LV', 'target_domain': 'OB', 'ca': 3, 'cc': 4},
+    8:  {'construction': '主力军是T淋巴细胞和B淋巴细胞',     'source_domain': 'WR', 'target_domain': 'BD', 'ca': 4, 'cc': 2},
+    9:  {'construction': '公社就是我的家',                   'source_domain': 'OB', 'target_domain': 'SC', 'ca': 5, 'cc': 2},
+    10: {'construction': '毛主席的话是劳动人民的心里话',     'source_domain': 'SP', 'target_domain': 'CM', 'ca': 4, 'cc': 3},
+    11: {'construction': '产品是人品',                       'source_domain': 'MR', 'target_domain': 'OB', 'ca': 4, 'cc': 4},
+}
+
+
 def create_representative_examples_table(df: pd.DataFrame) -> pd.DataFrame:
     """
     创建代表性构式类型语例分析表（表67）
+
+    使用论文表36中指定的12个代表性语例（TABLE_36_EXAMPLES），
+    域标签和属性值以表36为权威来源。全句从数据中获取，截断到80字符。
 
     Parameters
     ----------
@@ -144,39 +168,58 @@ def create_representative_examples_table(df: pd.DataFrame) -> pd.DataFrame:
         mask = df['cluster_label'] == cluster
         subset = df[mask]
 
-        # 选择代表性语例（最接近聚类中心的）
-        if 'prototype_distance' in subset.columns:
-            # 选择原型距离最小的
-            best_idx = subset['prototype_distance'].idxmin()
+        t36 = TABLE_36_EXAMPLES.get(cluster)
+
+        if t36 is not None:
+            # 使用表36指定的构式：在该聚类中查找匹配条目
+            pattern = t36['construction']
+            match_mask = subset['construction'] == pattern
+            if not match_mask.any():
+                # 模糊匹配（前6字符）
+                match_mask = subset['construction'].str.contains(
+                    pattern[:6], na=False, regex=False)
+
+            if match_mask.any():
+                example = subset[match_mask].iloc[0]
+                full_sent = str(example.get('full_sentence', ''))
+            else:
+                full_sent = ''
+
+            # 截断到80字符（CSV可读性）
+            if len(full_sent) > 80:
+                full_sent = full_sent[:80]
+
+            table_data.append({
+                '类型编号': f'T{cluster + 1}',
+                '代表语例': full_sent,
+                '构式结构': pattern,
+                '源域': t36['source_domain'],
+                '目标域': t36['target_domain'],
+                '认知通达度': t36['ca'],
+                '概念复杂度': t36['cc']
+            })
         else:
-            # 随机选择
-            best_idx = subset.index[0]
+            # 回退：未在表36中定义的类型，自动选择最接近聚类中心的
+            if 'prototype_distance' in subset.columns:
+                best_idx = subset['prototype_distance'].idxmin()
+            else:
+                best_idx = subset.index[0]
 
-        example = subset.loc[best_idx]
+            example = subset.loc[best_idx]
+            full_sent = str(example.get('full_sentence',
+                                        example.get('construction', '无')))
+            if len(full_sent) > 80:
+                full_sent = full_sent[:80]
 
-        # 获取完整句子
-        full_sent = example.get('full_sentence', example.get('construction', '无'))
-        if len(str(full_sent)) > 50:
-            full_sent = str(full_sent)[:47] + '...'
-
-        # 构式结构
-        construction = example.get('construction', '无')
-        if len(str(construction)) > 30:
-            construction = str(construction)[:27] + '...'
-
-        # 源域和目标域
-        source = example.get('source_domain', '未知')
-        target = example.get('target_domain', '未知')
-
-        table_data.append({
-            '类型编号': f'T{cluster + 1}',
-            '代表语例': full_sent,
-            '构式结构': construction,
-            '源域': source,
-            '目标域': target,
-            '认知通达度': example.get('cognitive_accessibility', np.nan),
-            '概念复杂度': example.get('conceptual_complexity', np.nan)
-        })
+            table_data.append({
+                '类型编号': f'T{cluster + 1}',
+                '代表语例': full_sent,
+                '构式结构': str(example.get('construction', '无')),
+                '源域': example.get('source_domain', '未知'),
+                '目标域': example.get('target_domain', '未知'),
+                '认知通达度': example.get('cognitive_accessibility', np.nan),
+                '概念复杂度': example.get('conceptual_complexity', np.nan)
+            })
 
     return pd.DataFrame(table_data)
 

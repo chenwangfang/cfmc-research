@@ -190,6 +190,12 @@ def create_lda_summary_table(lda, cv_scores: np.ndarray, X: np.ndarray, y: np.nd
     pd.DataFrame
         汇总表
     """
+    cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+    y_pred = cross_val_predict(lda, X, y, cv=cv)
+    macro_precision, macro_recall, macro_f1, _ = precision_recall_fscore_support(
+        y, y_pred, average='macro', zero_division=0
+    )
+
     table_data = [
         {'指标': '样本量', '值': len(y)},
         {'指标': '类别数', '值': len(np.unique(y))},
@@ -201,7 +207,10 @@ def create_lda_summary_table(lda, cv_scores: np.ndarray, X: np.ndarray, y: np.nd
         {'指标': 'CV最小值', '值': f"{cv_scores.min():.4f}"},
         {'指标': 'CV最大值', '值': f"{cv_scores.max():.4f}"},
         {'指标': '验证标准', '值': '>= 85%'},
-        {'指标': '是否达标', '值': '是' if cv_scores.mean() >= 0.85 else '否'}
+        {'指标': '是否达标', '值': '是' if cv_scores.mean() >= 0.85 else '否'},
+        {'指标': '宏平均精确率', '值': f"{macro_precision:.4f}"},
+        {'指标': '宏平均召回率', '值': f"{macro_recall:.4f}"},
+        {'指标': '宏平均F1', '值': f"{macro_f1:.4f}"}
     ]
 
     return pd.DataFrame(table_data)

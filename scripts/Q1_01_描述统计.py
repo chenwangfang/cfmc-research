@@ -10,6 +10,8 @@ Q1_01_描述统计.py
 - 图12: 映射类型分布条形图
 - 表58: 认知通达度分布
 - 表58: 映射类型分布与概念复杂度对应
+- 表58b: 映射类型与概念复杂度Tukey HSD事后检验
+- 表58c: 映射类型与概念复杂度Kruskal-Wallis稳健性检验
 
 创建日期：2025-12-05
 """
@@ -448,7 +450,7 @@ def analyze_domain_diversity_by_type(df: pd.DataFrame) -> pd.DataFrame:
 
 def analyze_md_cc_anova(df: pd.DataFrame) -> dict:
     """
-    映射类型与概念复杂度的单因素方差分析
+    映射类型与概念复杂度的单因素方差分析、事后检验与稳健性检验
     
     Parameters
     ----------
@@ -458,9 +460,10 @@ def analyze_md_cc_anova(df: pd.DataFrame) -> dict:
     Returns
     -------
     dict
-        ANOVA结果，包含F值、p值、η²、df等
+        ANOVA结果，包含F值、p值、η²、df、Tukey HSD与Kruskal-Wallis结果等
     """
     from scipy.stats import f_oneway
+    from statsmodels.stats.multicomp import pairwise_tukeyhsd
     
     # 按映射类型分组
     groups = []
@@ -474,6 +477,35 @@ def analyze_md_cc_anova(df: pd.DataFrame) -> dict:
     
     # 单因素方差分析
     f_stat, p_value = f_oneway(*groups)
+
+    # Tukey HSD事后检验
+    tukey_input = df[['mapping_direction', 'conceptual_complexity']].dropna().copy()
+    tukey_input['映射类型'] = tukey_input['mapping_direction'].map(MAPPING_DIRECTION_CODES)
+    tukey_result = pairwise_tukeyhsd(
+        endog=tukey_input['conceptual_complexity'],
+        groups=tukey_input['映射类型'],
+        alpha=0.05
+    )
+    tukey_rows = tukey_result.summary().data
+    tukey_df = pd.DataFrame(tukey_rows[1:], columns=tukey_rows[0])
+    tukey_df = tukey_df.rename(columns={
+        'group1': '组1',
+        'group2': '组2',
+        'meandiff': '均值差',
+        'p-adj': 'p_adj',
+        'lower': '95%CI下限',
+        'upper': '95%CI上限',
+        'reject': '是否显著'
+    })
+    for col in ['均值差', '95%CI下限', '95%CI上限']:
+        tukey_df[col] = pd.to_numeric(tukey_df[col], errors='coerce').round(4)
+    p_adj_numeric = pd.to_numeric(tukey_df['p_adj'], errors='coerce')
+    tukey_df['p_adj'] = p_adj_numeric.map(
+        lambda value: '<.001' if pd.notna(value) and value < 0.001 else f'{value:.4f}'
+    )
+
+    # 概念复杂度为1-4级有序评分，补充非参数稳健性检验
+    h_stat, kruskal_p = stats.kruskal(*groups)
     
     # 计算η² (eta squared)
     # η² = SS_between / SS_total
@@ -501,13 +533,19 @@ def analyze_md_cc_anova(df: pd.DataFrame) -> dict:
         'df_between': df_between,
         'df_within': df_within,
         'k': k,
-        'n': n
+        'n': n,
+        'tukey_hsd': tukey_df,
+        'kruskal_h': h_stat,
+        'kruskal_p': kruskal_p,
+        'kruskal_df': k - 1
     }
     
     print("\n映射类型与概念复杂度ANOVA分析:")
     print(f"  F({df_between}, {df_within}) = {f_stat:.3f}")
     print(f"  p < .001" if p_value < 0.001 else f"  p = {p_value:.4f}")
     print(f"  η² = {eta_squared:.4f}")
+    print(f"  Kruskal-Wallis H({k - 1}) = {h_stat:.3f}")
+    print(f"  Kruskal-Wallis p < .001" if kruskal_p < 0.001 else f"  Kruskal-Wallis p = {kruskal_p:.4f}")
     print(f"  效应量解释: ", end="")
     if eta_squared < 0.01:
         print("极小效应")
@@ -517,6 +555,7 @@ def analyze_md_cc_anova(df: pd.DataFrame) -> dict:
         print("中等效应")
     else:
         print("大效应")
+    print("  Tukey HSD: 四类映射类型两两差异均显著" if tukey_df['是否显著'].all() else "  Tukey HSD: 存在未达显著的两两差异")
     
     return result
 
@@ -794,6 +833,19 @@ def main():
     }])
     save_table(anova_df, "映射类型与概念复杂度ANOVA", global_num="58_anova",
                title="映射类型与概念复杂度单因素方差分析", formats=['csv', 'json'])
+
+    save_table(anova_result['tukey_hsd'], "映射类型概念复杂度TukeyHSD", global_num="58b",
+               title="映射类型与概念复杂度Tukey HSD事后检验", formats=['csv', 'json'])
+
+    kruskal_df = pd.DataFrame([{
+        '分析项目': '映射类型→概念复杂度',
+        'df': anova_result['kruskal_df'],
+        'H': round(anova_result['kruskal_h'], 3),
+        'p': '<.001' if anova_result['kruskal_p'] < 0.001 else f"{anova_result['kruskal_p']:.4f}",
+        '说明': '概念复杂度为1-4级有序评分，Kruskal-Wallis作为非参数稳健性检验'
+    }])
+    save_table(kruskal_df, "映射类型概念复杂度KruskalWallis", global_num="58c",
+               title="映射类型与概念复杂度Kruskal-Wallis稳健性检验", formats=['csv', 'json'])
 
 
     # 5. 汇总描述统计

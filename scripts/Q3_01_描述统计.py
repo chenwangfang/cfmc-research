@@ -6,10 +6,10 @@ Q3_01_描述统计.py
 认知加工指标的描述统计分析
 
 输出：
-- 表86: 认知编码机制相关变量描述统计
-- 表93b: 四阶段指标相关矩阵
-- 图27: 四阶段指标分布图
-- 图28: 四阶段指标相关矩阵热力图
+- 表85: 认知编码机制相关变量描述统计
+- 表92b: 四阶段指标相关矩阵
+- 图26: 四阶段指标分布图
+- 图27: 四阶段指标相关矩阵热力图
 
 创建日期：2025-12-05
 """
@@ -32,7 +32,7 @@ warnings.filterwarnings('ignore')
 from utils_公共函数 import (
     get_paths, get_font_paths, load_cfmc_data,
     save_figure, save_table, CONSTRUCTION_COLORS,
-    MAPPING_BASIS_NUM, COPULA_FUNCTION_CODES
+    COPULA_FUNCTION_CODES
 )
 
 
@@ -40,7 +40,7 @@ from utils_公共函数 import (
 STAGE_FIELDS = {
     'eta1_认知域激活': ['embodied_experience', 'source_domain', 'target_domain'],
     'eta2_参照点锚定': ['conventionality', 'cognitive_accessibility', 'prototype_distance'],
-    'eta3_跨域映射': ['mapping_direction', 'mapping_basis', 'systematicity', 'entailment_richness'],
+    'eta3_跨域映射': ['mapping_direction', 'systematicity', 'entailment_richness'],
     'X11_系词功能': ['copula_function']
 }
 
@@ -64,7 +64,7 @@ STAGE_NAMES_CN = {
 SEM_FIELDS = [
     'embodied_experience', 'source_domain', 'target_domain',
     'conventionality', 'cognitive_accessibility', 'prototype_distance',
-    'mapping_direction', 'mapping_basis', 'systematicity', 'entailment_richness',
+    'mapping_direction', 'systematicity', 'entailment_richness',
     'copula_function'
 ]
 
@@ -77,7 +77,6 @@ FIELD_NAMES_CN = {
     'cognitive_accessibility': '认知通达度',
     'prototype_distance': '原型距离',
     'mapping_direction': '映射方向',
-    'mapping_basis': '映射基础',
     'systematicity': '系统性',
     'entailment_richness': '蕴涵丰富度',
     'copula_function': '系词功能'
@@ -108,7 +107,7 @@ def prepare_sem_data(df: pd.DataFrame) -> pd.DataFrame:
 
     # 1. 处理源域和目标域（分类变量转换为数值）
     if 'source_domain' in sem_df.columns:
-        # 源域编码为数值（基于出现频率）
+        # 源域编码为数值（基于出现频率排序）
         source_map = {s: i+1 for i, s in enumerate(sem_df['source_domain'].value_counts().index)}
         sem_df['source_domain_num'] = sem_df['source_domain'].map(source_map)
 
@@ -125,21 +124,14 @@ def prepare_sem_data(df: pd.DataFrame) -> pd.DataFrame:
                 lambda x: exp_map.get(str(x).lower(), 2) if pd.notna(x) else 2
             )
 
-    # 3. 处理映射基础（分类变量）- 使用utils常量
-    if 'mapping_basis' in sem_df.columns:
-        if sem_df['mapping_basis'].dtype == 'object':
-            sem_df['mapping_basis_num'] = sem_df['mapping_basis'].map(
-                lambda x: MAPPING_BASIS_NUM.get(str(x).lower(), 1) if pd.notna(x) else 1
-            )
-
-    # 4. 处理系词功能（结果变量）- 使用utils常量
+    # 3. 处理系词功能（结果变量）- 使用utils常量
     if 'copula_function' in sem_df.columns:
         if sem_df['copula_function'].dtype == 'object':
             sem_df['copula_function_num'] = sem_df['copula_function'].map(
                 lambda x: COPULA_FUNCTION_CODES.get(str(x).lower(), 1) if pd.notna(x) else 1
             )
 
-    # 4.5 用Q1_05输出的连续马氏距离替换JSON中的等级值（1/2/3→连续值）
+    # 4. 用Q1_05输出的连续标准化欧氏距离替换JSON中的等级值（1/2/3→连续值）
     from pathlib import Path as _Path
     grades_path = _Path(__file__).resolve().parent.parent / '结果_输出' / 'Data' / 'CFMC_with_prototype_grades.csv'
     if grades_path.exists():
@@ -152,7 +144,7 @@ def prepare_sem_data(df: pd.DataFrame) -> pd.DataFrame:
         else:
             sem_df['prototype_distance'] = sem_df.index.map(id_to_dist)
             sem_df['prototype_grade'] = sem_df.index.map(id_to_grade)
-        print(f"  [OK] prototype_distance已替换为连续马氏距离 (from {grades_path.name})")
+        print(f"  [OK] prototype_distance已替换为连续标准化欧氏距离 (from {grades_path.name})")
         print(f"       prototype_grade分布: {sem_df['prototype_grade'].value_counts().sort_index().to_dict()}")
     else:
         print(f"  [WARN] {grades_path}不存在，prototype_distance保留原值")
@@ -194,13 +186,13 @@ def calculate_descriptive_stats(df: pd.DataFrame) -> pd.DataFrame:
     for field in SEM_FIELDS:
         if field in df.columns:
             # 检查是否为数值型或有对应的数值版本
-            if df[field].dtype in ['int64', 'float64']:
+            if pd.api.types.is_numeric_dtype(df[field]):
                 numeric_fields.append(field)
             elif f'{field}_num' in df.columns:
                 numeric_fields.append(f'{field}_num')
 
     # 添加额外的数值版本字段
-    for field in ['source_domain_num', 'target_domain_num', 'mapping_basis_num', 'copula_function_num']:
+    for field in ['source_domain_num', 'target_domain_num', 'copula_function_num']:
         if field in df.columns and field not in numeric_fields:
             numeric_fields.append(field)
 
@@ -311,7 +303,7 @@ def calculate_correlation_matrix(df: pd.DataFrame) -> tuple:
 
 def plot_stage_distributions(df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
-    绘制四阶段指标分布图（图27）
+    绘制四阶段指标分布图（图26）
 
     Parameters
     ----------
@@ -352,7 +344,7 @@ def plot_stage_distributions(df: pd.DataFrame, paths: dict) -> plt.Figure:
             # 获取数据
             values = None
             if field in df.columns:
-                if df[field].dtype in ['int64', 'float64', 'Int64', 'Float64']:
+                if pd.api.types.is_numeric_dtype(df[field]):
                     values = df[field].dropna()
                 elif df[field].dtype == 'object':
                     # 分类字段：使用类别编码
@@ -479,7 +471,7 @@ def plot_correlation_heatmap(corr_matrix: pd.DataFrame, p_matrix: pd.DataFrame,
     ax.set_yticklabels(corr_matrix.index, fontproperties=font_cn, rotation=0)
 
     # 标题中p使用斜体（LaTeX格式）
-    # ax.set_title(r'图28 四阶段指标相关矩阵热力图' + '\n' + r'(*$p$<.05, **$p$<.01, ***$p$<.001)',
+    # ax.set_title(r'图27 四阶段指标相关矩阵热力图' + '\n' + r'(*$p$<.05, **$p$<.01, ***$p$<.001)',
                 # fontproperties=font_cn_title, fontsize=12, pad=20)
 
     plt.tight_layout()
@@ -505,7 +497,7 @@ def analyze_stage_relationships(df: pd.DataFrame) -> None:
     for stage_name, fields in STAGE_FIELDS.items():
         values = []
         for field in fields:
-            if field in df.columns and df[field].dtype in ['int64', 'float64']:
+            if field in df.columns and pd.api.types.is_numeric_dtype(df[field]):
                 # 标准化后求均值
                 v = df[field].dropna()
                 if len(v) > 0:
@@ -640,7 +632,7 @@ def main():
     available_fields = []
     for field in SEM_FIELDS:
         if field in sem_df.columns:
-            if sem_df[field].dtype in ['int64', 'float64']:
+            if pd.api.types.is_numeric_dtype(sem_df[field]):
                 available_fields.append(field)
                 print(f"  [OK] {field}: 数值型")
             else:
@@ -663,7 +655,7 @@ def main():
     desc_stats = calculate_descriptive_stats(sem_df)
     print(desc_stats.to_string(index=False))
 
-    # 保存表86
+    # 保存表85
     save_table(desc_stats, "认知编码机制相关变量描述统计", global_num=85,
                title="认知编码机制相关变量描述统计", formats=['csv', 'json'])
 
@@ -676,18 +668,18 @@ def main():
     if not corr_matrix.empty:
         print(corr_matrix.round(3).to_string())
 
-        # 保存表93b
+        # 保存表92b
         save_table(corr_matrix.round(3), "四阶段指标相关矩阵", global_num="92b",
                    title="四阶段指标相关矩阵", formats=['csv', 'json'])
 
-        # 绘制相关热力图（图28）
+        # 绘制相关热力图（图27）
         fig_corr = plot_correlation_heatmap(corr_matrix, p_matrix, paths)
         save_figure(fig_corr, "四阶段指标相关矩阵热力图", global_num=27,
                     title="四阶段指标相关矩阵")
 
-    # 5. 绘制图27
+    # 5. 绘制图26
     print("\n" + "-" * 40)
-    print("5. 绘制图27: 四阶段指标分布图")
+    print("5. 绘制图26: 四阶段指标分布图")
     print("-" * 40)
     fig = plot_stage_distributions(sem_df, paths)
     save_figure(fig, "四阶段指标分布图", global_num=26,

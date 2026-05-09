@@ -7,7 +7,7 @@ Q1_05_原型梯度.py
 
 方法说明：
     采用全局标准化欧氏距离（distance from global center, standardized by global SD）。
-    12类构式由认知通达度（4级）和映射方向（4级）的离散组合界定，聚类内成员的
+    12类构式由认知通达度（5级量表，分析中归并为3级）和映射方向（4类）的离散组合界定，聚类内成员的
     双维度取值完全相同或高度趋同，聚类内协方差矩阵为奇异矩阵，不满足马氏距离
     或聚类内标准化距离的计算前提。全局距离测量每个构式偏离整体中心的程度，
     反映其在双维度空间中的位置典型性。
@@ -106,19 +106,20 @@ def calculate_prototype_distance(df: pd.DataFrame) -> pd.DataFrame:
     print(f"\n唯一距离值数量: {len(unique_dists)}")
     print(f"  距离值列表: {[f'{d:.4f}' for d in unique_dists]}")
 
-    # 使用全局百分位 P33/P67 划分三级梯度（均衡分布）
+    # 使用全局百分位 P33/P67 划分三级梯度；离散并列距离会使三组比例不严格等分。
     p33 = np.percentile(distances, 33.33)
     p67 = np.percentile(distances, 66.67)
 
     print(f"\n[全局百分位法]")
     print(f"  P33 断裂点: {p33:.4f}")
     print(f"  P67 断裂点: {p67:.4f}")
+    print("  注: 按 d≤断点归组，CA×MD离散组合的并列距离会导致组别比例不严格等分。")
 
     # 根据百分位划分三级梯度
     df_result['prototype_grade'] = np.where(
-        distances <= p33, 1,  # 中心成员（距离最小的1/3）
+        distances <= p33, 1,  # 中心成员（距离小于等于P33断点）
         np.where(distances <= p67, 2,  # 次中心成员
-                 3)  # 边缘成员（距离最大的1/3）
+                 3)  # 边缘成员（距离大于P67断点）
     )
 
     # 打印分布统计
@@ -211,8 +212,13 @@ def perform_grade_comparison(df: pd.DataFrame) -> pd.DataFrame:
     pd.DataFrame
         差异检验结果表
     """
-    variables = ['cognitive_accessibility', 'mapping_direction', 'prototype_distance']
-    var_names = ['认知通达度', '映射方向', '原型距离']
+    variables = [
+        'cognitive_accessibility',
+        'mapping_direction',
+        'conceptual_complexity',
+        'prototype_distance'
+    ]
+    var_names = ['认知通达度', '映射方向', '概念复杂度', '原型距离']
 
     results = []
 

@@ -5,45 +5,39 @@
 *汉语系表隐喻构式认知框架研究*
 
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.XXXXXXX-blue)](https://doi.org/10.5281/zenodo.XXXXXXX)
-[![Corpus](https://img.shields.io/badge/Corpus-5989%20constructions-blue)](CFMC_5989.json)
-[![Scripts](https://img.shields.io/badge/Scripts-29%20Python-green)](scripts/)
+[![Corpus](https://img.shields.io/badge/Corpus-5971%20records-blue)](CFMC_5989.json)
+[![Scripts](https://img.shields.io/badge/Scripts-Q1--Q3%2022-green)](scripts/)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey)](LICENSE)
-[![GitHub Pages](https://img.shields.io/badge/Demo-GitHub%20Pages-brightgreen)](https://chenwangfang.github.io/cfmc-research/visualization/)
+[![Visualizations](https://img.shields.io/badge/Visualizations-35%20SVG-brightgreen)](visualization/)
 [![中文](https://img.shields.io/badge/中文-README-red)](README.md)
 
----
-
-> **Quick Links**: [Corpus](CFMC_5989.json) | [PLS-SEM Model Design](PLS-SEM形成性测量模型设计.md) | [Live Demo](https://chenwangfang.github.io/cfmc-research/visualization/) | [中文](README.md)
+> **Quick Links**: [Corpus JSON](CFMC_5989.json) | [Main analysis table](Data/CFMC_for_SEM.csv) | [Statistical outputs](Data/) | [PLS-SEM Model Design](PLS-SEM形成性测量模型设计.md) | [Visualizations](visualization/) | [中文](README.md)
 
 ## Overview
 
-This research builds upon Sullivan's (2013) theory of metaphorical constructions to develop the **Cognitive Framework for Metaphorical Constructions (CFMC)** for Chinese copular metaphors. The framework is validated through a corpus of 5,989 annotated constructions using a **PLS-SEM formative measurement model** to test a four-stage cognitive encoding mechanism.
+This research builds upon Sullivan's (2013) theory of metaphorical constructions to develop the **Cognitive Framework for Metaphorical Constructions (CFMC)** for Chinese copular metaphors. The framework is examined with 5,971 released annotated records, including 5,908 core metaphorical-construction cases, using a **PLS-SEM formative measurement model** to test a four-stage cognitive encoding mechanism.
 
 ### Research Objectives
 
 1. **Typological System**: Establish a 12-type classification based on cognitive accessibility and mapping direction
 2. **Network Organization**: Reveal small-world structure characteristics and community organization patterns
-3. **Cognitive Mechanism**: Validate the four-stage cognitive encoding mechanism through PLS-SEM formative measurement modeling
+3. **Cognitive Mechanism**: Test the four-stage cognitive encoding mechanism through PLS-SEM formative measurement modeling
 
 ### Key Contributions
 
-- **Corpus**: 5,989 double-blind annotated Chinese copular metaphorical constructions
+- **Corpus**: 5,971 released annotated records, including 5,908 core metaphorical-construction cases
 - **Field System**: CFMC-33 field system (33 required + 8 optional fields)
 - **Classification**: GMM clustering validation of 12 construction types
 - **Network Model**: Two-layer construction network (construction layer + type layer)
-- **Cognitive Model**: PLS-SEM formative measurement model validation of the four-stage cognitive encoding mechanism
-
----
+- **Cognitive Model**: PLS-SEM formative measurement model testing of the four-stage cognitive encoding mechanism
 
 ## Research Questions and Hypotheses
 
 | Question | Content | Hypotheses | Chapter |
 |:---------|:--------|:-----------|:--------|
-| **Q1** | Typological System | H1-1: Negative correlation between cognitive accessibility and conceptual complexity (*r* = -0.40 to -0.60)<br>H1-2: GMM clustering validates 12 types (*k*=12, silhouette coefficient ≥0.30) | Ch.5 |
-| **Q2** | Network Organization | H2: Construction network exhibits small-world properties (*C*≥0.60, *L*≤3.0, σ>1) | Ch.6 |
-| **Q3** | Cognitive Mechanism | H3-1: PLS-SEM validates four-stage pathways (GoF>0.25, path coefficients significant at *p*<.05; PLS-MGA with 3 copula function groups tests cross-type sharing)<br>H3-2: Type differences show moderation effects (*r*≥0.30, *p*<0.05) | Ch.7 |
-
----
+| **Q1** | Typological System | H1-1: Negative correlation between cognitive accessibility and conceptual complexity (*r* = -0.40 to -0.60)<br>H1-2: qualified support for the CA×MD 12-cell operational classification; GMM/Bootstrap stability and prototype-gradient evidence meet the criteria, while LDA is retained as a boundary stress test | Ch.5 |
+| **Q2** | Network Organization | H2: the full 12-type unweighted macro network meets the descriptive small-world criterion (*C*≥0.60, *L*≤3.0, σ>1), with finite mean-level robustness under perturbation tests | Ch.6 |
+| **Q3** | Cognitive Mechanism | H3-1: PLS-SEM tests the first three cognitive-stage pathways and the boundary relation to linguistic encoding (GoF>0.25, core path coefficients significant at *p*<.05; PLS-MGA with 3 copula function groups tests cross-function sharing of the first three pathways)<br>H3-2: Layered bridge associations among prototype distance, cognitive accessibility, and four-stage indicators; 9-type Pearson approximate correlations are reported as exploratory supplements only | Ch.7 |
 
 ## Repository Structure
 
@@ -55,23 +49,20 @@ cfmc-research/
 ├── CITATION.cff                 # Citation info (GitHub auto-detected)
 ├── .gitignore                   # Git ignore configuration
 │
-├── CFMC_5989.json               # Core corpus (5,989 entries, 13MB)
+├── CFMC_5989.json               # Released annotated corpus (legacy filename; 5,971 records, including 5,908 core metaphorical constructions, 13MB)
 ├── PLS-SEM形成性测量模型设计.md  # PLS-SEM formative measurement model design
 │
-├── Data/                        # Statistical results (67 CSV + 49 JSON + 2 GraphML)
-│   ├── 表57a_源域分布.*         # Table 57a: Source domain distribution
-│   ├── PLS_路径系数表.csv       # PLS path coefficients
-│   ├── PLS_模型拟合比较.csv     # PLS model fit comparison
+├── Data/                        # Main data tables and statistical outputs (34 CSV + 13 JSON + 2 GraphML)
+│   ├── CFMC_for_SEM.csv
+│   ├── CFMC_with_12types.csv
+│   ├── 表57a_源域分布.*
+│   ├── PLS_路径系数表.csv
+│   ├── network_type_layer.graphml
 │   └── ...
 │
-├── figures/                     # Visualizations (39 PNG files)
-│   ├── 图1 研究路径图.png       # Figure 1: Research pathway
-│   ├── 图29_四阶段认知编码机制路径与中介效应图.png  # Figure 29: Four-stage path & mediation
-│   ├── PLS_路径模型图.png       # PLS path model diagram
-│   └── ...
-│
-├── scripts/                     # Python analysis scripts (29 files)
+├── scripts/                     # Python scripts (22 Q1-Q3 analysis scripts, plus utilities, backups, figure and cleanup helpers)
 │   ├── Q1_01_描述统计.py        # Q1_01: Descriptive statistics
+│   ├── Q1_01b_补充描述统计.py    # Q1_01b: Supplementary descriptive statistics
 │   ├── Q2_01_网络构建.py        # Q2_01: Network construction
 │   ├── Q3_02_PLS_SEM基础模型.py # Q3_02: PLS-SEM base model
 │   └── 一键运行全部脚本.py      # Run all scripts
@@ -82,24 +73,24 @@ cfmc-research/
 │   ├── 认知通达度的构念界定与测量方案_附录C.md  # Appendix C: Cognitive accessibility
 │   ├── 附录C_1.csv                              # Appendix C pilot study data (500 samples)
 │   ├── 概念复杂度的构念界定与测量方案_附录D.md  # Appendix D: Conceptual complexity
-│   ├── 附录D_1.py                              # Appendix D: CC pre-computation script
-│   ├── 附录D_1_预计算参考数据.csv               # Appendix D: Pre-computed reference data (5,989 entries)
+│   ├── 附录D_1_预计算参考数据.csv               # Appendix D: Pre-computed reference data (5,971 released records)
+│   ├── 附录D_1_预计算参考数据_汇总报告.txt
 │   ├── 信度效度验证_附录E/      # Appendix E: Reliability and validity
 │   ├── 统计分析补充材料_附录F.md # Appendix F: Statistical supplements
-│   ├── 附录G_认知通达度客观指标预计算.py  # Appendix G: CA objective indicator pre-computation script
+│   ├── 附录G_预计算参考数据.csv
+│   ├── 附录G_预计算参考数据_汇总报告.txt
 │   └── 概念复杂度和认知通达度快速取值手册.md  # Quick reference for CC & CA scoring
 │
-└── visualization/               # Interactive visualizations
-    └── index.html
+└── visualization/               # Visualizations (35 SVG files)
+    ├── image1.svg
+    └── image35.svg
 ```
-
----
 
 ## Data Description
 
-### CFMC_5989.json
+### CFMC_5989.json and Data/CFMC_for_SEM.csv
 
-The core corpus containing 5,989 fully annotated Chinese copular metaphorical constructions.
+`CFMC_5989.json` is the released annotated corpus. It keeps the legacy filename, while its current metadata records 5,971 released annotated records, including 5,908 `construction_type=copular_metaphor` core metaphorical-construction cases and 63 boundary/control records retained for quality tracing and methodological boundary clarification. `Data/CFMC_for_SEM.csv` is the corresponding main analysis table used directly by the statistical reproduction scripts.
 
 **Field System (CFMC-33)**:
 
@@ -116,7 +107,7 @@ The core corpus containing 5,989 fully annotated Chinese copular metaphorical co
   "metadata": {
     "description": "CFMC-33 Chinese Copular Metaphorical Construction Corpus",
     "field_count": 45,
-    "construction_count": 5989
+    "construction_count": 5971
   },
   "constructions": [
     {
@@ -196,18 +187,16 @@ Calculation: *D*abstract = 0.25×0.80 + 0.50×0.33 + 0.25×0.40 = 0.465, *D*proc
 
 ### Data Tables Index
 
-- **Q1 Typological Analysis (Chapter 5)**: Tables 57-72 + Supplementary Tables S1-S6
-- **Q2 Network Analysis (Chapter 6)**: Tables 73-87
-- **Q3 Cognitive Mechanism Analysis (Chapter 7)**: Table 92 + PLS-SEM data files (path coefficients, model fit comparison, outer weights & VIF, effect decomposition, bootstrap results, MGA permutation tests, moderation tests, etc.)
-- **Appendix F Statistical Supplements**: Tables F1-F7
+- **Q1 Typological Analysis (Chapter 5)**: `CFMC_with_12types.csv`, `CFMC_with_clusters.csv`, `CFMC_with_prototype_grades.csv`, and the Table 57-59 output series
+- **Q2 Network Analysis (Chapter 6)**: `network_full.graphml`, `network_type_layer.graphml`, and `network_type_layer.json`
+- **Q3 Cognitive Mechanism Analysis (Chapter 7)**: PLS-SEM CSV/JSON outputs, including path coefficients, model fit comparison, outer weights and VIF, effect decomposition, bootstrap results, MGA permutation tests, moderation tests, and 9-type Pearson approximate correlations
+- **Appendix and pre-computation materials**: see `appendix/`
 
 See `Data/` directory for details.
 
----
-
 ## PLS-SEM Formative Measurement Model
 
-This study employs a **PLS-SEM formative measurement model** to validate the four-stage cognitive encoding mechanism (η₁ Domain Activation → η₂ Reference Point Anchoring → η₃ Cross-domain Mapping → Y Linguistic Encoding).
+This study employs a **PLS-SEM formative measurement model** to test the four-stage cognitive encoding mechanism (η₁ Domain Activation → η₂ Reference Point Anchoring → η₃ Cross-domain Mapping → Y Linguistic Encoding).
 
 ### Why Formative Measurement
 
@@ -223,11 +212,9 @@ CFMC annotation fields are independently coded multidimensional attributes. Each
 
 ### Multi-Group Analysis (PLS-MGA)
 
-Groups are defined by copula function (attributive/equative/identificational). PLS-MGA permutation tests verify that the four-stage path structure is shared across copula function types.
+Groups are defined by copula function (attributive/equative/identificational). PLS-MGA permutation tests examine whether the first three cognitive-stage pathways are shared across copula functions; η₃→Y is interpreted separately as the boundary relation to linguistic encoding.
 
 See [`PLS-SEM形成性测量模型设计.md`](PLS-SEM形成性测量模型设计.md) for details.
-
----
 
 ## Usage
 
@@ -271,8 +258,7 @@ python Q3_06_PLS_调节效应.py
 **Execution Order**:
 1. Q1 module must run first (Q1_03 generates cluster labels for subsequent use)
 2. Q2 and Q3 modules depend on Q1_03 output
-
----
+3. Figure scripts can be run after the main analysis outputs are generated; their outputs are written to `visualization/`
 
 ## Reliability and Validity
 
@@ -286,8 +272,6 @@ python Q3_06_PLS_调节效应.py
 | Test-retest *r* | ≥0.85 | 0.974 |
 
 See `appendix/信度效度验证_附录E/` for details.
-
----
 
 ## Citation
 
@@ -303,8 +287,6 @@ If you use this corpus or code in your research, please cite:
 }
 ```
 
----
-
 ## License
 
 This project is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
@@ -312,8 +294,6 @@ This project is licensed under [CC BY-NC 4.0](https://creativecommons.org/licens
 - Sharing and adaptation permitted
 - Attribution required
 - Non-commercial use only
-
----
 
 ## Contact
 
@@ -327,12 +307,8 @@ This project is licensed under [CC BY-NC 4.0](https://creativecommons.org/licens
 - Email: wangdeliang@bnu.edu.cn
 - ORCID: [0000-0001-6142-1624](https://orcid.org/0000-0001-6142-1624)
 
----
-
 ## Acknowledgments
 
 We thank the School of Foreign Languages and Literature at Beijing Normal University for supporting this research.
 
----
-
-*Last updated: March 2026*
+*Last updated: May 2026*

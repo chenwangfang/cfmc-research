@@ -59,33 +59,33 @@
     {
       "id": "T8",
       "node_type": "type",
-      "size": 693,
+      "size": 692,
       "ca_mean": 3.0,
-      "cc_mean": 3.9696969696969697,
+      "cc_mean": 3.9696531791907512,
       "md_mode": 4
     },
     {
       "id": "T9",
       "node_type": "type",
-      "size": 1524,
-      "ca_mean": 4.082677165354331,
-      "cc_mean": 1.9101049868766404,
+      "size": 1515,
+      "ca_mean": 4.082508250825082,
+      "cc_mean": 1.9095709570957096,
       "md_mode": 1
     },
     {
       "id": "T10",
       "node_type": "type",
-      "size": 1208,
-      "ca_mean": 4.167218543046357,
-      "cc_mean": 1.929635761589404,
+      "size": 1206,
+      "ca_mean": 4.167495854063018,
+      "cc_mean": 1.929519071310116,
       "md_mode": 2
     },
     {
       "id": "T11",
       "node_type": "type",
-      "size": 1327,
-      "ca_mean": 4.001507159005275,
-      "cc_mean": 2.9517709118311983,
+      "size": 1321,
+      "ca_mean": 4.001514004542013,
+      "cc_mean": 2.951551854655564,
       "md_mode": 3
     },
     {
@@ -252,7 +252,7 @@
       "source": "T5",
       "target": "T9",
       "link_type": 1,
-      "weight": 0.4801512287334594
+      "weight": 0.480190174326466
     },
     {
       "source": "T6",
@@ -270,7 +270,7 @@
       "source": "T6",
       "target": "T10",
       "link_type": 1,
-      "weight": 0.4614209320091674
+      "weight": 0.4613618974751339
     },
     {
       "source": "T7",
@@ -282,7 +282,7 @@
       "source": "T7",
       "target": "T11",
       "link_type": 1,
-      "weight": 0.49962349397590367
+      "weight": 0.4996217851739789
     },
     {
       "source": "T8",
@@ -294,37 +294,37 @@
       "source": "T9",
       "target": "T10",
       "link_type": 2,
-      "weight": 0.7376389840491389
+      "weight": 0.7373356134324065
     },
     {
       "source": "T9",
       "target": "T11",
       "link_type": 2,
-      "weight": 0.7399391356605208
+      "weight": 0.7400594431938466
     },
     {
       "source": "T9",
       "target": "T12",
       "link_type": 2,
-      "weight": 0.7873934383880135
+      "weight": 0.787524366471735
     },
     {
       "source": "T10",
       "target": "T11",
       "link_type": 2,
-      "weight": 0.6862762180692628
+      "weight": 0.6861170268890949
     },
     {
       "source": "T10",
       "target": "T12",
       "link_type": 2,
-      "weight": 0.7269080332965601
+      "weight": 0.7267249171437179
     },
     {
       "source": "T11",
       "target": "T12",
       "link_type": 2,
-      "weight": 0.7510612206395624
+      "weight": 0.7510660475694114
     }
   ]
 }

@@ -6,7 +6,7 @@ Q2_07_网络可视化.py
 综合网络可视化
 
 输出：
-- 图25: 构式网络综合可视化图（含多视角）
+- 图24: 构式网络综合可视化图（含多视角）
 
 创建日期：2025-12-05
 """
@@ -61,7 +61,7 @@ def load_network_and_data(paths: dict) -> tuple:
 
 def plot_comprehensive_network(G: nx.Graph, df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
-    绘制构式网络综合可视化图（图25）
+    绘制构式网络综合可视化图（图24）
 
     Parameters
     ----------
@@ -232,16 +232,15 @@ def plot_comprehensive_network(G: nx.Graph, df: pd.DataFrame, paths: dict) -> pl
                            font_size=10,
                            font_weight='bold')
 
-    ax3.set_title('（c）链接类型分布\n红=隐喻扩展，蓝=多义链接',
+    ax3.set_title('（c）宏观边类型\n红=隐喻扩展边，蓝=多义型操作边',
                  fontproperties=font_cn, fontsize=20)
     ax3.axis('off')
 
     # 添加边类型图例
     from matplotlib.lines import Line2D
     edge_legend = [
-        Line2D([0], [0], color='#e74c3c', linewidth=3, label='隐喻扩展链接'),
-        Line2D([0], [0], color='#3498db', linewidth=3, label='多义链接'),
-        Line2D([0], [0], color='#95a5a6', linewidth=3, label='其他链接')
+        Line2D([0], [0], color='#e74c3c', linewidth=3, label='隐喻扩展边'),
+        Line2D([0], [0], color='#3498db', linewidth=3, label='多义型操作边')
     ]
     ax3.legend(handles=edge_legend, loc='lower left', prop=font_cn, fontsize=8)
 
@@ -295,17 +294,17 @@ def plot_comprehensive_network(G: nx.Graph, df: pd.DataFrame, paths: dict) -> pl
     cbar2 = plt.colorbar(sm2, ax=ax4, shrink=0.6, aspect=20)
     cbar2.set_label('概念复杂度', fontproperties=font_cn, fontsize=16)
 
-    # plt.suptitle('图22 构式网络综合可视化图',
+    # plt.suptitle('图24 构式网络综合可视化图',
                 # fontproperties=font_cn_title, fontsize=16, y=0.98)
 
     return fig
 
 
-def plot_forceatlas2_layout(G: nx.Graph, df: pd.DataFrame, paths: dict) -> plt.Figure:
+def plot_force_directed_layout(G: nx.Graph, df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
-    绘制ForceAtlas2布局可视化图（图24）
+    绘制力导向布局可视化图（图23）
 
-    ForceAtlas2是一种力导向布局算法，特别适合展示社区结构
+    本图使用NetworkX spring_layout生成可复现的力导向布局。
 
     Parameters
     ----------
@@ -327,9 +326,8 @@ def plot_forceatlas2_layout(G: nx.Graph, df: pd.DataFrame, paths: dict) -> plt.F
 
     fig, axes = plt.subplots(1, 2, figsize=(18, 8))
 
-    # 使用spring_layout模拟ForceAtlas2效果
-    # ForceAtlas2特点：强调社区结构，中心紧凑，边缘分散
-    pos_fa2 = nx.spring_layout(G, seed=42, k=3.0, iterations=100, scale=2.0)
+    # 使用spring_layout生成可复现的力导向布局。
+    pos_layout = nx.spring_layout(G, seed=42, k=3.0, iterations=100, scale=2.0)
 
     # 节点大小基于度中心性
     degree_centrality = nx.degree_centrality(G)
@@ -352,10 +350,10 @@ def plot_forceatlas2_layout(G: nx.Graph, df: pd.DataFrame, paths: dict) -> plt.F
     community_colors = ['#E74C3C', '#3498DB', '#2ECC71', '#9B59B6', '#F39C12']  # 红、蓝、绿、紫、橙
     node_colors = [community_colors[community_map.get(node, 0) % len(community_colors)] for node in G.nodes()]
 
-    # ========== 左图：ForceAtlas2布局（社区视角） ==========
+    # ========== 左图：力导向布局（社区视角） ==========
     ax1 = axes[0]
 
-    nx.draw_networkx_nodes(G, pos_fa2, ax=ax1,
+    nx.draw_networkx_nodes(G, pos_layout, ax=ax1,
                           node_size=node_sizes,
                           node_color=node_colors,
                           alpha=0.85,
@@ -375,16 +373,16 @@ def plot_forceatlas2_layout(G: nx.Graph, df: pd.DataFrame, paths: dict) -> plt.F
     max_w = max(edge_weights) if edge_weights else 1
     edge_widths = [0.2 + 11.8 * (w / max_w) for w in edge_weights]
 
-    nx.draw_networkx_edges(G, pos_fa2, ax=ax1,
+    nx.draw_networkx_edges(G, pos_layout, ax=ax1,
                           edge_color='#555555',
                           width=edge_widths,
                           alpha=0.65)
 
-    nx.draw_networkx_labels(G, pos_fa2, ax=ax1,
+    nx.draw_networkx_labels(G, pos_layout, ax=ax1,
                            font_size=11,
                            font_weight='bold')
 
-    ax1.set_title('（a）ForceAtlas2布局（社区结构）\n节点大小=度中心性，颜色=社区归属',
+    ax1.set_title('（a）力导向布局（社区结构）\n节点大小=度中心性，颜色=社区归属',
                  fontproperties=font_cn, fontsize=20)
     ax1.axis('off')
 
@@ -402,7 +400,7 @@ def plot_forceatlas2_layout(G: nx.Graph, df: pd.DataFrame, paths: dict) -> plt.F
     betweenness = nx.betweenness_centrality(G)
     node_colors_bc = [betweenness.get(node, 0) for node in G.nodes()]
 
-    nodes = nx.draw_networkx_nodes(G, pos_fa2, ax=ax2,
+    nodes = nx.draw_networkx_nodes(G, pos_layout, ax=ax2,
                                    node_size=node_sizes,
                                    node_color=node_colors_bc,
                                    cmap='plasma',  # 使用plasma配色增强区分度
@@ -410,7 +408,7 @@ def plot_forceatlas2_layout(G: nx.Graph, df: pd.DataFrame, paths: dict) -> plt.F
                                    edgecolors='black',
                                    linewidths=1.5)
 
-    nx.draw_networkx_edges(G, pos_fa2, ax=ax2,
+    nx.draw_networkx_edges(G, pos_layout, ax=ax2,
                           edge_color='#555555',
                           width=edge_widths,
                           alpha=0.65)
@@ -418,7 +416,7 @@ def plot_forceatlas2_layout(G: nx.Graph, df: pd.DataFrame, paths: dict) -> plt.F
     # 根据节点颜色深浅自动调整标签颜色（深色背景用白字，浅色背景用黑字）
     bc_min, bc_max = min(node_colors_bc), max(node_colors_bc)
     for node in G.nodes():
-        x, y = pos_fa2[node]
+        x, y = pos_layout[node]
         bc_val = betweenness.get(node, 0)
         # 归一化到0-1，plasma色图中<0.5为深色
         bc_norm = (bc_val - bc_min) / (bc_max - bc_min) if bc_max > bc_min else 0.5
@@ -438,7 +436,7 @@ def plot_forceatlas2_layout(G: nx.Graph, df: pd.DataFrame, paths: dict) -> plt.F
     cbar = plt.colorbar(sm, ax=ax2, shrink=0.7, aspect=20)
     cbar.set_label('中介中心性', fontproperties=font_cn, fontsize=20)
 
-    # plt.suptitle('图21 ForceAtlas2布局网络可视化',
+    # plt.suptitle('图23 力导向布局网络可视化',
                 # fontproperties=font_cn_title, fontsize=16, y=0.98)
     plt.tight_layout()
 
@@ -525,17 +523,17 @@ def main():
     print("-" * 40)
     create_network_summary(G, df)
 
-    # 3. 绘制图24: ForceAtlas2布局
+    # 3. 绘制图23: 力导向布局
     print("\n" + "-" * 40)
-    print("3. 绘制图24: ForceAtlas2布局网络可视化")
+    print("3. 绘制图23: 力导向布局网络可视化")
     print("-" * 40)
-    fig_fa2 = plot_forceatlas2_layout(G, df, paths)
-    save_figure(fig_fa2, "ForceAtlas2布局网络图", global_num=23,
-                title="ForceAtlas2布局网络可视化")
+    fig_layout = plot_force_directed_layout(G, df, paths)
+    save_figure(fig_layout, "力导向布局网络图", global_num=23,
+                title="力导向布局网络可视化")
 
-    # 4. 绘制图22
+    # 4. 绘制图24
     print("\n" + "-" * 40)
-    print("4. 绘制图25: 构式网络综合可视化图")
+    print("4. 绘制图24: 构式网络综合可视化图")
     print("-" * 40)
     fig = plot_comprehensive_network(G, df, paths)
     save_figure(fig, "构式网络综合可视化图", global_num=24,

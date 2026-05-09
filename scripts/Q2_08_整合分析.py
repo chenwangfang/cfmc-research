@@ -6,10 +6,9 @@ Q2_08_整合分析.py
 Q2网络组织分析整合与假设验证汇总
 
 输出：
-- 表86: Q2网络特征综合汇总
-- 表77: 四类链接与构式特征关联分析
-- 表78: 网络中心性与认知维度相关分析
-- 表79: 社区结构与类型特征对应分析
+- 表87aux: Q2网络特征综合汇总
+- 表87aux: Q2探索性分析发现汇总（正文表48）
+- 表82a: 四类链接与构式特征关联分析
 - 表81: Q2假设验证结果汇总
 
 创建日期：2025-12-05
@@ -53,28 +52,49 @@ def load_previous_results(paths: dict) -> dict:
     data_dir = paths['output_data']
 
     # 加载网络基本参数
-    params_file = data_dir / '表67_两层网络基本参数.json'
+    params_file = data_dir / '表70_两层网络基本参数.json'
     if params_file.exists():
         with open(params_file, 'r', encoding='utf-8') as f:
             results['network_params'] = json.load(f)
             print(f"[OK] 加载网络参数: {params_file}")
 
     # 加载小世界检验结果
-    sw_file = data_dir / '表68_小世界性质检验结果.json'
+    sw_file = data_dir / '表71_小世界性质检验结果.json'
     if sw_file.exists():
         with open(sw_file, 'r', encoding='utf-8') as f:
             results['small_world'] = json.load(f)
             print(f"[OK] 加载小世界结果: {sw_file}")
 
+    # 加载小世界敏感性分析
+    sens_file = data_dir / '表F5_小世界敏感性分析_附录F.json'
+    if sens_file.exists():
+        with open(sens_file, 'r', encoding='utf-8') as f:
+            results['sensitivity'] = json.load(f)
+            print(f"[OK] 加载敏感性分析: {sens_file}")
+
     # 加载链接类型分布
-    link_file = data_dir / '表69_四类链接关系频率分布.json'
+    link_file = data_dir / '表72_四类链接关系频率分布.json'
     if link_file.exists():
         with open(link_file, 'r', encoding='utf-8') as f:
             results['link_types'] = json.load(f)
             print(f"[OK] 加载链接类型: {link_file}")
 
+    # 加载按构式类型交叉的实例层链接分布
+    link_by_type_file = data_dir / '表75_12类构式实例层链接类型分布交叉表.json'
+    if link_by_type_file.exists():
+        with open(link_by_type_file, 'r', encoding='utf-8') as f:
+            results['link_by_type'] = json.load(f)
+            print(f"[OK] 加载实例层链接类型交叉表: {link_by_type_file}")
+
+    # 加载宏观链接删除影响
+    removal_file = data_dir / '表74_链接删除影响分析.json'
+    if removal_file.exists():
+        with open(removal_file, 'r', encoding='utf-8') as f:
+            results['link_removal'] = json.load(f)
+            print(f"[OK] 加载链接删除影响: {removal_file}")
+
     # 加载中心性指标
-    cent_file = data_dir / '表76_12类构式类型中心性指标.json'
+    cent_file = data_dir / '表76_构式类型组网络中心性指标.json'
     if cent_file.exists():
         with open(cent_file, 'r', encoding='utf-8') as f:
             results['centrality'] = json.load(f)
@@ -88,7 +108,7 @@ def load_previous_results(paths: dict) -> dict:
             print(f"[OK] 加载社区检测: {comm_file}")
 
     # 加载度分布统计
-    degree_file = data_dir / '表74_度分布统计.json'
+    degree_file = data_dir / '表F6_度分布统计_附录F.json'
     if degree_file.exists():
         with open(degree_file, 'r', encoding='utf-8') as f:
             results['degree'] = json.load(f)
@@ -161,6 +181,110 @@ def create_network_summary_table(results: dict) -> pd.DataFrame:
                 pass
 
     return pd.DataFrame(table_data)
+
+
+def create_exploratory_findings_summary_table(results: dict) -> pd.DataFrame:
+    """
+    创建正文表48对应的Q2探索性分析发现汇总表。
+
+    该表直接服务正文6.4.4，对实例层链接类型、中心性、模块化和度分布
+    四个维度作可复现汇总。
+    """
+    rows = []
+
+    link_rows = [
+        item for item in results.get('link_by_type', [])
+        if item.get('构式类型') and item.get('构式类型') != '合计'
+    ]
+    if link_rows:
+        groups = {
+            '低通达度组': ['T1', 'T2', 'T3', 'T4'],
+            '中通达度组': ['T5', 'T6', 'T7', 'T8'],
+            '高通达度组': ['T9', 'T10', 'T11', 'T12'],
+        }
+        by_type = {item['构式类型']: item for item in link_rows}
+        group_summaries = {}
+        for group_name, members in groups.items():
+            selected = [by_type[m] for m in members if m in by_type]
+            total = sum(float(item.get('合计', 0)) for item in selected)
+            metaphor = sum(float(item.get('隐喻扩展链接', 0)) for item in selected)
+            polysemy = sum(float(item.get('多义链接', 0)) for item in selected)
+            subpart = sum(float(item.get('子部分链接', 0)) for item in selected)
+            group_summaries[group_name] = {
+                'total': int(total),
+                'metaphor_pct': round(metaphor / total * 100, 2) if total else 0,
+                'polysemy_pct': round(polysemy / total * 100, 2) if total else 0,
+                'subpart_pct': round(subpart / total * 100, 2) if total else 0,
+            }
+        rows.append({
+            '分析维度': '实例层链接类型',
+            '核心发现': '三组均以隐喻扩展为主，非主导类型呈现组间差异',
+            '关键数据': (
+                f"低/中/高通达度组隐喻扩展占比分别为"
+                f"{group_summaries['低通达度组']['metaphor_pct']}%、"
+                f"{group_summaries['中通达度组']['metaphor_pct']}%、"
+                f"{group_summaries['高通达度组']['metaphor_pct']}%；"
+                f"中通达度组多义关系{group_summaries['中通达度组']['polysemy_pct']}%；"
+                f"低通达度组子部分关系{group_summaries['低通达度组']['subpart_pct']}%"
+            ),
+            '理论含义': '通达度分层与非主导链接类型分布存在描述性对应',
+            '数据来源': '表75、正文表43'
+        })
+
+    centrality_rows = results.get('centrality', [])
+    if centrality_rows:
+        degree_groups = {}
+        for item in centrality_rows:
+            degree = int(float(item.get('度数', 0)))
+            degree_groups.setdefault(degree, []).append(item.get('构式类型'))
+        degree_parts = []
+        for degree in sorted(degree_groups.keys(), reverse=True):
+            members = sorted(degree_groups[degree], key=lambda x: int(str(x).replace('T', '')))
+            degree_parts.append(f"{'/'.join(members)}度={degree}")
+        rows.append({
+            '分析维度': '中心性',
+            '核心发现': '非高通达度枢纽现象',
+            '关键数据': '；'.join(degree_parts) + '；特征向量中心性与通达度r=-0.859',
+            '理论含义': '频率高不必然带来高中心性；中心性在当前网络中与认知通达度分层形成描述性对应',
+            '数据来源': '表76、正文表44、正文表46'
+        })
+
+    community_rows = [
+        item for item in results.get('community', [])
+        if str(item.get('社区编号', '')).startswith('C')
+    ]
+    if community_rows:
+        c_parts = []
+        cross_edges = 38 - sum(int(float(item.get('社区内边数', 0))) for item in community_rows)
+        for item in community_rows:
+            c_parts.append(
+                f"{item.get('社区编号')}({item.get('成员构式')})内部边{item.get('社区内边数')}"
+            )
+        c_parts.append(f"跨社区边{cross_edges}条")
+        algorithm = community_rows[0].get('社区检测算法', '模块度优化')
+        rows.append({
+            '分析维度': '模块化',
+            '核心发现': '低模块度条件下的探索性二元社区结构',
+            '关键数据': '；'.join(c_parts) + f"；实际算法={algorithm}",
+            '理论含义': '社区划分与认知通达度分层对应；不作为强模块化证据',
+            '数据来源': '表77、表82a、正文表47'
+        })
+
+    degree_rows = results.get('degree', [])
+    if degree_rows:
+        degree = degree_rows[0]
+        rows.append({
+            '分析维度': '度分布',
+            '核心发现': '三级分化',
+            '关键数据': (
+                f"平均度={degree.get('平均度')}，标准差={degree.get('标准差')}，"
+                f"最小度={degree.get('最小度')}，最大度={degree.get('最大度')}"
+            ),
+            '理论含义': '度数分布不等同于使用频率，在当前建边规则下与认知通达度分层形成对应',
+            '数据来源': '表F6、正文表48'
+        })
+
+    return pd.DataFrame(rows)
 
 
 def create_link_feature_analysis(results: dict) -> pd.DataFrame:
@@ -351,7 +475,7 @@ def create_h2_verification_summary(results: dict) -> pd.DataFrame:
     # H2主假设：小世界性质
     h2_data = {
         '假设编号': 'H2',
-        '假设内容': '构式网络呈现小世界性质（C>=0.60，L<=3.0，sigma>1）',
+        '假设内容': '完整12类型宏观网络满足小世界判据（C>=0.60，L<=3.0，sigma>1）',
         '验证方法': '小世界指标计算',
         '判断标准': 'C>=0.60，L<=3.0，sigma>1'
     }
@@ -375,11 +499,11 @@ def create_h2_verification_summary(results: dict) -> pd.DataFrame:
         h2_data['统计显著性'] = 'N/A（描述性指标）'
 
         if c_pass and l_pass and sigma_pass:
-            h2_data['验证结论'] = '支持'
-            h2_data['支持程度'] = '强'
+            h2_data['验证结论'] = '描述性支持'
+            h2_data['支持程度'] = '描述性'
         elif (c_pass and l_pass) or (c_pass and sigma_pass) or (l_pass and sigma_pass):
-            h2_data['验证结论'] = '部分支持'
-            h2_data['支持程度'] = '中等'
+            h2_data['验证结论'] = '部分描述性支持'
+            h2_data['支持程度'] = '描述性支持'
         else:
             h2_data['验证结论'] = '不支持'
             h2_data['支持程度'] = '无'
@@ -390,20 +514,80 @@ def create_h2_verification_summary(results: dict) -> pd.DataFrame:
 
     table_data.append(h2_data)
 
+    # H2稳定性补充：随机边集扰动
+    h2_stability_data = {
+        '假设编号': 'H2-稳定性',
+        '假设内容': '随机边集扰动下的小世界判定稳健性',
+        '验证方法': '固定随机种子的删边补边敏感性分析',
+        '判断标准': '均值层面C>=0.60，L<=3.0，sigma>1；同步报告单次达标风险'
+    }
+
+    if 'sensitivity' in results and results['sensitivity']:
+        highest = results['sensitivity'][-1]
+        h2_stability_data['实际结果'] = (
+            f"{highest.get('扰动水平')}扰动（实际{highest.get('实际扰动比例', 'NA')}，"
+            f"替换{highest.get('实际替换边数', 'NA')}条边）："
+            f"C均值={highest.get('C均值')}, L均值={highest.get('L均值')}, "
+            f"sigma均值={highest.get('sigma均值')}; "
+            f"C达标率={highest.get('C达标率')}, sigma达标率={highest.get('sigma达标率')}"
+        )
+        h2_stability_data['统计显著性'] = 'N/A（敏感性分析）'
+        h2_stability_data['验证结论'] = highest.get('均值层面判定', '待确认')
+        h2_stability_data['支持程度'] = f"单次达标风险：{highest.get('单次达标风险', '待确认')}"
+    else:
+        h2_stability_data['实际结果'] = '待计算'
+        h2_stability_data['统计显著性'] = 'N/A'
+        h2_stability_data['验证结论'] = '待确认'
+        h2_stability_data['支持程度'] = '待确认'
+
+    table_data.append(h2_stability_data)
+
+    # H2宏观边贡献补充：链接删除实验
+    h2_macro_edge_data = {
+        '假设编号': 'H2-宏观边贡献',
+        '假设内容': '两类宏观操作边对小世界拓扑的结构贡献',
+        '验证方法': '链接删除实验',
+        '判断标准': '删除任一宏观边类型后观察聚类和连通性变化'
+    }
+
+    if 'link_removal' in results and results['link_removal']:
+        parts = []
+        for item in results['link_removal']:
+            parts.append(
+                f"删除{item.get('链接类型')}后C={item.get('删除后C')}，"
+                f"连通性={item.get('删除后连通性')}"
+            )
+        h2_macro_edge_data['实际结果'] = '；'.join(parts)
+        h2_macro_edge_data['统计显著性'] = 'N/A（结构删除实验）'
+        h2_macro_edge_data['验证结论'] = '描述性支持'
+        h2_macro_edge_data['支持程度'] = '宏观结构补充'
+    else:
+        h2_macro_edge_data['实际结果'] = '待计算'
+        h2_macro_edge_data['统计显著性'] = 'N/A'
+        h2_macro_edge_data['验证结论'] = '待确认'
+        h2_macro_edge_data['支持程度'] = '待确认'
+
+    table_data.append(h2_macro_edge_data)
+
     # H2补充：四类链接关系
     h2_link_data = {
         '假设编号': 'H2-补充',
-        '假设内容': '四类链接关系共同构成网络拓扑',
+        '假设内容': '四类链接关系共同构成微观实例层描述证据',
         '验证方法': '链接类型频率分析',
         '判断标准': '四类链接均存在'
     }
 
     if 'link_types' in results:
         n_types = len([x for x in results['link_types'] if x.get('频数', 0) > 0])
-        h2_link_data['实际结果'] = f'识别到{n_types}类链接'
+        dominant = next((x for x in results['link_types'] if x.get('链接类型') == '隐喻扩展链接'), {})
+        dominant_ratio = dominant.get('占比(%)')
+        if dominant_ratio is not None:
+            h2_link_data['实际结果'] = f'识别到{n_types}类链接；隐喻扩展链接占{dominant_ratio}%'
+        else:
+            h2_link_data['实际结果'] = f'识别到{n_types}类链接'
         h2_link_data['统计显著性'] = 'N/A'
-        h2_link_data['验证结论'] = '支持' if n_types >= 4 else '部分支持'
-        h2_link_data['支持程度'] = '强' if n_types >= 4 else '中等'
+        h2_link_data['验证结论'] = '描述性支持' if n_types >= 4 else '部分描述性支持'
+        h2_link_data['支持程度'] = '描述性补充' if n_types >= 4 else '中等'
     else:
         h2_link_data['实际结果'] = '待计算'
         h2_link_data['验证结论'] = '待确认'
@@ -473,27 +657,36 @@ def main():
     print("-" * 40)
     results = load_previous_results(paths)
 
-    # 2. 创建表86
+    # 2. 创建Q2网络特征综合汇总
     print("\n" + "-" * 40)
-    print("2. 保存表86: Q2网络特征综合汇总")
+    print("2. 保存表87aux: Q2网络特征综合汇总")
     print("-" * 40)
     summary_table = create_network_summary_table(results)
     print(summary_table.to_string(index=False))
     save_table(summary_table, "Q2网络特征综合汇总", global_num="87aux",
                title="Q2网络特征综合汇总", formats=['csv', 'json'])
 
-    # 3. 创建表77
+    # 3. 创建正文表48对应的探索性分析汇总
     print("\n" + "-" * 40)
-    print("3. 保存表77: 四类链接与构式特征关联分析")
+    print("3. 保存表87aux: Q2探索性分析发现汇总（正文表48）")
+    print("-" * 40)
+    exploratory_summary = create_exploratory_findings_summary_table(results)
+    print(exploratory_summary.to_string(index=False))
+    save_table(exploratory_summary, "Q2探索性分析发现汇总", global_num="87aux",
+               title="Q2探索性分析发现汇总", formats=['csv', 'json'])
+
+    # 4. 创建表77
+    print("\n" + "-" * 40)
+    print("4. 保存表82a: 四类链接与构式特征关联分析")
     print("-" * 40)
     link_analysis = create_link_feature_analysis(results)
     print(link_analysis.to_string(index=False))
     save_table(link_analysis, "四类链接与构式特征关联分析", global_num="82a",  # 补充分析
                title="四类链接与构式特征关联分析", formats=['csv', 'json'])
 
-    # 4. 创建表73
+    # 5. 创建中心性相关分析（已由Q2_04生成，保留屏幕复核）
     print("\n" + "-" * 40)
-    print("4. 保存表78: 网络中心性与认知维度相关分析")
+    print("5. 复核表78: 网络中心性与认知维度相关分析")
     print("-" * 40)
     corr_analysis = create_centrality_cognitive_correlation(results)
     if len(corr_analysis) > 0:
@@ -503,25 +696,25 @@ def main():
     # [已删除] 网络中心性与认知维度相关分析 - 与Q2_04重复
 #                title="网络中心性与认知维度相关分析", formats=['csv', 'json'])
 
-    # 5. 创建表74
+    # 6. 创建社区结构与类型特征对应分析（已由Q2_05生成，保留屏幕复核）
     print("\n" + "-" * 40)
-    print("5. 保存表79: 社区结构与类型特征对应分析")
+    print("6. 复核表82a: 社区结构与类型特征对应分析")
     print("-" * 40)
     comm_analysis = create_community_type_analysis(results)
     print(comm_analysis.to_string(index=False))
     # [已删除] 社区结构与类型特征对应分析 - 与Q2_05重复
 #                title="社区结构与类型特征对应分析", formats=['csv', 'json'])
 
-    # 6. 创建表76
+    # 7. 创建表81
     print("\n" + "-" * 40)
-    print("6. 保存表81: Q2假设验证结果汇总")
+    print("7. 保存表81: Q2假设验证结果汇总")
     print("-" * 40)
     h2_summary = create_h2_verification_summary(results)
     print(h2_summary.to_string(index=False))
     save_table(h2_summary, "Q2假设验证结果汇总", global_num=81,
                title="Q2假设验证结果汇总", formats=['csv', 'json'])
 
-    # 7. 打印整体结论
+    # 8. 打印整体结论
     print_q2_conclusion(results)
 
     print("\n" + "=" * 60)

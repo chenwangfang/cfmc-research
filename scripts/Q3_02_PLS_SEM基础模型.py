@@ -14,7 +14,7 @@ PLS-SEM 形成性测量模型（Mode.B）分析
   - CSV数据文件（≥6个，描述性命名）→ 结果_输出/Data/
   - PNG图表（4个，dpi=300）→ 结果_输出/Figures/
 
-数据源：结果_输出/Data/CFMC_for_SEM.csv（5989条）
+数据源：结果_输出/Data/CFMC_for_SEM.csv（5,971条）
 Python环境：/home/tomja/miniconda3/envs/m_s/bin/python
 
 创建日期：2026-02-08
@@ -46,7 +46,7 @@ from plspm.mode import Mode
 
 # 导入公共函数（路径管理+图表保存）
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from utils_公共函数 import get_paths, save_figure, save_table, setup_chinese_font
+from utils_公共函数 import get_paths, save_figure, save_table, setup_chinese_font, get_hd_output_dir
 
 
 # ============================================================
@@ -104,8 +104,17 @@ def save_png(fig, filename, dpi=300):
     """保存PNG到结果_输出/Figures/目录"""
     path = PATHS['output_figures'] / filename
     fig.savefig(path, dpi=dpi, bbox_inches='tight', facecolor='white', edgecolor='none')
+    # 高清输出（1200 DPI）
+    hd_dir = get_hd_output_dir()
+    hd_dir.mkdir(parents=True, exist_ok=True)
+    hd_path = hd_dir / filename
+    fig.savefig(hd_path, dpi=1200, bbox_inches='tight', facecolor='white', edgecolor='none')
+    svg_path = hd_path.with_suffix('.svg')
+    fig.savefig(svg_path, format='svg', bbox_inches='tight', facecolor='white', edgecolor='none')
     plt.close(fig)
     print(f"  [OK] 已保存: {path.name}")
+    print(f"  → 高清: {hd_path}")
+    print(f"  → 矢量: {svg_path}")
     return path
 
 
@@ -499,14 +508,16 @@ def output_model_comparison(results_a, results_b, results_c):
             'R2(Y)': round(r2_dict.get('Y', np.nan), 4) if not np.isnan(r2_dict.get('Y', np.nan)) else '-',
         })
 
-    # f2效应量（模型A vs 模型B，评估η1的效应）
+    # f²效应量（模型C vs 模型A，评估η₁→η₃直接路径的增量贡献）
+    # 模型B移除η₁后，η₂由内生变量变为外生变量，形成性权重结构随之改变；
+    # 因此模型A与模型B的R²差异不宜直接转换为η₁的效应量。
     r2_eta3_A = results_a['inner_summary'].loc['eta3', 'r_squared'] if 'eta3' in results_a['inner_summary'].index else np.nan
-    r2_eta3_B = results_b['inner_summary'].loc['eta3', 'r_squared'] if 'eta3' in results_b['inner_summary'].index else np.nan
+    r2_eta3_C = results_c['inner_summary'].loc['eta3', 'r_squared'] if 'eta3' in results_c['inner_summary'].index else np.nan
 
-    f2_eta1_on_eta3 = calculate_f_squared(r2_eta3_A, r2_eta3_B) if not np.isnan(r2_eta3_A) and not np.isnan(r2_eta3_B) else np.nan
+    f2_eta1_on_eta3 = calculate_f_squared(r2_eta3_C, r2_eta3_A) if not np.isnan(r2_eta3_C) and not np.isnan(r2_eta3_A) else np.nan
 
     rows.append({
-        '模型': 'f2(η1对η3)',
+        '模型': 'f²(η₁→η₃直接)',
         'GoF': '-',
         'R2(η2)': '-',
         'R2(η3)': f'{f2_eta1_on_eta3:.4f}' if not np.isnan(f2_eta1_on_eta3) else '-',
@@ -546,12 +557,11 @@ def output_effects_decomposition_c(results_c):
 
 
 def output_mediation_effects(results_c):
-    """输出：中介效应检验表（基于模型C，含直接路径η₁→η₃和η₂→Y）
+    """输出：模型C效应分解与中介模式描述表。
 
-    中介类型判断标准（Zhao et al., 2010）：
-    - 间接效应显著 + 直接效应不显著 → 完全中介（indirect-only）
-    - 间接效应显著 + 直接效应显著且同号 → 互补中介（complementary partial）
-    - 间接效应显著 + 直接效应显著且异号 → 竞争中介（competitive）
+    本表使用直接、间接和总效应点估计描述模型C的传导模式。
+    当前脚本不单独计算间接效应的置信区间或p值，因此不把结果表述为
+    间接效应显著性检验。
     """
     effects = results_c['effects']
     inner = results_c['inner_model']
@@ -581,16 +591,17 @@ def output_mediation_effects(results_c):
             # 获取直接路径的p值
             direct_p = get_direct_p(from_lv, to_lv)
 
-            # 判断中介类型（Zhao et al., 2010标准）
-            # 直接效应是否显著：检查模型C的inner_model中是否有该路径及其p值
+            # 描述性模式判断：检查模型C的inner_model中是否有该路径及其p值
             direct_significant = (not np.isnan(direct_p)) and (direct_p < 0.05)
 
-            if not direct_significant or abs(direct) < 1e-6:
-                med_type = '完全中介'
+            if np.isnan(direct_p):
+                pattern = '模型设定下的总间接效应'
+            elif (not direct_significant) or abs(direct) < 1e-6:
+                pattern = '间接路径为主的描述性模式'
             elif direct * indirect > 0:
-                med_type = '互补中介（部分中介）'
+                pattern = '互补中介模式（点估计）'
             else:
-                med_type = '竞争中介（抑制效应）'
+                pattern = '竞争中介（抑制效应）'
 
             # 直接效应显著性标记
             if np.isnan(direct_p):
@@ -608,17 +619,17 @@ def output_mediation_effects(results_c):
                 '间接效应': round(indirect, 4),
                 '总效应': round(total, 4),
                 '中介比例': round(mediation_ratio, 4) if not np.isnan(mediation_ratio) else '-',
-                '中介类型': med_type,
+                '描述性模式': pattern,
             })
 
     if rows:
         df = pd.DataFrame(rows)
     else:
         df = pd.DataFrame(columns=['起点', '终点', '直接效应', '直接效应p值', '直接效应显著性',
-                                    '间接效应', '总效应', '中介比例', '中介类型'])
+                                    '间接效应', '总效应', '中介比例', '描述性模式'])
         df.loc[0] = ['(无间接效应)', '-', '-', '-', '-', '-', '-', '-', '-']
 
-    save_csv(df, 'PLS_中介效应检验.csv')
+    save_csv(df, 'PLS_模型C效应分解与中介模式描述.csv')
     return df
 
 
@@ -627,10 +638,10 @@ def output_mediation_effects(results_c):
 # ============================================================
 
 def plot_path_model(results_a, results_c, data):
-    """图：四阶段路径模型结构图 + 中介效应汇总表（合并版）
+    """图：四阶段路径模型结构图 + 效应分解汇总表（合并版）
     上方：潜变量椭圆 + 路径系数 + R² + GoF + 模型C直接路径（虚线弧线）
-    下方：间接效应表（中介路径、效应值、中介类型、中介比例）
-    数据源：PLS_中介效应检验.csv + PLS_效应分解表.csv（动态加载）
+    下方：间接效应表（效应对象、效应值、描述性模式、间接比例）
+    数据源：PLS_模型C效应分解与中介模式描述.csv + PLS_效应分解表_模型C.csv（动态加载）
     """
     plt.close('all')
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -641,8 +652,8 @@ def plot_path_model(results_a, results_c, data):
     inner = results_a['inner_model']
     summary = results_a['inner_summary']
 
-    # 从CSV动态加载中介效应数据（遵守O001规则）
-    mediation_csv = PATHS['output_data'] / 'PLS_中介效应检验.csv'
+    # 从CSV动态加载效应分解数据（遵守O001规则）
+    mediation_csv = PATHS['output_data'] / 'PLS_模型C效应分解与中介模式描述.csv'
     if mediation_csv.exists():
         mediation_df = pd.read_csv(mediation_csv, index_col=0)
     else:
@@ -719,7 +730,7 @@ def plot_path_model(results_a, results_c, data):
             return row.iloc[0]['estimate'], row.iloc[0]['p>|t|']
         return np.nan, np.nan
 
-    # η₁→η₃ 直接路径（弧线，从上方绕过η₂）
+    # η₁→η₃直接路径（弧线，表示未由η₂解释的直接统计关联）
     beta_13, p_13 = get_path_c('eta1', 'eta3')
     if not np.isnan(beta_13):
         sig_13 = '***' if p_13 < 0.001 else ('**' if p_13 < 0.01 else ('*' if p_13 < 0.05 else 'ns'))
@@ -731,7 +742,7 @@ def plot_path_model(results_a, results_c, data):
                 ha='center', va='bottom', fontsize=10, color=color_13,
                 fontstyle='italic')
 
-    # η₂→Y 直接路径（弧线，从下方绕过η₃）
+    # η₂→Y直接路径（弧线，表示未由η₃解释的直接统计关联）
     beta_2y, p_2y = get_path_c('eta2', 'Y')
     if not np.isnan(beta_2y):
         sig_2y = '***' if p_2y < 0.001 else ('**' if p_2y < 0.01 else ('*' if p_2y < 0.05 else 'ns'))
@@ -749,7 +760,7 @@ def plot_path_model(results_a, results_c, data):
             ha='left', va='top', fontproperties=_font(10),
             bbox=dict(boxstyle='round', facecolor='lightgreen', alpha=0.6))
 
-    # ---- 下方：中介效应汇总表 ----
+    # ---- 下方：效应分解汇总表 ----
     if not mediation_df.empty:
         # 构建表格数据
         table_data = []
@@ -757,25 +768,25 @@ def plot_path_model(results_a, results_c, data):
             from_lv = row['起点']
             to_lv = row['终点']
             if from_lv == 'eta1' and to_lv == 'eta3':
-                path_desc = '$\\eta_1$ \u2192 $\\eta_2$ \u2192 $\\eta_3$'
+                path_desc = '$\\eta_1$ \u2192 $\\eta_3$（经$\\eta_2$）'
             elif from_lv == 'eta1' and to_lv == 'Y':
-                path_desc = '$\\eta_1$ \u2192 $\\eta_2$ \u2192 $\\eta_3$ \u2192 $Y$'
+                path_desc = '$\\eta_1$ \u2192 $Y$（总间接）'
             elif from_lv == 'eta2' and to_lv == 'Y':
-                path_desc = '$\\eta_2$ \u2192 $\\eta_3$ \u2192 $Y$'
+                path_desc = '$\\eta_2$ \u2192 $Y$（经$\\eta_3$）'
             else:
                 path_desc = f'{from_lv} \u2192 {to_lv}'
 
             indirect = row['间接效应']
-            med_type = row['中介类型']
+            pattern = row['描述性模式']
             med_ratio = row['中介比例']
 
             if isinstance(med_ratio, (int, float)):
                 ratio_str = f'{med_ratio:.0%}'
             else:
                 ratio_str = str(med_ratio)
-            table_data.append([path_desc, f'{indirect:.4f}', med_type, ratio_str])
+            table_data.append([path_desc, f'{indirect:.4f}', pattern, ratio_str])
 
-        col_labels = ['间接效应路径', '效应值', '中介类型', '中介比例']
+        col_labels = ['效应对象', '效应值', '描述性模式', '间接比例']
         table = ax.table(cellText=table_data,
                          colLabels=col_labels,
                          cellLoc='center',
@@ -1093,12 +1104,30 @@ def main():
     if src.exists():
         shutil.copy2(src, dst)
         print(f"  [OK] 已复制: {dst.name}")
-    # 图29：路径模型图 + 中介效应汇总（合并版，复制为全局编号版本）
+    # 图29：路径模型图 + 效应分解汇总（合并版，复制为全局编号版本）
     src = PATHS['output_figures'] / 'PLS_路径模型图.png'
-    dst = PATHS['output_figures'] / '图29_四阶段认知编码机制路径与中介效应图.png'
+    dst = PATHS['output_figures'] / '图29_四阶段认知编码机制路径与效应分解图.png'
     if src.exists():
         shutil.copy2(src, dst)
         print(f"  [OK] 已复制: {dst.name}")
+
+    # 高清图目录也复制为全局编号版本（PNG + SVG）
+    hd_dir = get_hd_output_dir()
+    for src_name, dst_name in [
+        ('PLS_外部权重图.png', '图28_形成性指标外部权重图.png'),
+        ('PLS_路径模型图.png', '图29_四阶段认知编码机制路径与效应分解图.png'),
+    ]:
+        hd_src = hd_dir / src_name
+        hd_dst = hd_dir / dst_name
+        if hd_src.exists():
+            shutil.copy2(hd_src, hd_dst)
+            print(f"  [OK] 高清已复制: {hd_dst.name}")
+        # SVG 矢量版本也复制
+        svg_src = hd_dir / src_name.replace('.png', '.svg')
+        svg_dst = hd_dir / dst_name.replace('.png', '.svg')
+        if svg_src.exists():
+            shutil.copy2(svg_src, svg_dst)
+            print(f"  [OK] 矢量已复制: {svg_dst.name}")
 
     # 7. 汇总报告
     print("\n[7/7] 分析汇总")

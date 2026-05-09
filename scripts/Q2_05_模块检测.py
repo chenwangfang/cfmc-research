@@ -3,12 +3,12 @@
 """
 Q2_05_模块检测.py
 ================
-社区/模块检测（Louvain算法）
+社区/模块检测（模块度优化）
 
 输出：
-- 图23: 网络社区结构可视化图（补充图）
-- 表77: 五大模块组成特征（原表73）
-- 表82a: 社区与构式类型对应表（原表74）
+- 图22: 网络社区结构可视化图
+- 表77: 社区检测结果
+- 表82a: 社区与构式类型对应表
 
 验证标准：模块度Q >= 0.40
 
@@ -30,7 +30,7 @@ from collections import defaultdict
 import warnings
 warnings.filterwarnings('ignore')
 
-# 尝试导入community模块
+# 优先使用python-louvain；不可用时回退到NetworkX贪婪模块度优化，并在输出中记录实际算法。
 try:
     import community as community_louvain
     HAS_COMMUNITY = True
@@ -70,12 +70,13 @@ def detect_communities(G: nx.Graph) -> tuple:
     Returns
     -------
     tuple
-        (社区划分字典, 模块度Q)
+        (社区划分字典, 模块度Q, 实际算法名称)
     """
     if HAS_COMMUNITY:
         # 使用Louvain算法
         partition = community_louvain.best_partition(G, random_state=42)
         modularity = community_louvain.modularity(partition, G)
+        algorithm_name = "Louvain (python-louvain)"
         print(f"  使用Louvain算法")
     else:
         # 使用networkx内置的贪婪模块度优化
@@ -90,16 +91,19 @@ def detect_communities(G: nx.Graph) -> tuple:
 
         # 计算模块度
         modularity = nx.algorithms.community.modularity(G, communities)
+        algorithm_name = "NetworkX greedy modularity"
         print(f"  使用贪婪模块度优化算法")
 
     print(f"  检测到 {len(set(partition.values()))} 个社区")
     print(f"  模块度Q = {modularity:.4f}")
+    print(f"  实际算法: {algorithm_name}")
 
-    return partition, modularity
+    return partition, modularity, algorithm_name
 
 
 def create_community_table(G: nx.Graph, partition: dict,
-                           modularity: float) -> pd.DataFrame:
+                           modularity: float,
+                           algorithm_name: str) -> pd.DataFrame:
     """
     创建社区检测结果表（表77）
 
@@ -111,6 +115,8 @@ def create_community_table(G: nx.Graph, partition: dict,
         社区划分
     modularity : float
         模块度
+    algorithm_name : str
+        实际使用的社区检测算法
 
     Returns
     -------
@@ -151,6 +157,8 @@ def create_community_table(G: nx.Graph, partition: dict,
             '节点数': n,
             '成员构式': ', '.join(sorted(stats['nodes'])),
             '社区内边数': stats['internal_edges'],
+            '模块度Q': round(modularity, 4),
+            '社区检测算法': algorithm_name,
             '平均认知通达度': round(stats['ca_sum'] / n, 2) if n > 0 else 0,
             '平均概念复杂度': round(stats['cc_sum'] / n, 2) if n > 0 else 0,
             '样本总量': int(stats['total_size'])
@@ -162,6 +170,8 @@ def create_community_table(G: nx.Graph, partition: dict,
         '节点数': len(partition),
         '成员构式': f'共{len(set(partition.values()))}个社区',
         '社区内边数': sum(s['internal_edges'] for s in community_stats.values()),
+        '模块度Q': round(modularity, 4),
+        '社区检测算法': algorithm_name,
         '平均认知通达度': '-',
         '平均概念复杂度': '-',
         '样本总量': sum(int(s['total_size']) for s in community_stats.values())
@@ -170,7 +180,7 @@ def create_community_table(G: nx.Graph, partition: dict,
     return pd.DataFrame(table_data)
 
 
-def create_community_type_mapping(partition: dict) -> pd.DataFrame:
+def create_community_type_mapping(partition: dict, algorithm_name: str) -> pd.DataFrame:
     """
     创建社区与构式类型对应表（表82a）
 
@@ -178,6 +188,8 @@ def create_community_type_mapping(partition: dict) -> pd.DataFrame:
     ----------
     partition : dict
         社区划分
+    algorithm_name : str
+        实际使用的社区检测算法
 
     Returns
     -------
@@ -189,7 +201,8 @@ def create_community_type_mapping(partition: dict) -> pd.DataFrame:
     for node, comm_id in sorted(partition.items(), key=lambda x: (x[1], x[0])):
         table_data.append({
             '构式类型': node,
-            '所属社区': f'C{comm_id + 1}'
+            '所属社区': f'C{comm_id + 1}',
+            '社区检测算法': algorithm_name
         })
 
     return pd.DataFrame(table_data)
@@ -330,7 +343,7 @@ def plot_community_structure(G: nx.Graph, partition: dict,
     ax2.text(0.5, avg_size + 0.3, f'平均规模={avg_size:.1f}',
              fontproperties=font_cn, fontsize=10, color='#c0392b', ha='center')
 
-    # plt.suptitle('图20 网络社区结构可视化图',
+    # plt.suptitle('图22 网络社区结构可视化图',
                 # fontproperties=font_cn_title, fontsize=14, y=1.02)
     plt.tight_layout()
 
@@ -379,7 +392,7 @@ def main():
     """主函数"""
     print("=" * 60)
     print("Q2_05_模块检测.py")
-    print("社区/模块检测（Louvain算法）")
+    print("社区/模块检测（模块度优化）")
     print("=" * 60)
 
     # 获取路径
@@ -397,7 +410,7 @@ def main():
     print("\n" + "-" * 40)
     print("2. 社区检测")
     print("-" * 40)
-    partition, modularity = detect_communities(G)
+    partition, modularity, algorithm_name = detect_communities(G)
 
     # 验证模块度标准
     print(f"\n模块度验证:")
@@ -407,25 +420,25 @@ def main():
 
     # 3. 创建表77
     print("\n" + "-" * 40)
-    print("3. 保存表77: 五大模块组成特征")
+    print("3. 保存表77: 社区检测结果")
     print("-" * 40)
-    community_table = create_community_table(G, partition, modularity)
+    community_table = create_community_table(G, partition, modularity, algorithm_name)
     print(community_table.to_string(index=False))
-    save_table(community_table, "五大模块组成特征", global_num=77,
+    save_table(community_table, "社区检测结果", global_num=77,
                title="社区检测结果", formats=['csv', 'json'])
 
-    # 4. 创建表82b
+    # 4. 创建表82a
     print("\n" + "-" * 40)
-    print("4. 保存表82b: 社区结构与类型特征对应分析")
+    print("4. 保存表82a: 社区结构与类型特征对应分析")
     print("-" * 40)
-    mapping_table = create_community_type_mapping(partition)
+    mapping_table = create_community_type_mapping(partition, algorithm_name)
     print(mapping_table.to_string(index=False))
     save_table(mapping_table, "社区结构与类型特征对应分析", global_num="82a",
                title="社区结构与类型特征对应分析", formats=['csv', 'json'])
 
-    # 5. 绘制图20
+    # 5. 绘制图22
     print("\n" + "-" * 40)
-    print("5. 绘制图23: 网络社区结构可视化图")
+    print("5. 绘制图22: 网络社区结构可视化图")
     print("-" * 40)
     fig = plot_community_structure(G, partition, modularity, paths)
     save_figure(fig, "网络社区结构可视化图", global_num=22,
@@ -441,8 +454,8 @@ def main():
     print("Q2_05_模块检测 完成")
     print("=" * 60)
 
-    return partition, modularity
+    return partition, modularity, algorithm_name
 
 
 if __name__ == "__main__":
-    partition, modularity = main()
+    partition, modularity, algorithm_name = main()

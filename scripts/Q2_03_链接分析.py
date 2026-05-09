@@ -6,16 +6,17 @@ Q2_03_链接分析.py
 四类链接关系分析（Goldberg构式网络理论）
 
 输出：
-- 图20: 四类链接关系分布桑基图
+- 图19: 四类链接关系分布图
+- 图20: 12类构式的实例层链接类型分布热力图
 - 表72: 四类链接关系频率分布（微观层面节点级统计）
-- 表73: 四类链接典型语例
+- 表73aux: 四类链接候选语例（自动抽取；正文表41以人工锁定语例为准）
 - 表74: 链接删除影响分析（基于真实网络删除实验）
-- 表75: 构式类型组的链接偏好分布（原表76）
+- 表75: 12类构式实例层链接类型分布交叉表（正文表43据此按通达度组汇总）
 
-注：表77（Cohen's κ）已移除——链接类型由确定性算法分配，无需信度检验。
+注：本节直接读取已固化的link_type字段；表77（Cohen's κ）已移除，不重新计算信度。
 
 创建日期：2025-12-05
-修改日期：2026-02-28（修复链接删除实验：真实删除替代线性估算）
+修改日期：2026-05-01（同步表75为实例层链接类型交叉表口径）
 """
 
 import sys
@@ -156,7 +157,7 @@ def get_link_description(link_code: int) -> str:
 
 def create_link_construction_crosstab(df: pd.DataFrame) -> pd.DataFrame:
     """
-    创建链接类型与构式类型交叉表（表75）
+    创建实例层链接类型与构式类型交叉表（表75）
 
     Parameters
     ----------
@@ -178,6 +179,10 @@ def create_link_construction_crosstab(df: pd.DataFrame) -> pd.DataFrame:
         margins=True,
         margins_name='合计'
     )
+
+    type_order = [f'T{i}' for i in range(1, 13)] + ['合计']
+    link_order = [LINK_TYPE_CODES[i] for i in [1, 2, 3, 4]] + ['合计']
+    crosstab = crosstab.reindex(index=type_order, columns=link_order, fill_value=0)
 
     # 重命名索引
     crosstab.index.name = '构式类型'
@@ -298,7 +303,7 @@ def plot_link_sankey(df: pd.DataFrame, paths: dict) -> plt.Figure:
 
 def plot_link_type_heatmap(df: pd.DataFrame, paths: dict) -> plt.Figure:
     """
-    绘制12类构式间链接类型热力图（图21）
+    绘制12类构式的实例层链接类型分布热力图（图20）
 
     Parameters
     ----------
@@ -319,123 +324,58 @@ def plot_link_type_heatmap(df: pd.DataFrame, paths: dict) -> plt.Figure:
     if 'link_type' not in df.columns:
         df = infer_link_types(df)
 
-    fig, ax = plt.subplots(figsize=(14, 10))
+    fig, ax = plt.subplots(figsize=(14, 6))
 
-    # 创建12x12的链接类型矩阵（构式类型间的主要链接类型）
+    # 以真实link_type字段统计各构式类型内的链接类型占比
     n_clusters = 12
-    link_matrix = np.zeros((n_clusters, n_clusters))
+    link_types = [1, 2, 3, 4]
+    link_matrix = np.zeros((len(link_types), n_clusters))
 
-    # 设置随机种子以确保可复现性
-    np.random.seed(42)
+    for cluster_id in range(n_clusters):
+        subset = df[df['cluster_label'] == cluster_id]
+        if len(subset) == 0:
+            continue
+        counts = subset['link_type'].value_counts(normalize=True) * 100
+        for row, link_type in enumerate(link_types):
+            link_matrix[row, cluster_id] = counts.get(link_type, 0.0)
 
-    # 计算每个构式类型的平均认知通达度
-    ca_means = {}
-    for i in range(n_clusters):
-        mask = df['cluster_label'] == i
-        subset = df[mask]
-        if len(subset) > 0:
-            ca_means[i] = subset['cognitive_accessibility'].mean()
-        else:
-            ca_means[i] = 3.0  # 默认中等
-
-    # 统计各构式类型对之间的主要链接关系
-    for i in range(n_clusters):
-        for j in range(n_clusters):
-            if i == j:
-                # 对角线：使用真实数据统计（各类型内部最常见的链接类型）
-                mask = df['cluster_label'] == i
-                subset = df[mask]
-                if len(subset) > 0 and len(subset['link_type'].mode()) > 0:
-                    link_matrix[i, j] = subset['link_type'].mode().values[0]
-                else:
-                    link_matrix[i, j] = 1  # 默认隐喻扩展链接
-            else:
-                # 非对角线：基于认知通达度差异推断，优化阈值使四类链接都出现
-                ca_diff = abs(ca_means[i] - ca_means[j])
-
-                # 优化后的阈值划分（确保多义链接能出现）
-                if ca_diff < 0.3:
-                    # 非常相近：隐喻扩展链接为主，少数多义链接
-                    link_matrix[i, j] = 1 if np.random.random() > 0.25 else 2
-                elif ca_diff < 0.7:
-                    # 较相近：多义链接为主
-                    link_matrix[i, j] = 2 if np.random.random() > 0.3 else 1
-                elif ca_diff < 1.2:
-                    # 中等差异：子部分链接为主，少数多义链接
-                    link_matrix[i, j] = 3 if np.random.random() > 0.2 else 2
-                else:
-                    # 差异较大：实例链接为主
-                    link_matrix[i, j] = 4 if np.random.random() > 0.15 else 3
-
-    # 使用与图23一致的颜色方案
-    colors_map = {
-        1: '#E74C3C',  # 隐喻扩展链接 - 红色
-        2: '#3498DB',  # 多义链接 - 蓝色
-        3: '#2ECC71',  # 子部分链接 - 绿色
-        4: '#F39C12'   # 实例链接 - 橙色
-    }
-
-    # 创建自定义colormap
-    from matplotlib.colors import ListedColormap
-    cmap_colors = [colors_map[1], colors_map[2], colors_map[3], colors_map[4]]
-    cmap = ListedColormap(cmap_colors)
-
-    im = ax.imshow(link_matrix, cmap=cmap, vmin=0.5, vmax=4.5)
+    im = ax.imshow(link_matrix, cmap='YlOrRd', vmin=0, vmax=max(100, link_matrix.max()))
 
     # 设置标签
     labels = [f'T{i+1}' for i in range(n_clusters)]
     ax.set_xticks(np.arange(n_clusters))
-    ax.set_yticks(np.arange(n_clusters))
+    ax.set_yticks(np.arange(len(link_types)))
     ax.set_xticklabels(labels, fontproperties=font_cn, fontsize=10)
-    ax.set_yticklabels(labels, fontproperties=font_cn, fontsize=10)
+    ax.set_yticklabels([LINK_TYPE_CODES[i] for i in link_types],
+                       fontproperties=font_cn, fontsize=10)
 
-    # 添加链接类型标注
-    link_abbrevs = {1: '隐', 2: '多', 3: '子', 4: '实'}
-    for i in range(n_clusters):
-        for j in range(n_clusters):
-            link_val = int(link_matrix[i, j])
-            if link_val > 0:
-                # 根据背景色选择文字颜色
-                text_color = 'white' if link_val in [1, 2, 3] else 'black'
-                fontweight = 'bold' if i == j else 'normal'  # 对角线加粗
-                ax.text(j, i, link_abbrevs.get(link_val, ''),
-                       ha='center', va='center', fontsize=10,
-                       fontproperties=font_cn, color=text_color, fontweight=fontweight)
+    # 添加占比标注
+    for row in range(len(link_types)):
+        for col in range(n_clusters):
+            value = link_matrix[row, col]
+            if value > 0:
+                text_color = 'white' if value >= 40 else 'black'
+                ax.text(col, row, f'{value:.1f}%', ha='center', va='center',
+                        fontsize=8, color=text_color)
 
-    # 对角线单元格添加边框高亮
-    for i in range(n_clusters):
-        rect = plt.Rectangle((i-0.5, i-0.5), 1, 1, fill=False,
-                             edgecolor='black', linewidth=2.5)
-        ax.add_patch(rect)
+    ax.set_xlabel('构式类型', fontproperties=font_cn, fontsize=12)
+    ax.set_ylabel('实例层链接类型', fontproperties=font_cn, fontsize=12)
 
-    ax.set_xlabel('目标构式类型', fontproperties=font_cn, fontsize=12)
-    ax.set_ylabel('源构式类型', fontproperties=font_cn, fontsize=12)
-
-    # 添加图例（使用与颜色映射一致的颜色）
-    from matplotlib.patches import Patch
-    legend_elements = [
-        Patch(facecolor=colors_map[1], label='隐喻扩展链接', edgecolor='white', linewidth=1),
-        Patch(facecolor=colors_map[2], label='多义链接', edgecolor='white', linewidth=1),
-        Patch(facecolor=colors_map[3], label='子部分链接', edgecolor='white', linewidth=1),
-        Patch(facecolor=colors_map[4], label='实例链接', edgecolor='white', linewidth=1)
-    ]
-    ax.legend(handles=legend_elements, loc='upper left', bbox_to_anchor=(1.02, 1),
-              prop=font_cn, frameon=True, fancybox=True, shadow=True)
-
-    # plt.title('图18 12类构式间链接类型热力图', fontproperties=font_cn_title, fontsize=14, pad=20)
+    cbar = plt.colorbar(im, ax=ax, shrink=0.8)
+    cbar.set_label('类型内占比（%）', fontproperties=font_cn)
     plt.tight_layout()
 
     return fig
 
 
 # [已移除] calculate_cohen_kappa
-# 链接类型由 Q2_01 的确定性算法分配（基于认知通达度差和映射方向的阈值规则），
-# 不涉及人工主观判断，因此 Cohen's κ 标注者间一致性检验不适用。
+# 本节直接读取已固化的link_type字段；宏观层边类型由 Q2_01 的 CA-MD 规则生成，
+# 二者不可混同，因此 Cohen's κ 标注者间一致性检验不适用。
 
 
 def get_typical_examples(df: pd.DataFrame, n_per_type: int = 3) -> pd.DataFrame:
     """
-    获取四类链接的典型语例（表73）
+    获取四类链接的候选语例（表73aux）
 
     Parameters
     ----------
@@ -491,8 +431,8 @@ def analyze_link_removal_impact(G: nx.Graph) -> pd.DataFrame:
 
     基于宏观层类型网络，实际删除不同类型链接后重新计算网络拓扑指标。
     宏观网络包含两种边类型：
-    - type 1（隐喻扩展链接）：跨社区桥梁
-    - type 2（多义链接）：社区内密集连接
+    - type 1（隐喻扩展边）：跨社区桥梁
+    - type 2（多义型操作边）：社区内密集连接
 
     Parameters
     ----------
@@ -513,6 +453,10 @@ def analyze_link_removal_impact(G: nx.Graph) -> pd.DataFrame:
 
     # 统计实际边类型分布
     edge_by_type = {}
+    macro_link_type_names = {
+        1: '隐喻扩展边',
+        2: '多义型操作边',
+    }
     for u, v, d in G.edges(data=True):
         lt = d.get('link_type', 0)
         if lt not in edge_by_type:
@@ -520,7 +464,7 @@ def analyze_link_removal_impact(G: nx.Graph) -> pd.DataFrame:
         edge_by_type[lt].append((u, v))
 
     for lt in sorted(edge_by_type):
-        link_name = LINK_TYPE_CODES.get(lt, f'类型{lt}')
+        link_name = macro_link_type_names.get(lt, LINK_TYPE_CODES.get(lt, f'类型{lt}'))
         print(f"  {link_name}: {len(edge_by_type[lt])}条边")
 
     results = []
@@ -528,7 +472,7 @@ def analyze_link_removal_impact(G: nx.Graph) -> pd.DataFrame:
     for link_type in sorted(edge_by_type.keys()):
         edges = edge_by_type[link_type]
         edge_count = len(edges)
-        link_name = LINK_TYPE_CODES.get(link_type, f'类型{link_type}')
+        link_name = macro_link_type_names.get(link_type, LINK_TYPE_CODES.get(link_type, f'类型{link_type}'))
 
         # 真实删除并重新计算
         G_copy = G.copy()
@@ -629,30 +573,30 @@ def main():
 
     # 3. 创建交叉表
     print("\n" + "-" * 40)
-    print("3. 保存表75: 构式类型组的链接偏好分布")
+    print("3. 保存表75: 12类构式实例层链接类型分布交叉表")
     print("-" * 40)
     if 'link_type' not in df.columns:
         df = infer_link_types(df)
     crosstab = create_link_construction_crosstab(df)
     print(crosstab.to_string())
-    save_table(crosstab.reset_index(), "构式类型组的链接偏好分布", global_num=75,
-               title="构式类型组的链接偏好分布", formats=['csv', 'json'])
+    save_table(crosstab.reset_index(), "12类构式实例层链接类型分布交叉表", global_num=75,
+               title="12类构式实例层链接类型分布交叉表", formats=['csv', 'json'])
 
-    # 4. 绘制图17
+    # 4. 绘制图19
     print("\n" + "-" * 40)
-    print("4. 绘制图20: 四类链接关系分布桑基图")
+    print("4. 绘制图19: 四类链接关系分布图")
     print("-" * 40)
     fig = plot_link_sankey(df, paths)
     save_figure(fig, "四类链接关系分布图", global_num=19,
                 title="四类链接关系分布")
 
-    # 4a. 绘制图21: 12类构式间链接类型热力图
+    # 4a. 绘制图20: 12类构式的实例层链接类型分布热力图
     print("\n" + "-" * 40)
-    print("4a. 绘制图21: 12类构式间链接类型热力图")
+    print("4a. 绘制图20: 12类构式的实例层链接类型分布热力图")
     print("-" * 40)
     fig_heatmap = plot_link_type_heatmap(df, paths)
-    save_figure(fig_heatmap, "12类构式间链接类型热力图", global_num=20,
-                title="12类构式间链接类型热力图")
+    save_figure(fig_heatmap, "12类构式的实例层链接类型分布热力图", global_num=20,
+                title="12类构式的实例层链接类型分布热力图")
 
     # 5. 详细模式分析
     print("\n" + "-" * 40)
@@ -661,19 +605,19 @@ def main():
     analyze_link_patterns(df)
 
     # 6. [已移除] Cohen's κ信度分析
-    # 链接类型由确定性算法分配，不涉及人工判断，κ不适用
+    # 本节直接读取已固化的link_type字段；字段复核口径见主稿4.3.3节。
     print("\n" + "-" * 40)
-    print("6. [跳过] Cohen's κ信度分析（链接类型为算法确定，无需信度检验）")
+    print("6. [跳过] Cohen's κ信度分析（本节读取已固化link_type字段，不重新计算一致性）")
     print("-" * 40)
 
-    # 7. 典型语例
+    # 7. 候选语例
     print("\n" + "-" * 40)
-    print("7. 保存表73: 四类链接典型语例")
+    print("7. 保存表73aux: 四类链接候选语例（正文表41以人工锁定语例为准）")
     print("-" * 40)
     examples_table = get_typical_examples(df, n_per_type=3)
     print(examples_table.to_string(index=False))
     save_table(examples_table, "四类链接典型语例", global_num="73aux",
-               title="四类链接关系典型语例", formats=['csv', 'json'])
+               title="四类链接候选语例（自动抽取）", formats=['csv', 'json'])
 
     # 8. 链接删除影响分析（基于真实网络删除实验）
     print("\n" + "-" * 40)

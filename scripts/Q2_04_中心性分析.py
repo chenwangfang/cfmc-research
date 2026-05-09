@@ -23,7 +23,6 @@ import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
-from scipy import stats
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -298,7 +297,10 @@ def plot_centrality_comparison(centrality_df: pd.DataFrame, paths: dict) -> plt.
 
 def correlate_centrality_with_features(centrality_df: pd.DataFrame) -> pd.DataFrame:
     """
-    分析中心性与构式特征的相关性
+    描述中心性与构式特征的相关趋势。
+
+    12类类型节点只形成少量中心性取值组，因此这里只输出
+    Pearson r 作为方向和强度描述，不输出显著性概率或星号标注。
 
     Parameters
     ----------
@@ -318,13 +320,13 @@ def correlate_centrality_with_features(centrality_df: pd.DataFrame) -> pd.DataFr
     for c_col in centrality_cols:
         for f_col in feature_cols:
             if f_col in centrality_df.columns:
-                r, p = stats.pearsonr(centrality_df[c_col], centrality_df[f_col])
+                r = centrality_df[c_col].corr(centrality_df[f_col])
                 results.append({
                     '中心性指标': c_col,
                     '构式特征': f_col,
                     'r': round(r, 4),
-                    'p值': f'<0.001' if p < 0.001 else f'{p:.3f}',
-                    '显著性': '***' if p < 0.001 else ('**' if p < 0.01 else ('*' if p < 0.05 else 'ns'))
+                    '推断状态': '不作显著性检验',
+                    '说明': '12类构式仅形成少量取值组，相关系数只描述方向与强度'
                 })
 
     return pd.DataFrame(results)
@@ -393,7 +395,7 @@ def analyze_function_in_network(paths: dict) -> pd.DataFrame:
 
 def analyze_function_centrality_consistency(centrality_df: pd.DataFrame, paths: dict) -> pd.DataFrame:
     """
-    分析function_in_network标签与实际中心性指标的一致性（表81b）
+    分析function_in_network标签与实际中心性指标的一致性（表83b）
 
     Parameters
     ----------
@@ -423,13 +425,41 @@ def analyze_function_centrality_consistency(centrality_df: pd.DataFrame, paths: 
     }
 
     # 按功能角色分组计算平均中心性
-    # 首先需要关联构式类型
+    # 首先需要关联到T1-T12。发布语料有时只有CA和MD字段，因此需要现场派生类型标签。
+    type_col = '_centrality_type_label'
     if 'construction_type_12' in df.columns:
-        type_col = 'construction_type_12'
+        type_order = [
+            '低_具具', '低_具抽', '低_抽抽', '低_抽具',
+            '中_具具', '中_具抽', '中_抽抽', '中_抽具',
+            '高_具具', '高_具抽', '高_抽抽', '高_抽具'
+        ]
+        type_map = {label: f'T{i + 1}' for i, label in enumerate(type_order)}
+        df[type_col] = df['construction_type_12'].map(type_map).fillna(df['construction_type_12'])
     elif 'cluster_label' in df.columns:
-        type_col = 'cluster_label'
+        cluster_values = pd.to_numeric(df['cluster_label'], errors='coerce')
+        if cluster_values.dropna().between(0, 11).all():
+            df[type_col] = cluster_values.apply(lambda x: f'T{int(x) + 1}' if pd.notna(x) else np.nan)
+        elif cluster_values.dropna().between(1, 12).all():
+            df[type_col] = cluster_values.apply(lambda x: f'T{int(x)}' if pd.notna(x) else np.nan)
+        else:
+            df[type_col] = df['cluster_label']
+    elif {'cognitive_accessibility', 'mapping_direction'}.issubset(df.columns):
+        ca_values = pd.to_numeric(df['cognitive_accessibility'], errors='coerce')
+        md_values = pd.to_numeric(df['mapping_direction'], errors='coerce')
+
+        def build_type_label(ca, md):
+            if pd.isna(ca) or pd.isna(md):
+                return np.nan
+            ca = float(ca)
+            md = int(md)
+            if md < 1 or md > 4:
+                return np.nan
+            ca_offset = 0 if ca <= 2 else 4 if ca <= 3 else 8
+            return f'T{ca_offset + md}'
+
+        df[type_col] = [build_type_label(ca, md) for ca, md in zip(ca_values, md_values)]
     else:
-        print("  [WARN] 无法找到构式类型列")
+        print("  [WARN] 无法找到或派生构式类型列")
         return pd.DataFrame()
 
     # 按功能角色分组
@@ -546,7 +576,7 @@ def main():
 
     # 6. 中心性与特征的相关分析
     print("\n" + "-" * 40)
-    print("6. 保存表79: 网络中心性与认知维度相关分析")
+    print("6. 保存表78: 网络中心性与认知维度相关分析")
     print("-" * 40)
     corr_results = correlate_centrality_with_features(centrality_df)
     print(corr_results.to_string(index=False))
@@ -562,9 +592,9 @@ def main():
         save_table(func_dist, "节点功能角色分布", global_num=78,
                    title="节点功能角色分布", formats=['csv', 'json'])
 
-    # 8. 功能角色与中心性一致性分析（表81b）
+    # 8. 功能角色与中心性一致性分析（表83b）
     print("\n" + "-" * 40)
-    print("8. 保存表81b: 功能角色与中心性一致性分析")
+    print("8. 保存表83b: 功能角色与中心性一致性分析")
     print("-" * 40)
     consistency_df = analyze_function_centrality_consistency(centrality_df, paths)
     if not consistency_df.empty:

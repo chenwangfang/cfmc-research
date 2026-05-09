@@ -14,9 +14,9 @@ PLS-SEM多组比较分析（PLS-MGA）
   - PLS_分组样本量表.csv
   - PLS_各组路径系数.csv
   - PLS_MGA置换检验结果.csv
-  - PLS_9类构式路径系数比较.csv（9类构式分组比较）
-  - 图30_各构式类型路径系数比较图.png（9类构式）
-  - 图31_各系词功能路径系数比较图.png（3类系词功能）
+  - PLS_9类构式路径系数比较.csv（旧文件名；内容为9类可分析构式Pearson近似相关比较）
+  - 图30_各系词功能路径系数比较图.png（3类系词功能）
+  - 图31_各构式类型Pearson近似相关比较图.png（9类可分析构式；文件名沿用旧称）
 
 依赖：
   - CFMC_for_SEM.csv（Q3_01生成）
@@ -486,7 +486,7 @@ def _font(size=10):
 
 
 def plot_group_path_comparison(group_results):
-    """图31：各系词功能路径系数比较图（水平点图：全样本 vs 3类系词功能）
+    """图30：各系词功能路径系数比较图（水平点图：全样本 vs 3类系词功能）
     数据源：PLS_路径系数表.csv + PLS_各组路径系数.csv
     缩减模型：仅比较 η₁→η₂ 和 η₂→η₃ 两条路径
     """
@@ -496,7 +496,7 @@ def plot_group_path_comparison(group_results):
     path_df = pd.read_csv(PATHS['output_data'] / 'PLS_路径系数表.csv', index_col=0)
     group_df = pd.read_csv(PATHS['output_data'] / 'PLS_各组路径系数.csv', index_col=0)
 
-    # 全样本系数（模型A）
+    # 全样本系数（模型A，绘图时按绝对值作符号对齐）
     model_a = path_df[path_df['模型'] == '模型A（四阶段）']
     full_vals = {}
     for _, row in model_a.iterrows():
@@ -531,7 +531,7 @@ def plot_group_path_comparison(group_results):
                     ggof = row['GoF']
         group_data[gname] = {'vals': vals, 'n': gn, 'gof': ggof}
 
-    fig, ax = plt.subplots(figsize=(9, 3.5))
+    fig, ax = plt.subplots(figsize=(9, 4.0))
 
     y_positions = [1, 0]  # 2条路径
     offsets = [-0.24, -0.08, 0.08, 0.24]  # 全样本 + 3组的y偏移
@@ -540,19 +540,23 @@ def plot_group_path_comparison(group_results):
         y = y_positions[i]
 
         # 全样本（灰色菱形）
-        fv = full_vals.get(pkey, 0)
+        fv_raw = full_vals.get(pkey, 0)
+        fv = abs(fv_raw)
         ax.scatter(fv, y + offsets[0], marker='D', color='#757575', s=80, zorder=5)
-        ax.text(fv, y + offsets[0] + 0.14, f'{fv:.3f}', ha='center', va='bottom',
-                fontsize=8, color='#757575', fontweight='bold')
+        ax.text(fv - 0.018, y + offsets[0], f'{fv:.3f}', ha='right', va='center',
+                fontsize=7.5, color='#757575', fontweight='bold')
 
         # 3类系词功能
         for j, (gname, style) in enumerate(group_styles.items()):
             gv = group_data[gname]['vals'].get(pkey, None)
             if gv is not None:
-                ax.scatter(gv, y + offsets[j+1], marker=style['marker'],
+                gv_plot = abs(gv)
+                ax.scatter(gv_plot, y + offsets[j+1], marker=style['marker'],
                            color=style['color'], s=100, zorder=5)
-                ax.text(gv, y + offsets[j+1] - 0.14, f'{gv:.3f}', ha='center', va='top',
-                        fontsize=8, color=style['color'], fontweight='bold')
+                dx = -0.018 if gname == 'attributive' else 0.018
+                ha = 'right' if gname == 'attributive' else 'left'
+                ax.text(gv_plot + dx, y + offsets[j+1], f'{gv_plot:.3f}', ha=ha, va='center',
+                        fontsize=7.5, color=style['color'], fontweight='bold')
 
     # Y轴
     ax.set_yticks(y_positions)
@@ -561,13 +565,14 @@ def plot_group_path_comparison(group_results):
     # 零线和网格
     ax.axvline(x=0, color='gray', linestyle='--', linewidth=0.8, alpha=0.5)
     ax.grid(axis='x', alpha=0.3, linestyle=':')
-    ax.set_xlabel('路径系数 $\\beta$', fontproperties=_font(10))
+    ax.set_xlabel('路径强度 $|\\beta|$', fontproperties=_font(10))
 
     # 图例
     from matplotlib.lines import Line2D
+    full_n = sum(v['n'] for v in group_data.values() if v['n'])
     legend_elements = [
         Line2D([0], [0], marker='D', color='w', markerfacecolor='#757575',
-               markersize=8, label='全样本 ($n$=5989)'),
+               markersize=8, label=f'全样本（符号对齐，$n$={full_n}）'),
     ]
     for gname, style in group_styles.items():
         gn = group_data[gname]['n']
@@ -582,22 +587,23 @@ def plot_group_path_comparison(group_results):
 
     # 脚注：说明缩减模型
     ax.text(0.5, -0.18,
-            '注：分组分析采用缩减模型（$\\eta_1$→$\\eta_2$→$\\eta_3$），因系词功能编码变量在各组内方差为零，故不含$\\eta_3$→$Y$路径',
+            '注：灰色菱形为全样本模型A经符号对齐后的路径强度；分组分析采用缩减模型（$\\eta_1$→$\\eta_2$→$\\eta_3$）。\n因系词功能编码变量在各组内方差为零，故不含$\\eta_3$→$Y$路径。',
             transform=ax.transAxes, ha='center', va='top',
             fontproperties=_font(8), color='#666666')
 
     ax.set_ylim(-0.6, 1.8)
     plt.tight_layout()
+    fig.subplots_adjust(bottom=0.28)
     save_figure(fig, '各系词功能路径系数比较图', global_num=30)
 
 
 
 
 # ============================================================
-# 9类构式分组分析（基于12类GMM构式，排除低样本组）
+# 9类可分析构式分组分析（基于12类GMM构式，排除低样本组）
 # ============================================================
 
-CONSTRUCTION_MIN_SAMPLE = 30  # 9类构式的最低样本量阈值
+CONSTRUCTION_MIN_SAMPLE = 30  # 9类可分析构式的最低样本量阈值
 
 
 def load_construction_type_data():
@@ -642,17 +648,18 @@ def load_construction_type_data():
 
 
 def fit_construction_type_models(data):
-    """对各构式类型分别拟合路径模型（相关近似法）
+    """对各构式类型分别计算阶段近似相关（相关近似法）
     
     由于construction_type_12由CA×MD定义，分组后这两个指标方差趋近于零，
     PLS-SEM的形成性测量模型无法收敛。因此采用相关近似法：
-    以指标均值作为潜变量代理，以相关系数估计路径系数。
-    此方法与论文原表91的数据一致。
+    按原始观测指标等权求均值，构建阶段近似变量，再用Pearson相关描述
+    阶段近似变量之间的协变。该结果不是PLS路径系数，也不与正式PLS-SEM
+    的标准化潜变量得分等同。此方法与正文表60的数据一致。
     
-    三条路径：
-    - β₁(η₁→η₂): 域激活→参照点锚定
-    - β₂(η₂→η₃): 参照点锚定→跨域映射  
-    - β₃(η₁→η₃): 域激活→跨域映射（直接路径）
+    三组近似相关：
+    - r_proxy1(η₁→η₂): 域激活→参照点锚定
+    - r_proxy2(η₂→η₃): 参照点锚定→跨域映射
+    - r_proxy3(η₁→η₃): 域激活→跨域映射（直接路径）
     """
     ct_col = 'construction_type_12'
     types = sorted(data[ct_col].unique())
@@ -673,7 +680,7 @@ def fit_construction_type_models(data):
             continue
 
         try:
-            # 计算潜变量代理值（指标均值）
+            # 阶段近似变量：原始观测指标等权均值，不是PLS标准化潜变量得分
             e1_cols = [v for v in eta1_vars if v in group_data.columns]
             e2_cols = [v for v in eta2_vars if v in group_data.columns]
             e3_cols = [v for v in eta3_vars if v in group_data.columns]
@@ -688,24 +695,24 @@ def fit_construction_type_models(data):
 
             eta1, eta2, eta3 = eta1[valid], eta2[valid], eta3[valid]
 
-            # 路径系数 = Pearson相关
+            # 9类可分析构式分组样本内用Pearson相关作为阶段近似相关
             r12 = eta1.corr(eta2)
             r23 = eta2.corr(eta3)
             r13 = eta1.corr(eta3)
 
-            # 近似CFI（与旧脚本一致）
+            # 旧输出中的描述性占位指标；正文不作为模型拟合指标解释
             all_corrs = [r12, r23, r13]
             valid_corrs = [c for c in all_corrs if pd.notna(c)]
             avg_corr = np.mean(valid_corrs) if valid_corrs else 0
             cfi = min(0.98, 0.80 + 0.20 * abs(avg_corr))
 
             paths = {
-                'beta1 (eta1->eta2)': round(r12, 3) if pd.notna(r12) else np.nan,
-                'beta2 (eta2->eta3)': round(r23, 3) if pd.notna(r23) else np.nan,
-                'beta3 (eta1->eta3)': round(r13, 3) if pd.notna(r13) else np.nan,
+                'r_proxy1 (eta1->eta2)': round(r12, 3) if pd.notna(r12) else np.nan,
+                'r_proxy2 (eta2->eta3)': round(r23, 3) if pd.notna(r23) else np.nan,
+                'r_proxy3 (eta1->eta3)': round(r13, 3) if pd.notna(r13) else np.nan,
             }
 
-            print(f"  [OK] {ctype}: n={n}, β₁={r12:.3f}, β₂={r23:.3f}, β₃={r13:.3f}, CFI={cfi:.3f}")
+            print(f"  [OK] {ctype}: n={n}, r_proxy1={r12:.3f}, r_proxy2={r23:.3f}, r_proxy3={r13:.3f}, CFI={cfi:.3f}")
             results[ctype] = {'n': n, 'status': 'ok', 'cfi': cfi, 'paths': paths}
 
         except Exception as e:
@@ -716,9 +723,10 @@ def fit_construction_type_models(data):
 
 
 def output_construction_type_comparison(ct_results):
-    """输出9类构式路径系数比较表（CSV）
+    """输出9类可分析构式Pearson近似相关比较表（CSV）
     
-    输出格式与论文表91一致：构式类型、样本量、β₁、β₂、β₃、CFI
+    输出格式：构式类型、样本量、三组r_proxy值，以及旧版描述性占位列CFI。
+    CFI列只为兼容旧输出保留，正文表60不报告也不解释该列。
     """
     rows = []
     for ctype in sorted(ct_results.keys()):
@@ -731,37 +739,38 @@ def output_construction_type_comparison(ct_results):
             rows.append({
                 '构式类型': ctype,
                 '样本量': n,
-                'beta1 (eta1->eta2)': paths.get('beta1 (eta1->eta2)', np.nan),
-                'beta2 (eta2->eta3)': paths.get('beta2 (eta2->eta3)', np.nan),
-                'beta3 (eta1->eta3)': paths.get('beta3 (eta1->eta3)', np.nan),
+                'r_proxy1 (eta1->eta2)': paths.get('r_proxy1 (eta1->eta2)', np.nan),
+                'r_proxy2 (eta2->eta3)': paths.get('r_proxy2 (eta2->eta3)', np.nan),
+                'r_proxy3 (eta1->eta3)': paths.get('r_proxy3 (eta1->eta3)', np.nan),
                 'CFI': round(res['cfi'], 3),
             })
         elif status == 'insufficient':
             rows.append({
                 '构式类型': ctype,
                 '样本量': n,
-                'beta1 (eta1->eta2)': np.nan,
-                'beta2 (eta2->eta3)': np.nan,
-                'beta3 (eta1->eta3)': np.nan,
+                'r_proxy1 (eta1->eta2)': np.nan,
+                'r_proxy2 (eta2->eta3)': np.nan,
+                'r_proxy3 (eta1->eta3)': np.nan,
                 'CFI': np.nan,
             })
 
     df = pd.DataFrame(rows)
 
-    # 添加总体行
-    ok_df = df.dropna(subset=['beta1 (eta1->eta2)'])
+    # 添加9类内部相关均值行。该行是可分析类型内部相关的未加权均值，
+    # 不是5,941条样本合并后的总体相关。
+    ok_df = df.dropna(subset=['r_proxy1 (eta1->eta2)'])
     if not ok_df.empty:
         summary = {
-            '构式类型': '总体',
-            '样本量': int(ok_df['样本量'].sum()),
-            'beta1 (eta1->eta2)': round(ok_df['beta1 (eta1->eta2)'].mean(), 3),
-            'beta2 (eta2->eta3)': round(ok_df['beta2 (eta2->eta3)'].mean(), 3),
-            'beta3 (eta1->eta3)': round(ok_df['beta3 (eta1->eta3)'].mean(), 3),
+            '构式类型': '9类内部相关均值',
+            '样本量': 'N_type=9',
+            'r_proxy1 (eta1->eta2)': round(ok_df['r_proxy1 (eta1->eta2)'].mean(), 3),
+            'r_proxy2 (eta2->eta3)': round(ok_df['r_proxy2 (eta2->eta3)'].mean(), 3),
+            'r_proxy3 (eta1->eta3)': round(ok_df['r_proxy3 (eta1->eta3)'].mean(), 3),
             'CFI': round(ok_df['CFI'].mean(), 3),
         }
         df = pd.concat([df, pd.DataFrame([summary])], ignore_index=True)
 
-        for col in ['beta1 (eta1->eta2)', 'beta2 (eta2->eta3)', 'beta3 (eta1->eta3)']:
+        for col in ['r_proxy1 (eta1->eta2)', 'r_proxy2 (eta2->eta3)', 'r_proxy3 (eta1->eta3)']:
             vals = ok_df[col].dropna()
             print(f"  {col}: M={vals.mean():.3f} (范围: {vals.min():.3f} ~ {vals.max():.3f})")
 
@@ -770,9 +779,9 @@ def output_construction_type_comparison(ct_results):
 
 
 def plot_construction_type_comparison(ct_results):
-    """图30：各构式类型路径系数比较图（三子图柱状图，与旧脚本风格一致）
+    """图31：9类可分析构式Pearson近似相关比较图（三子图柱状图；输出文件名沿用旧称）
     数据源：PLS_9类构式路径系数比较.csv
-    三条路径：β₁(η₁→η₂)、β₂(η₂→η₃)、β₃(η₁→η₃)
+    三条路径近似相关：r_proxy1(η₁→η₂)、r_proxy2(η₂→η₃)、r_proxy3(η₁→η₃)
     """
     plt.close('all')
 
@@ -784,8 +793,9 @@ def plot_construction_type_comparison(ct_results):
 
     ct_df = pd.read_csv(csv_path, index_col=0)
 
-    # 排除总体行和样本不足行
-    plot_df = ct_df[(ct_df['构式类型'] != '总体') & ct_df['beta1 (eta1->eta2)'].notna()].copy()
+    # 排除汇总行和样本不足行
+    summary_labels = ['总体', '9类内部相关均值']
+    plot_df = ct_df[(~ct_df['构式类型'].isin(summary_labels)) & ct_df['r_proxy1 (eta1->eta2)'].notna()].copy()
 
     if plot_df.empty:
         print("  [WARN] 无有效构式类型数据，跳过绘图")
@@ -795,11 +805,11 @@ def plot_construction_type_comparison(ct_results):
     plt.rcParams['mathtext.fontset'] = 'stix'
     plt.rcParams['axes.unicode_minus'] = False
 
-    path_cols = ['beta1 (eta1->eta2)', 'beta2 (eta2->eta3)', 'beta3 (eta1->eta3)']
+    path_cols = ['r_proxy1 (eta1->eta2)', 'r_proxy2 (eta2->eta3)', 'r_proxy3 (eta1->eta3)']
     path_names = [
-        r'$\beta_1$: $\eta_1 \rightarrow \eta_2$',
-        r'$\beta_2$: $\eta_2 \rightarrow \eta_3$',
-        r'$\beta_3$: $\eta_1 \rightarrow \eta_3$',
+        r'$r_{proxy1}$: $\eta_1 \rightarrow \eta_2$',
+        r'$r_{proxy2}$: $\eta_2 \rightarrow \eta_3$',
+        r'$r_{proxy3}$: $\eta_1 \rightarrow \eta_3$',
     ]
 
     colormap = plt.cm.RdYlBu_r
@@ -839,7 +849,7 @@ def plot_construction_type_comparison(ct_results):
         ax.set_xticklabels(short_types, rotation=45, ha='right',
                            fontproperties=_font(8), fontsize=8)
 
-        ax.set_ylabel('路径系数', fontproperties=_font(10))
+        ax.set_ylabel('Pearson近似相关', fontproperties=_font(10))
         ax.set_title(name, fontsize=12, fontweight='bold', pad=10)
 
         # 均值参考线
@@ -866,10 +876,10 @@ def plot_construction_type_comparison(ct_results):
 
     # 脚注
     fig.text(0.5, 0.02,
-             '注：颜色由红到蓝表示系数从高到低，红色虚线为各组均值（$M$）',
+             '注：颜色由红到蓝表示Pearson近似相关从高到低，红色虚线为各组均值（$M$）',
              ha='center', fontproperties=_font(8), fontsize=9, color='gray')
 
-    save_figure(fig, '各构式类型路径系数比较图', global_num=31)
+    save_figure(fig, '各构式类型Pearson近似相关比较图', global_num=31)
 
 
 # ============================================================
@@ -912,7 +922,7 @@ def main():
     # 输出各组路径系数
     path_df = output_group_path_coefficients(group_results)
 
-    # 图31：各系词功能路径系数比较图（缩减模型）
+    # 图30：各系词功能路径系数比较图（缩减模型）
     print("\n  论文图表:")
     plot_group_path_comparison(group_results)
 
@@ -926,22 +936,22 @@ def main():
     print(f"\n  copula_function分析完成: {valid_groups}/{total_groups}组成功拟合")
 
     # ============================
-    # Part B: 9类构式分组比较
+    # Part B: 9类可分析构式分组比较
     # ============================
     print("\n" + "=" * 70)
-    print("Part B: 9类构式分组比较（PLS缩减模型）")
+    print("Part B: 9类可分析构式分组比较（Pearson近似相关）")
     print("=" * 70)
 
     ct_data = load_construction_type_data()
     if ct_data is not None:
-        print("\n[B1/B2] 各构式类型PLS模型拟合")
+        print("\n[B1/B2] 各构式类型Pearson近似相关计算")
         ct_results = fit_construction_type_models(ct_data)
 
         # 输出比较CSV
-        print("\n[B2/B2] 输出路径系数比较表 + 绘图")
+        print("\n[B2/B2] 输出Pearson近似相关比较表 + 绘图")
         ct_comp_df = output_construction_type_comparison(ct_results)
 
-        # 图30：各构式类型路径系数比较图
+        # 图31：9类可分析构式Pearson近似相关比较图（输出文件名沿用旧称）
         plot_construction_type_comparison(ct_results)
 
         ct_valid = sum(1 for r in ct_results.values() if r['status'] == 'ok')

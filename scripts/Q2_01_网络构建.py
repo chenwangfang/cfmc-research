@@ -6,8 +6,8 @@ Q2_01_网络构建.py
 构建两层构式网络（类型层+实例层）
 
 输出：
-- 图18: 两层网络结构示意图
-- 表70: 两层网络基本参数
+- 图17: 两层网络结构示意图
+- 表70: 两层网络基本参数（整合网络行仅为图17(b)可视化抽样元数据）
 
 创建日期：2025-12-05
 """
@@ -88,9 +88,9 @@ def build_type_network(df: pd.DataFrame) -> nx.Graph:
                 md_mode=subset['mapping_direction'].mode().iloc[0] if len(subset['mapping_direction'].mode()) > 0 else 0
             )
 
-    # 基于认知通达度和映射方向的相似性添加边
-    # 隐喻扩展链接：相同映射方向、不同认知通达度
-    # 多义链接：相同认知通达度、不同映射方向
+    # 基于认知通达度均值差和映射方向组合添加宏观操作边。
+    # 隐喻扩展边：映射方向相同，认知通达度均值差在阈值内。
+    # 多义型操作边：映射方向不同，认知通达度均值差在阈值内。
     nodes = list(G_type.nodes())
 
     for i, node1 in enumerate(nodes):
@@ -101,14 +101,14 @@ def build_type_network(df: pd.DataFrame) -> nx.Graph:
             ca_diff = abs(attr1['ca_mean'] - attr2['ca_mean'])
             md_same = attr1['md_mode'] == attr2['md_mode']
 
-            # 隐喻扩展链接：映射方向相同，认知通达度相近
+            # 隐喻扩展边：映射方向相同，认知通达度相近
             # 阈值1.7确保中→高的连接（CA差约1.5-1.6）能够建立
             if md_same and ca_diff <= 1.7:
                 G_type.add_edge(node1, node2,
                               link_type=1,
                               weight=1.0 / (1 + ca_diff))
 
-            # 多义链接：认知通达度相近，映射方向不同
+            # 多义型操作边：认知通达度相近，映射方向不同
             elif not md_same and ca_diff <= 1.0:
                 G_type.add_edge(node1, node2,
                               link_type=2,
@@ -123,7 +123,8 @@ def build_type_network(df: pd.DataFrame) -> nx.Graph:
 
 def build_instance_network(df: pd.DataFrame) -> nx.Graph:
     """
-    构建实例层网络
+    构建实例层网络。实例层边为同类内部按CA/CC相近性生成的抽样相似性边，
+    用于观察局部结构，不等同于link_type字段中的理论链接类型。
 
     Parameters
     ----------
@@ -148,14 +149,14 @@ def build_instance_network(df: pd.DataFrame) -> nx.Graph:
             md=row['mapping_direction']
         )
 
-    # 基于link_type字段添加边
+    # 若存在link_type字段，则在保留节点标签的前提下生成实例层局部相似性边
     if 'link_type' in df.columns:
-        # 按聚类分组，组内添加子部分链接和实例链接
+        # 按聚类分组，组内按CA/CC相近性生成抽样相似性边
         for cluster in df['cluster_label'].unique():
             mask = df['cluster_label'] == cluster
             cluster_indices = df[mask].index.tolist()
 
-            # 组内样本的子部分链接（基于相似性）
+            # 组内样本的抽样相似性链接
             for i, idx1 in enumerate(cluster_indices[:100]):  # 限制边数
                 row1 = df.loc[idx1]
                 for idx2 in cluster_indices[i+1:min(i+10, len(cluster_indices))]:
@@ -340,7 +341,7 @@ def plot_two_layer_network(G_type: nx.Graph, G_full: nx.Graph,
 
     fig, axes = plt.subplots(1, 2, figsize=(18, 9))
 
-    # 认知通达度三色系统（与图19保持一致）
+    # 认知通达度三色系统
     # 高=红系, 中=绿系, 低=蓝系
     CA_COLORS = {
         0: '#5DADE2',  # 低通达度 - 浅蓝色（更亮）
@@ -665,7 +666,7 @@ def main():
     print("-" * 40)
     G_type, G_instance, G_full = build_two_layer_network(df)
 
-    # 3. 创建表67
+    # 3. 创建表70
     print("\n" + "-" * 40)
     print("3. 保存表70: 两层网络基本参数")
     print("-" * 40)
@@ -674,9 +675,9 @@ def main():
     save_table(params_table, "两层网络基本参数", global_num=70,
                title="两层网络基本参数", formats=['csv', 'json'])
 
-    # 4. 绘制图18
+    # 4. 绘制图17
     print("\n" + "-" * 40)
-    print("4. 绘制图18: 两层网络结构示意图")
+    print("4. 绘制图17: 两层网络结构示意图")
     print("-" * 40)
     fig = plot_two_layer_network(G_type, G_full, paths)
     save_figure(fig, "两层网络结构示意图", global_num=17,

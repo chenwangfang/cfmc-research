@@ -5,46 +5,40 @@
 *A Corpus-Based Study on the Cognitive Mechanisms of Chinese Copular Metaphorical Constructions*
 
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.XXXXXXX-blue)](https://doi.org/10.5281/zenodo.XXXXXXX)
-[![Corpus](https://img.shields.io/badge/Corpus-5989%20constructions-blue)](CFMC_5989.json)
-[![Scripts](https://img.shields.io/badge/Scripts-29%20Python-green)](scripts/)
+[![Corpus](https://img.shields.io/badge/Corpus-5971%20records-blue)](CFMC_5989.json)
+[![Scripts](https://img.shields.io/badge/Scripts-Q1--Q3%2022-green)](scripts/)
 [![License](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey)](LICENSE)
-[![GitHub Pages](https://img.shields.io/badge/Demo-GitHub%20Pages-brightgreen)](https://chenwangfang.github.io/cfmc-research/visualization/)
+[![Visualizations](https://img.shields.io/badge/Visualizations-35%20SVG-brightgreen)](visualization/)
 [![中文](https://img.shields.io/badge/中文-README-red)](README.md)
 [![English](https://img.shields.io/badge/English-README-orange)](README_EN.md)
 
----
-
-> **快速链接**：[语料库](CFMC_5989.json) | [PLS-SEM模型设计](PLS-SEM形成性测量模型设计.md) | [在线演示](https://chenwangfang.github.io/cfmc-research/visualization/) | [English](README_EN.md)
+> **快速链接**：[语料库JSON](CFMC_5989.json) | [主数据表](Data/CFMC_for_SEM.csv) | [统计结果](Data/) | [PLS-SEM模型设计](PLS-SEM形成性测量模型设计.md) | [可视化图表](visualization/) | [English](README_EN.md)
 
 ## 项目简介
 
-本研究基于Sullivan (2013) 的隐喻构式理论，构建**汉语系表隐喻构式认知框架（CFMC: Cognitive Framework for Metaphorical Constructions）**，通过5989条标注语料，采用**PLS-SEM形成性测量模型**验证四阶段认知编码机制。
+本研究基于Sullivan (2013) 的隐喻构式理论，构建**汉语系表隐喻构式认知框架（CFMC: Cognitive Framework for Metaphorical Constructions）**，以5,971条发布标注记录为基础，采用**PLS-SEM形成性测量模型**检验四阶段认知编码机制，其中5,908条为核心隐喻构式样本。
 
 ### 研究目标
 
 1. **类型特征**：建立基于认知通达度—映射方向双维度的12类构式分类体系
 2. **网络组织**：揭示构式网络的小世界结构特征与社区组织规律
-3. **认知机制**：通过PLS-SEM形成性测量模型验证四阶段认知编码机制
+3. **认知机制**：通过PLS-SEM形成性测量模型检验四阶段认知编码机制
 
 ### 核心贡献
 
-- **语料库**：5989条双盲标注的汉语系表隐喻构式
+- **语料库**：5,971条发布标注记录，其中5,908条为核心隐喻构式样本
 - **字段体系**：CFMC-33字段体系（33项必填+8项选填）
 - **分类体系**：12类构式类型的GMM聚类验证
 - **网络模型**：两层构式网络（构式层+类型层）
-- **认知模型**：四阶段认知编码机制的PLS-SEM形成性测量模型验证
-
----
+- **认知模型**：四阶段认知编码机制的PLS-SEM形成性测量模型检验
 
 ## 研究问题与假设
 
 | 问题 | 内容 | 假设 | 章节 |
 |:-----|:-----|:-----|:-----|
-| **Q1** | 类型特征 | H1-1: 认知通达度与概念复杂度负相关 (*r* = -0.40至-0.60)<br>H1-2: GMM聚类验证12类构式分类 (*k*=12, 轮廓系数≥0.30) | 第5章 |
-| **Q2** | 网络组织 | H2: 构式网络呈现小世界特征 (*C*≥0.60, *L*≤3.0, σ>1) | 第6章 |
-| **Q3** | 认知机制 | H3-1: PLS-SEM验证四阶段路径 (GoF>0.25, 路径系数显著 *p*<.05; PLS-MGA按系词功能分3组验证跨类型共享性)<br>H3-2: 类型差异调节效应 (*r*≥0.30, *p*<0.05) | 第7章 |
-
----
+| **Q1** | 类型特征 | H1-1: 认知通达度与概念复杂度负相关 (*r* = -0.40至-0.60)<br>H1-2: CA×MD 12格操作分类获得限定支持（GMM/Bootstrap稳定性与原型梯度证据达标，LDA作为压力测试提示类型边界） | 第5章 |
+| **Q2** | 网络组织 | H2: 完整12类型无权宏观网络满足描述性小世界判据 (*C*≥0.60, *L*≤3.0, σ>1)，扰动检验显示均值层面临界稳健 | 第6章 |
+| **Q3** | 认知机制 | H3-1: PLS-SEM检验前三阶段路径及语言编码端点的边界关系 (GoF>0.25, 核心路径系数显著 *p*<.05; PLS-MGA按系词功能分3组检验前三阶段路径的跨功能共享性)<br>H3-2: 原型距离、认知通达度与四阶段指标之间的分层桥梁关联；9类构式Pearson近似相关仅作为探索性补充 | 第7章 |
 
 ## 目录结构
 
@@ -56,23 +50,20 @@ cfmc-research/
 ├── CITATION.cff                 # 引用信息（GitHub自动识别）
 ├── .gitignore                   # Git忽略配置
 │
-├── CFMC_5989.json               # 核心语料库（5989条，13MB）
+├── CFMC_5989.json               # 发布标注语料库（历史文件名；当前为5,971条记录，其中5,908条核心隐喻构式，13MB）
 ├── PLS-SEM形成性测量模型设计.md  # PLS-SEM形成性测量模型设计文档
 │
-├── Data/                        # 统计分析结果（67个CSV + 49个JSON + 2个GraphML）
+├── Data/                        # 主数据表与统计分析结果（34个CSV + 13个JSON + 2个GraphML）
+│   ├── CFMC_for_SEM.csv
+│   ├── CFMC_with_12types.csv
 │   ├── 表57a_源域分布.*
 │   ├── PLS_路径系数表.csv
-│   ├── PLS_模型拟合比较.csv
+│   ├── network_type_layer.graphml
 │   └── ...
 │
-├── figures/                     # 可视化图表（39个PNG）
-│   ├── 图1 研究路径图.png
-│   ├── 图29_四阶段认知编码机制路径与中介效应图.png
-│   ├── PLS_路径模型图.png
-│   └── ...
-│
-├── scripts/                     # Python分析脚本（29个）
+├── scripts/                     # Python脚本（22个Q1-Q3分析脚本，另含公共函数、备份脚本、绘图与整理辅助脚本）
 │   ├── Q1_01_描述统计.py
+│   ├── Q1_01b_补充描述统计.py
 │   ├── Q2_01_网络构建.py
 │   ├── Q3_02_PLS_SEM基础模型.py
 │   └── 一键运行全部脚本.py
@@ -83,24 +74,24 @@ cfmc-research/
 │   ├── 认知通达度的构念界定与测量方案_附录C.md
 │   ├── 附录C_1.csv                     # 附录C试点研究数据（500样本）
 │   ├── 概念复杂度的构念界定与测量方案_附录D.md
-│   ├── 附录D_1.py                              # 附录D 概念复杂度预计算脚本
-│   ├── 附录D_1_预计算参考数据.csv               # 附录D 预计算参考数据（5989条）
+│   ├── 附录D_1_预计算参考数据.csv               # 附录D 预计算参考数据（5,971条发布记录）
+│   ├── 附录D_1_预计算参考数据_汇总报告.txt
 │   ├── 信度效度验证_附录E/
 │   ├── 统计分析补充材料_附录F.md
-│   ├── 附录G_认知通达度客观指标预计算.py
+│   ├── 附录G_预计算参考数据.csv
+│   ├── 附录G_预计算参考数据_汇总报告.txt
 │   └── 概念复杂度和认知通达度快速取值手册.md
 │
-└── visualization/               # 交互式可视化
-    └── index.html
+└── visualization/               # 可视化图表（35个SVG）
+    ├── image1.svg
+    └── image35.svg
 ```
-
----
 
 ## 数据说明
 
-### CFMC_5989.json
+### CFMC_5989.json 与 Data/CFMC_for_SEM.csv
 
-核心语料库，包含5989条汉语系表隐喻构式的完整标注。
+`CFMC_5989.json` 为发布标注语料库，文件名沿用早期命名，当前元数据记录5,971条发布标注记录，其中5,908条 `construction_type=copular_metaphor` 记录为核心隐喻构式样本，另有63条边界/对照记录用于质量追溯和方法边界说明。`Data/CFMC_for_SEM.csv` 是与该语料对应的主分析表，供统计复现脚本直接读取。
 
 **字段体系（CFMC-33）**：
 
@@ -111,26 +102,10 @@ cfmc-research/
 | Level 2补充字段 | 4 | 汉语特色特征 |
 | Level 3-4选填字段 | 8 | 质性标注内容 |
 
-**示例结构**：
-```json
-{
-  "metadata": {
-    "description": "CFMC-33汉语系表隐喻构式标注语料库",
-    "field_count": 45,
-    "construction_count": 5989
-  },
-  "constructions": [
-    {
-      "original_id": "zh55588",
-      "full_sentence": "会议认为，总路线是建设社会主义的锐利武器...",
-      "construction": "总路线是建设社会主义的锐利武器",
-      "cognitive_accessibility": 4.0,
-      "conceptual_complexity": 2.0,
-      "mapping_direction": 2.0,
-      ...
-    }
-  ]
-}
+**示例记录**：
+```text
+original_id,construction,cognitive_accessibility,conceptual_complexity,mapping_direction,source_domain,target_domain,construction_type,copula_function
+zh55588,总路线是建设社会主义的锐利武器,4,2,2,WR,SC,copular_metaphor,equative
 ```
 
 **示例字段计算过程**（以zh55588为例）：
@@ -197,18 +172,16 @@ D_processing = 0.6×I_depth + 0.4×S_schema
 
 ### 数据表索引
 
-**Q1类型特征分析（第5章）**：表57-72 + 补充表S1-S6
-**Q2网络组织分析（第6章）**：表73-87
-**Q3认知机制分析（第7章）**：表92 + PLS-SEM系列数据文件（路径系数、模型拟合比较、外部权重与VIF、效应分解、Bootstrap结果、MGA置换检验、调节效应检验等）
-**附录F统计补充**：表F1-F7
+- **Q1类型特征分析（第5章）**：`CFMC_with_12types.csv`、`CFMC_with_clusters.csv`、`CFMC_with_prototype_grades.csv`、表57至表59系列结果表
+- **Q2网络组织分析（第6章）**：`network_full.graphml`、`network_type_layer.graphml`、`network_type_layer.json`
+- **Q3认知机制分析（第7章）**：PLS-SEM系列CSV/JSON文件，包括路径系数、模型拟合比较、外部权重与VIF、效应分解、Bootstrap结果、MGA置换检验、调节效应检验和9类构式Pearson近似相关等
+- **附录与预计算材料**：见 `appendix/`
 
 详见 `Data/` 目录。
 
----
-
 ## PLS-SEM形成性测量模型
 
-本研究采用**PLS-SEM形成性测量模型**验证四阶段认知编码机制（η₁域激活 → η₂参照点锚定 → η₃跨域映射 → Y语言编码）。
+本研究采用**PLS-SEM形成性测量模型**检验四阶段认知编码机制（η₁域激活 → η₂参照点锚定 → η₃跨域映射 → Y语言编码）。
 
 ### 为何采用形成性测量
 
@@ -218,17 +191,15 @@ CFMC标注字段是标注者独立编码的多维度属性，各指标共同**�
 
 | 模型 | 结构 | 用途 |
 |:-----|:-----|:-----|
-| 模型A | η₁→η₂→η₃→Y（完整四阶段） | 验证核心假设 |
+| 模型A | η₁→η₂→η₃→Y（完整四阶段） | 检验核心假设 |
 | 模型B | η₂→η₃→Y（三阶段对照） | 检验η₁阶段是否必要 |
 | 模型C | 四阶段+直接跳跃路径 | 检验中间阶段是否可绕过 |
 
 ### 多组分析（PLS-MGA）
 
-按系词功能（attributive/equative/identificational）分3组，通过PLS-MGA置换检验验证四阶段路径结构的跨类型共享性。
+按系词功能（attributive/equative/identificational）分3组，通过PLS-MGA置换检验考察前三阶段路径结构的跨功能共享性；η₃→Y作为语言编码端点的边界关系单独解释。
 
 详见 [`PLS-SEM形成性测量模型设计.md`](PLS-SEM形成性测量模型设计.md)。
-
----
 
 ## 使用方法
 
@@ -272,8 +243,7 @@ python Q3_06_PLS_调节效应.py
 **脚本执行顺序**：
 1. Q1模块必须首先运行（Q1_03生成聚类标签供后续使用）
 2. Q2和Q3模块依赖Q1_03的输出
-
----
+3. 图表脚本可在主分析结果生成后按需运行，输出写入 `visualization/`
 
 ## 信度效度
 
@@ -287,8 +257,6 @@ python Q3_06_PLS_调节效应.py
 | 重测 *r* | ≥0.85 | 0.974 |
 
 详见 `appendix/信度效度验证_附录E/`
-
----
 
 ## 引用方式
 
@@ -304,8 +272,6 @@ python Q3_06_PLS_调节效应.py
 }
 ```
 
----
-
 ## 许可证
 
 本项目采用 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hans) 许可证。
@@ -313,8 +279,6 @@ python Q3_06_PLS_调节效应.py
 - 允许分享、改编
 - 需署名原作者
 - 禁止商业用途
-
----
 
 ## 联系方式
 
@@ -328,12 +292,8 @@ python Q3_06_PLS_调节效应.py
 - 邮箱：wangdeliang@bnu.edu.cn
 - ORCID：[0000-0001-6142-1624](https://orcid.org/0000-0001-6142-1624)
 
----
-
 ## 致谢
 
 感谢北京师范大学外国语言文学学院对本研究的支持。
 
----
-
-*最后更新：2026年3月*
+*最后更新：2026年5月*

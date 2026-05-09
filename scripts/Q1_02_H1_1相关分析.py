@@ -37,6 +37,32 @@ from utils_公共函数 import (
 )
 
 
+def partial_pearson(x: pd.Series, y: pd.Series, covariates: pd.DataFrame) -> tuple:
+    """
+    计算控制协变量后的Pearson偏相关。
+    """
+    data = pd.concat([x, y, covariates], axis=1).dropna()
+    x_arr = data.iloc[:, 0].astype(float).to_numpy()
+    y_arr = data.iloc[:, 1].astype(float).to_numpy()
+    cov_arr = data.iloc[:, 2:].astype(float).to_numpy()
+
+    design = np.column_stack([np.ones(len(data)), cov_arr])
+    beta_x = np.linalg.lstsq(design, x_arr, rcond=None)[0]
+    beta_y = np.linalg.lstsq(design, y_arr, rcond=None)[0]
+    resid_x = x_arr - design @ beta_x
+    resid_y = y_arr - design @ beta_y
+
+    r = pearsonr(resid_x, resid_y).statistic
+    covariate_rank = np.linalg.matrix_rank(cov_arr)
+    df = len(data) - covariate_rank - 2
+    if df <= 0 or abs(r) >= 1:
+        p = np.nan
+    else:
+        t_value = r * np.sqrt(df / (1 - r ** 2))
+        p = 2 * stats.t.sf(abs(t_value), df)
+    return r, p, df
+
+
 def calculate_correlations(df: pd.DataFrame) -> dict:
     """
     计算双维度（认知通达度x概念复杂度）相关分析
@@ -94,6 +120,36 @@ def calculate_correlations(df: pd.DataFrame) -> dict:
     # 决定系数
     results['r_squared'] = r_pearson ** 2
 
+    # 偏相关：mapping_direction是四类范畴变量，主报告采用虚拟变量控制。
+    md = df.loc[valid_idx, 'mapping_direction']
+    md_dummies = pd.get_dummies(md.astype(int), prefix='MD', drop_first=True, dtype=float)
+    partial_r, partial_p, partial_df = partial_pearson(ca_aligned, cc_aligned, md_dummies)
+    results['partial_r_control_md'] = partial_r
+    results['partial_p_control_md'] = partial_p
+    results['partial_df_control_md'] = partial_df
+    results['partial_n_control_md'] = len(valid_idx)
+
+    # 敏感性检查：将mapping_direction按原1-4数值编码控制，仅作对照说明。
+    md_numeric = md.astype(float).to_frame(name='mapping_direction_numeric')
+    partial_numeric_r, partial_numeric_p, partial_numeric_df = partial_pearson(
+        ca_aligned, cc_aligned, md_numeric
+    )
+    results['partial_r_control_md_numeric'] = partial_numeric_r
+    results['partial_p_control_md_numeric'] = partial_numeric_p
+    results['partial_df_control_md_numeric'] = partial_numeric_df
+
+    # 核心隐喻构式敏感性检查：排除边界/对照记录后复算H1-1。
+    if 'construction_type' in df.columns:
+        core_df = df.loc[valid_idx].copy()
+        core_df = core_df[core_df['construction_type'] == 'copular_metaphor']
+        core_ca = core_df['cognitive_accessibility'].astype(float)
+        core_cc = core_df['conceptual_complexity'].astype(float)
+        core_r, core_p = pearsonr(core_ca, core_cc)
+        results['core_n'] = len(core_df)
+        results['core_pearson_r'] = core_r
+        results['core_pearson_p'] = core_p
+        results['core_r_squared'] = core_r ** 2
+
     return results
 
 
@@ -121,6 +177,12 @@ def verify_h1_1(results: dict) -> dict:
         '实际r值': round(r, 4),
         'p值': f"< 0.001" if p < 0.001 else f"{p:.4f}",
         '95% CI': f"[{results['ci_lower']:.3f}, {results['ci_upper']:.3f}]",
+        '控制MD虚拟变量偏r': round(results['partial_r_control_md'], 4),
+        '控制MD虚拟变量偏p': f"< 0.001" if results['partial_p_control_md'] < 0.001 else f"{results['partial_p_control_md']:.4f}",
+        '控制MD数值编码偏r_敏感性': round(results['partial_r_control_md_numeric'], 4),
+        '控制MD数值编码偏p_敏感性': f"< 0.001" if results['partial_p_control_md_numeric'] < 0.001 else f"{results['partial_p_control_md_numeric']:.4f}",
+        '核心隐喻样本r_敏感性': round(results.get('core_pearson_r', np.nan), 4),
+        '核心隐喻样本N': results.get('core_n', 'NA'),
         '显著性': '是' if p < 0.001 else '否',
         '方向正确': '是' if r < 0 else '否',
         '强度符合': '是' if -0.60 <= r <= -0.40 else ('接近' if -0.70 <= r <= -0.30 else '否')
@@ -199,11 +261,27 @@ def create_correlation_table(df: pd.DataFrame, results: dict) -> pd.DataFrame:
             '值': f"< 0.001" if results['kendall_p'] < 0.001 else f"{results['kendall_p']:.4f}"
         },
         {
+            '分析项目': '偏相关 r（控制映射方向虚拟变量）',
+            '值': f"{results['partial_r_control_md']:.4f}"
+        },
+        {
+            '分析项目': '偏相关 p（控制映射方向虚拟变量）',
+            '值': f"< 0.001" if results['partial_p_control_md'] < 0.001 else f"{results['partial_p_control_md']:.4f}"
+        },
+        {
+            '分析项目': '偏相关 r（控制映射方向数值编码，敏感性）',
+            '值': f"{results['partial_r_control_md_numeric']:.4f}"
+        },
+        {
+            '分析项目': '核心隐喻样本Pearson r（敏感性）',
+            '值': f"{results.get('core_pearson_r', np.nan):.4f} (N={results.get('core_n', 'NA')})"
+        },
+        {
             '分析项目': 'R² (决定系数)',
             '值': f"{results['r_squared']:.4f}"
         },
         {
-            '分析项目': '效果量解释',
+            '分析项目': 'Pearson r效果量解释',
             '值': '大' if abs(results['pearson_r']) >= 0.5 else ('中等' if abs(results['pearson_r']) >= 0.3 else '小')
         }
     ]
@@ -245,9 +323,10 @@ def plot_scatter_with_ci(df: pd.DataFrame, results: dict, paths: dict) -> plt.Fi
 
     fig, ax = plt.subplots(figsize=(10, 8))
 
-    # 散点图（带抖动避免重叠）
-    jitter_ca = ca_arr + np.random.uniform(-0.1, 0.1, len(ca_arr))
-    jitter_cc = cc_arr + np.random.uniform(-0.1, 0.1, len(cc_arr))
+    # 散点图（带抖动避免重叠）；固定随机种子保证图像可复现。
+    rng = np.random.default_rng(42)
+    jitter_ca = ca_arr + rng.uniform(-0.1, 0.1, len(ca_arr))
+    jitter_cc = cc_arr + rng.uniform(-0.1, 0.1, len(cc_arr))
 
     # 使用密度着色
     from scipy.stats import gaussian_kde
@@ -366,6 +445,12 @@ def main():
     print(f"95% CI: [{results['ci_lower']:.3f}, {results['ci_upper']:.3f}]")
     print(f"Spearman rho = {results['spearman_r']:.4f}")
     print(f"Kendall tau = {results['kendall_tau']:.4f}")
+    partial_p_str = '< 0.001' if results['partial_p_control_md'] < 0.001 else f"= {results['partial_p_control_md']:.4f}"
+    print(f"偏相关 r（控制MD虚拟变量）= {results['partial_r_control_md']:.4f}, p {partial_p_str}")
+    numeric_partial_p_str = '< 0.001' if results['partial_p_control_md_numeric'] < 0.001 else f"= {results['partial_p_control_md_numeric']:.4f}"
+    print(f"偏相关 r（控制MD数值编码，敏感性）= {results['partial_r_control_md_numeric']:.4f}, p {numeric_partial_p_str}")
+    if 'core_pearson_r' in results:
+        print(f"核心隐喻样本 Pearson r = {results['core_pearson_r']:.4f} (N={results['core_n']})")
     print(f"R² = {results['r_squared']:.4f}")
 
     # 2. 验证H1-1
@@ -379,6 +464,10 @@ def main():
     print(f"实际r值: {verification['实际r值']}")
     print(f"p值: {verification['p值']}")
     print(f"95% CI: {verification['95% CI']}")
+    print(f"控制MD虚拟变量偏r: {verification['控制MD虚拟变量偏r']}")
+    print(f"控制MD虚拟变量偏p: {verification['控制MD虚拟变量偏p']}")
+    print(f"控制MD数值编码偏r（敏感性）: {verification['控制MD数值编码偏r_敏感性']}")
+    print(f"核心隐喻样本r（敏感性）: {verification['核心隐喻样本r_敏感性']}")
     print(f"显著性: {verification['显著性']}")
     print(f"方向正确: {verification['方向正确']}")
     print(f"强度符合: {verification['强度符合']}")

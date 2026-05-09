@@ -3,10 +3,10 @@
 """
 Q2_02_小世界检验.py
 ==================
-小世界性质检验（H2核心验证）
+小世界性质检验（H2描述性检验）
 
 输出：
-- 图19: 网络聚类系数与平均路径长度对比图
+- 图18: 网络聚类系数与平均路径长度对比图
 - 表71: 小世界性质检验结果
 
 验证标准：C >= 0.60，L <= 3.0，sigma > 1
@@ -142,7 +142,7 @@ def calculate_small_world_metrics(G: nx.Graph) -> dict:
 
 def verify_h2(metrics: dict) -> dict:
     """
-    验证H2假设
+    按预设操作判据检验H2假设
 
     Parameters
     ----------
@@ -158,7 +158,7 @@ def verify_h2(metrics: dict) -> dict:
 
     result = {
         '假设': 'H2',
-        '假设内容': '构式网络呈现小世界性质',
+        '假设内容': '完整12类型宏观网络满足小世界判据',
         '判断标准': f"C >= {criteria['C']}, L <= {criteria['L']}, sigma > {criteria['sigma']}",
         '实际聚类系数C': round(metrics['聚类系数C'], 4),
         '实际路径长度L': round(metrics['平均路径长度L'], 4),
@@ -171,11 +171,11 @@ def verify_h2(metrics: dict) -> dict:
     sigma_pass = metrics['小世界系数sigma'] > criteria['sigma']
 
     if c_pass and l_pass and sigma_pass:
-        result['验证结论'] = '支持'
-        result['支持程度'] = '强' if metrics['小世界系数sigma'] > 2.0 else '中等'
+        result['验证结论'] = '描述性支持'
+        result['支持程度'] = '描述性'
     elif (c_pass and l_pass) or (c_pass and sigma_pass) or (l_pass and sigma_pass):
-        result['验证结论'] = '部分支持'
-        result['支持程度'] = '中等'
+        result['验证结论'] = '部分描述性支持'
+        result['支持程度'] = '描述性支持'
     else:
         result['验证结论'] = '不支持'
         result['支持程度'] = '无'
@@ -223,7 +223,7 @@ def create_small_world_table(metrics: dict, h2_result: dict) -> pd.DataFrame:
 
 def plot_small_world_comparison(metrics: dict, paths: dict) -> plt.Figure:
     """
-    绘制网络聚类系数与平均路径长度对比图（图19）
+    绘制网络聚类系数与平均路径长度对比图（图18）
 
     优化设计：
     - 左图：水平条形图分两行展示C和L，各带阈值线和达标标记
@@ -369,7 +369,7 @@ def plot_small_world_comparison(metrics: dict, paths: dict) -> plt.Figure:
 
     # 判断结果框
     if sigma > 1:
-        result_text = f'$\\sigma$ = {sigma:.2f} > 1\n✓ 支持小世界性质'
+        result_text = f'$\\sigma$ = {sigma:.2f} > 1\n✓ 支持描述性小世界判定'
         box_color = '#27AE60'
         box_bg = '#D5F5E3'
     else:
@@ -401,7 +401,7 @@ def plot_small_world_comparison(metrics: dict, paths: dict) -> plt.Figure:
     ax2.spines['right'].set_visible(False)
     ax2.spines['bottom'].set_visible(False)
 
-    # plt.suptitle('图16 小世界性质检验结果',
+    # plt.suptitle('图18 小世界性质检验结果',
                 # fontproperties=font_cn_title, fontsize=14, y=0.98)
 
     return fig
@@ -409,7 +409,7 @@ def plot_small_world_comparison(metrics: dict, paths: dict) -> plt.Figure:
 
 def sensitivity_analysis(G: nx.Graph, metrics_original: dict, n_trials: int = 100) -> pd.DataFrame:
     """
-    敏感性分析：测试小世界性质的稳健性
+    敏感性分析：通过宏观边集随机删边补边测试小世界性质的均值层面稳定性
 
     Parameters
     ----------
@@ -428,8 +428,9 @@ def sensitivity_analysis(G: nx.Graph, metrics_original: dict, n_trials: int = 10
     import random
 
     results = []
-    n_nodes = G.number_of_nodes()
     n_edges = G.number_of_edges()
+    original_edges = sorted(tuple(sorted((u, v))) for u, v in G.edges())
+    original_non_edges = sorted(tuple(sorted((u, v))) for u, v in nx.non_edges(G))
 
     # 测试不同扰动水平
     perturbation_levels = [0.05, 0.10, 0.15, 0.20]
@@ -439,20 +440,24 @@ def sensitivity_analysis(G: nx.Graph, metrics_original: dict, n_trials: int = 10
         l_values = []
         sigma_values = []
 
-        for _ in range(min(n_trials, 20)):  # 减少试验次数以提高效率
+        n_changes = max(1, int(round(n_edges * level)))
+        actual_ratio = n_changes / n_edges if n_edges else 0
+
+        for trial in range(n_trials):
+            rng = random.Random(RANDOM_SEED + int(level * 1000) + trial)
+
             # 复制网络
             G_pert = G.copy()
 
-            # 随机删除一定比例的边
-            edges_to_remove = random.sample(list(G_pert.edges()),
-                                           int(n_edges * level * 0.5))
+            # 随机删除一定比例的原始边，再补入同数量的原始非边。
+            # 补边候选固定在原始非边集合内，避免刚删除的边被立即补回。
+            edges_to_remove = rng.sample(original_edges, n_changes)
             G_pert.remove_edges_from(edges_to_remove)
 
-            # 随机添加同数量的边
-            non_edges = list(nx.non_edges(G_pert))
-            if len(non_edges) > len(edges_to_remove):
-                edges_to_add = random.sample(non_edges, len(edges_to_remove))
-                G_pert.add_edges_from(edges_to_add)
+            if len(original_non_edges) < n_changes:
+                continue
+            edges_to_add = rng.sample(original_non_edges, n_changes)
+            G_pert.add_edges_from(edges_to_add)
 
             # 确保连通
             if nx.is_connected(G_pert):
@@ -471,16 +476,39 @@ def sensitivity_analysis(G: nx.Graph, metrics_original: dict, n_trials: int = 10
                     continue
 
         if c_values:
+            c_pass_rate = sum(1 for c in c_values if c >= 0.60) / len(c_values) * 100
+            l_pass_rate = sum(1 for l in l_values if l <= 3.0) / len(l_values) * 100
+            sigma_pass_rate = (
+                sum(1 for sigma in sigma_values if sigma > 1) / len(sigma_values) * 100
+                if sigma_values else 0
+            )
+            min_core_pass_rate = min(c_pass_rate, sigma_pass_rate)
+            if min_core_pass_rate >= 90:
+                single_trial_risk = '低'
+            elif min_core_pass_rate >= 70:
+                single_trial_risk = '中'
+            else:
+                single_trial_risk = '高'
+
             results.append({
                 '扰动水平': f'{int(level*100)}%',
+                '实际替换边数': n_changes,
+                '实际扰动比例': f'{actual_ratio*100:.2f}%',
                 'C均值': round(np.mean(c_values), 4),
                 'C标准差': round(np.std(c_values), 4),
                 'L均值': round(np.mean(l_values), 4),
                 'L标准差': round(np.std(l_values), 4),
                 'sigma均值': round(np.mean(sigma_values), 2) if sigma_values else '-',
-                'C达标率': f"{sum(1 for c in c_values if c >= 0.60)/len(c_values)*100:.0f}%",
-                'L达标率': f"{sum(1 for l in l_values if l <= 3.0)/len(l_values)*100:.0f}%",
-                '结论稳健': '是' if (np.mean(c_values) >= 0.60 and np.mean(l_values) <= 3.0) else '否'
+                'C达标率': f"{c_pass_rate:.0f}%",
+                'L达标率': f"{l_pass_rate:.0f}%",
+                'sigma达标率': f"{sigma_pass_rate:.0f}%" if sigma_values else '-',
+                '有效试验次数': len(c_values),
+                '均值层面判定': '均值达标' if (
+                    np.mean(c_values) >= 0.60
+                    and np.mean(l_values) <= 3.0
+                    and (np.mean(sigma_values) > 1 if sigma_values else False)
+                ) else '均值未达标',
+                '单次达标风险': single_trial_risk
             })
 
     return pd.DataFrame(results)
@@ -490,7 +518,7 @@ def main():
     """主函数"""
     print("=" * 60)
     print("Q2_02_小世界检验.py")
-    print("小世界性质检验（H2核心验证）")
+    print("小世界性质检验（H2描述性检验）")
     print("=" * 60)
 
     # 获取路径
@@ -526,7 +554,7 @@ def main():
     print(f"  实测: C={metrics['聚类系数C']:.4f}, L={metrics['平均路径长度L']:.4f}, sigma={metrics['小世界系数sigma']:.4f}")
     print(f"  结论: {h2_result['验证结论']} ({h2_result['支持程度']})")
 
-    # 4. 创建表68
+    # 4. 创建表71
     print("\n" + "-" * 40)
     print("4. 保存表71: 小世界性质检验结果")
     print("-" * 40)
@@ -542,11 +570,11 @@ def main():
     sensitivity_df = sensitivity_analysis(G, metrics, n_trials=100)
     print(sensitivity_df.to_string(index=False))
     save_table(sensitivity_df, "小世界敏感性分析_附录F", global_num='F5',
-               title="小世界性质敏感性分析结果", formats=['csv', 'json'])
+               title="宏观边集随机删边补边敏感性分析结果", formats=['csv', 'json'])
 
-    # 6. 绘制图16
+    # 6. 绘制图18
     print("\n" + "-" * 40)
-    print("6. 绘制图19: 网络聚类系数与平均路径长度对比图")
+    print("6. 绘制图18: 网络聚类系数与平均路径长度对比图")
     print("-" * 40)
     fig = plot_small_world_comparison(metrics, paths)
     save_figure(fig, "小世界性质对比图", global_num=18,

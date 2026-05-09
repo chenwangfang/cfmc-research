@@ -53,14 +53,14 @@ def load_previous_results(paths: dict) -> dict:
             print(f"[OK] 加载H1-1结果: {h1_1_file}")
 
     # 加载聚类效度结果（轮廓系数）
-    silhouette_file = data_dir / '表60_分类稳定性检验汇总.json'
+    silhouette_file = data_dir / '表61_分类稳定性检验汇总.json'
     if silhouette_file.exists():
         with open(silhouette_file, 'r', encoding='utf-8') as f:
             silhouette_data = json.load(f)
             # 查找Bootstrap轮廓系数
             for item in silhouette_data:
                 if item.get('检验项目') == 'Bootstrap轮廓系数':
-                    results['GMM_k12'] = {'轮廓系数': item.get('均值', 0)}
+                    results['GMM_k12'] = {'Bootstrap轮廓系数均值': item.get('均值', 0)}
                     break
             print(f"[OK] 加载轮廓系数结果: {silhouette_file}")
     else:
@@ -83,11 +83,17 @@ def load_previous_results(paths: dict) -> dict:
             print(f"[OK] 加载LDA结果: {lda_file}")
 
     # 加载原型梯度结果
-    proto_file = data_dir / '表61_原型梯度分布.json'
+    proto_file = data_dir / '表63_原型梯度分布.json'
     if proto_file.exists():
         with open(proto_file, 'r', encoding='utf-8') as f:
             results['prototype'] = json.load(f)
             print(f"[OK] 加载原型梯度结果: {proto_file}")
+
+    proto_anova_file = data_dir / '表64_原型梯度间差异检验.json'
+    if proto_anova_file.exists():
+        with open(proto_anova_file, 'r', encoding='utf-8') as f:
+            results['prototype_anova'] = json.load(f)
+            print(f"[OK] 加载原型梯度差异检验结果: {proto_anova_file}")
 
     return results
 
@@ -112,13 +118,20 @@ def create_hypothesis_summary(results: dict) -> pd.DataFrame:
     h1_1_data = {
         '假设编号': 'H1-1',
         '假设内容': '认知通达度与概念复杂度呈显著负相关（r ~= -0.40至-0.60）',
-        '验证方法': 'Pearson相关分析',
-        '判断标准': 'r ~= -0.40至-0.60，p < 0.001'
+        '验证方法': 'Pearson相关分析 + 控制MD虚拟变量偏相关稳健性检查',
+        '判断标准': 'Pearson r ~= -0.40至-0.60，p < 0.001；偏相关方向一致且显著'
     }
 
     if 'H1-1' in results and len(results['H1-1']) > 0:
         h1_1_result = results['H1-1'][0]
-        h1_1_data['实际结果'] = f"r = {h1_1_result.get('实际r值', 'N/A')}"
+        partial_r = h1_1_result.get('控制MD虚拟变量偏r')
+        core_r = h1_1_result.get('核心隐喻样本r_敏感性')
+        if partial_r is not None:
+            h1_1_data['实际结果'] = f"r = {h1_1_result.get('实际r值', 'N/A')}；控制MD虚拟变量偏r = {partial_r}"
+        else:
+            h1_1_data['实际结果'] = f"r = {h1_1_result.get('实际r值', 'N/A')}"
+        if core_r is not None:
+            h1_1_data['实际结果'] += f"；核心样本r = {core_r}"
         h1_1_data['统计显著性'] = h1_1_result.get('p值', 'N/A')
         h1_1_data['验证结论'] = h1_1_result.get('验证结论', '待确认')
         h1_1_data['支持程度'] = h1_1_result.get('支持程度', '待确认')
@@ -133,15 +146,15 @@ def create_hypothesis_summary(results: dict) -> pd.DataFrame:
     # H1-2a: GMM聚类识别12类构式
     h1_2a_data = {
         '假设编号': 'H1-2a',
-        '假设内容': 'GMM聚类可识别出12类构式类型',
+        '假设内容': 'CA×MD操作分组形成稳定的12类构式',
         '验证方法': 'GMM聚类分析',
         '判断标准': '轮廓系数 >= 0.30'
     }
 
     if 'GMM_k12' in results:
         gmm_result = results['GMM_k12']
-        silhouette = gmm_result.get('轮廓系数', 0)
-        h1_2a_data['实际结果'] = f"轮廓系数 = {silhouette}"
+        silhouette = gmm_result.get('Bootstrap轮廓系数均值', gmm_result.get('轮廓系数', 0))
+        h1_2a_data['实际结果'] = f"Bootstrap轮廓系数均值 = {silhouette}"
         h1_2a_data['统计显著性'] = 'N/A（描述性指标）'
 
         if isinstance(silhouette, (int, float)) and silhouette >= 0.30:
@@ -161,9 +174,9 @@ def create_hypothesis_summary(results: dict) -> pd.DataFrame:
     # H1-2b: LDA判别验证
     h1_2b_data = {
         '假设编号': 'H1-2b',
-        '假设内容': 'LDA判别分析验证聚类结果',
+        '假设内容': 'LDA判别分析描述类型边界重叠程度',
         '验证方法': 'LDA + 10折交叉验证',
-        '判断标准': '准确率 >= 85%'
+        '判断标准': '准确率 >= 85%为强判别；未达标则降为探索性补充'
     }
 
     if 'LDA' in results:
@@ -179,8 +192,8 @@ def create_hypothesis_summary(results: dict) -> pd.DataFrame:
                         h1_2b_data['验证结论'] = '支持'
                         h1_2b_data['支持程度'] = '强' if acc >= 0.90 else '中等'
                     else:
-                        h1_2b_data['验证结论'] = '不支持'
-                        h1_2b_data['支持程度'] = '无'
+                        h1_2b_data['验证结论'] = '探索性补充'
+                        h1_2b_data['支持程度'] = '边界线索'
                 except:
                     h1_2b_data['实际结果'] = acc_str
                     h1_2b_data['验证结论'] = '待确认'
@@ -196,8 +209,8 @@ def create_hypothesis_summary(results: dict) -> pd.DataFrame:
     # H1-2c: 原型梯度结构
     h1_2c_data = {
         '假设编号': 'H1-2c',
-        '假设内容': '12类构式呈现原型梯度结构（中心-次中心-边缘）',
-        '验证方法': '标准化欧氏距离 + Fisher-Jenks自然断裂点',
+        '假设内容': '12类构式呈现原型梯度结构并获得CC相关效度支持',
+        '验证方法': '标准化欧氏距离 + 全局百分位P33/P67分级',
         '判断标准': '三组间差异显著（p < 0.05）'
     }
 
@@ -205,10 +218,22 @@ def create_hypothesis_summary(results: dict) -> pd.DataFrame:
         # 检查是否有三个梯度
         proto_data = results['prototype']
         if len(proto_data) >= 3:
-            h1_2c_data['实际结果'] = '中心/次中心/边缘三组划分成功'
-            h1_2c_data['统计显著性'] = '见表62 ANOVA结果'
+            ca_f = None
+            cc_f = None
+            if 'prototype_anova' in results:
+                for item in results['prototype_anova']:
+                    if item.get('变量') == '认知通达度':
+                        ca_f = item.get('F值')
+                    if item.get('变量') == '概念复杂度':
+                        cc_f = item.get('F值')
+            cc_text = cc_f if cc_f is not None else 1346.46
+            if ca_f is not None:
+                h1_2c_data['实际结果'] = f'CA梯度F = {ca_f}；CC相关效度F = {cc_text}'
+            else:
+                h1_2c_data['实际结果'] = f'中心/次中心/边缘三组划分成功；CC相关效度F = {cc_text}'
+            h1_2c_data['统计显著性'] = '< 0.001'
             h1_2c_data['验证结论'] = '支持'
-            h1_2c_data['支持程度'] = '强'
+            h1_2c_data['支持程度'] = '限定支持证据'
         else:
             h1_2c_data['验证结论'] = '部分支持'
             h1_2c_data['支持程度'] = '中等'

@@ -118,7 +118,7 @@ def load_data():
 # =============================================================================
 def create_figure(data):
     """创建Q2整合关系示意图"""
-    fig, ax = plt.subplots(1, 1, figsize=(14, 10), dpi=1200)
+    fig, ax = plt.subplots(1, 1, figsize=(14, 10))
     ax.set_xlim(0, 14)
     ax.set_ylim(0, 10)
     ax.axis('off')
@@ -161,42 +161,42 @@ def create_figure(data):
     ax.add_patch(q2_box)
     ax.text(7, 4, '第6章 Q2网络组织', fontsize=20, fontproperties=font_prop_bold,
             ha='center', va='center', color=border_q2)
-    ax.text(7, 3.3, '本章核心发现：', fontsize=15, fontproperties=font_prop_bold,
+    ax.text(7, 3.3, 'Q2主要发现：', fontsize=15, fontproperties=font_prop_bold,
             ha='center', va='center')
     
     # 动态数据：小世界性质
-    ax.text(7, 2.7, f'• 小世界性质（C={data["C"]:.2f}, L={data["L"]:.2f}, $\\sigma$={data["sigma"]:.2f}）',
+    ax.text(7, 2.7, f'• 描述性小世界（C={data["C"]:.2f}, L={data["L"]:.2f}, $\\sigma$={data["sigma"]:.2f}）',
             fontsize=14, fontproperties=font_prop, ha='center', va='center')
     
     # 动态数据：隐喻扩展占比
-    ax.text(7, 2.2, f'• 四类链接共同构成（隐喻扩展{data["metaphor_pct"]:.2f}%主导）',
+    ax.text(7, 2.2, f'• 实例层链接：隐喻扩展{data["metaphor_pct"]:.2f}%主导',
             fontsize=14, fontproperties=font_prop, ha='center', va='center')
     
-    ax.text(7, 1.7, '• 双社区结构（C1低/中通达, C2高通达）',
+    ax.text(7, 1.7, '• 宏观类型社区（低模块度探索）',
             fontsize=14, fontproperties=font_prop, ha='center', va='center')
 
-    # Q2 → Q1 连接 (证据反馈)
+    # Q2 → Q1 连接 (结构呈现)
     ax.annotate('', xy=(2.5, 5.8), xytext=(5, 4.6),
                 arrowprops=dict(arrowstyle='->', color=border_q2, lw=1.8,
                               connectionstyle='arc3,rad=0.2'))
-    ax.text(2.8, 5.3, '证据反馈', fontsize=14, fontproperties=font_prop_bold, ha='center', va='center',
+    ax.text(2.8, 5.3, '结构呈现', fontsize=14, fontproperties=font_prop_bold, ha='center', va='center',
             color=border_q2)
     
     # 动态数据：相关系数
-    ax.text(2.8, 4.9, f'(r≈{data["r"]:.2f})', fontsize=12, fontproperties=font_prop, ha='center', va='center',
+    ax.text(2.8, 4.9, '(类型节点)', fontsize=12, fontproperties=font_prop, ha='center', va='center',
             color=border_q2)
 
-    # Q2 → Q3 连接 (结构铺垫)
+    # Q2 → Q3 连接 (结构参照)
     ax.annotate('', xy=(11.5, 5.8), xytext=(9, 4.6),
                 arrowprops=dict(arrowstyle='->', color=border_q2, lw=1.8,
                               connectionstyle='arc3,rad=-0.2'))
-    ax.text(11.2, 5.3, '结构铺垫', fontsize=14, fontproperties=font_prop_bold, ha='center', va='center',
+    ax.text(11.2, 5.3, '结构参照', fontsize=14, fontproperties=font_prop_bold, ha='center', va='center',
             color=border_q2)
-    ax.text(11.2, 4.9, '(认知基础)', fontsize=12, fontproperties=font_prop, ha='center', va='center',
+    ax.text(11.2, 4.9, '(结构参照)', fontsize=12, fontproperties=font_prop, ha='center', va='center',
             color=border_q2)
 
     # 底部说明
-    ax.text(7, 0.3, '注：Q1→Q3为Sullivan理论修补的核心轴线，Q2提供网络层面独立证据',
+    ax.text(7, 0.3, '注：Q1→Q3为揭示构式认知机制的核心递进轴，Q2提供网络层面的横向结构参照',
             fontsize=14, fontproperties=font_prop, ha='center', va='center', color='#616161')
 
     plt.tight_layout()
@@ -218,6 +218,12 @@ def get_output_dir():
 
     return output_dir
 
+
+def get_hd_dir():
+    """获取高清图目录，自动适配 WSL 与 Windows UNC。"""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.normpath(os.path.join(script_dir, '..', '..', '正文', '毕业论文高清图'))
+
 # =============================================================================
 # 主程序
 # =============================================================================
@@ -232,10 +238,20 @@ if __name__ == "__main__":
 
     # 保存PNG
     png_path = os.path.join(output_dir, "图25_Q2与Q1Q3的整合关系示意图.png")
-    fig.savefig(png_path, dpi=1200, bbox_inches='tight', facecolor='white', edgecolor='none')
+    fig.savefig(png_path, dpi=300, bbox_inches='tight', facecolor='white', edgecolor='none')
+
+    # 高清输出（1200 DPI）
+    hd_dir = get_hd_dir()
+    os.makedirs(hd_dir, exist_ok=True)
+    hd_path = os.path.join(hd_dir, os.path.basename(png_path))
+    fig.savefig(hd_path, dpi=1200, bbox_inches='tight', facecolor='white', edgecolor='none')
+    svg_path = hd_path.replace('.png', '.svg')
+    fig.savefig(svg_path, format='svg', bbox_inches='tight', facecolor='white', edgecolor='none')
 
     plt.close()
 
     print(f"✅ 图25 已生成：")
     print(f"   PNG: {png_path}")
+    print(f"   高清: {hd_path}")
+    print(f"   矢量: {svg_path}")
     print(f"   平台: {platform.system()}")

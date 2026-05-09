@@ -7,7 +7,7 @@ utils_公共函数.py
 
 功能：提供所有脚本共用的工具函数
 创建日期：2025-12-05
-数据来源：CFMC_5989.json（5,989条有效语料）
+数据来源：CFMC_5989.json（强去重键裁定后5,971条发布标注记录）
 """
 
 import os
@@ -33,6 +33,47 @@ warnings.filterwarnings('ignore', category=FutureWarning)
 # 路径管理
 # =============================================================================
 
+def _path_exists(path: Path) -> bool:
+    """安全判断路径存在性，兼容不可达的 Windows/UNC 候选路径。"""
+    try:
+        return path.exists()
+    except OSError:
+        return False
+
+
+def get_stats_base_path() -> Path:
+    """
+    获取统计分析根目录。
+
+    优先相对当前脚本定位，确保 Windows 通过 UNC 访问 WSL 文件系统时
+    不会退回到 Windows 不可识别的 /home/... 路径。
+    """
+    script_dir = Path(__file__).resolve().parent
+    candidates = [
+        script_dir.parent,
+        Path.cwd().parent if Path.cwd().name == '脚本' else Path.cwd(),
+        Path('/home/tomja/projects/博士毕业论文/大论文/论文撰写/统计分析'),
+        Path(r'\\wsl$\Ubuntu\home\tomja\projects\博士毕业论文\大论文\论文撰写\统计分析'),
+        Path(r'\\wsl.localhost\Ubuntu\home\tomja\projects\博士毕业论文\大论文\论文撰写\统计分析'),
+        Path(r'E:\博士毕业论文\大论文\论文撰写\统计分析'),
+    ]
+
+    for candidate in candidates:
+        if _path_exists(candidate / '语料_输入' / 'CFMC_5989.json'):
+            return candidate
+
+    for candidate in candidates:
+        if _path_exists(candidate / '结果_输出'):
+            return candidate
+
+    return script_dir.parent
+
+
+def get_hd_output_dir() -> Path:
+    """获取毕业论文高清图输出目录，自动适配 WSL 与 Windows UNC。"""
+    return get_stats_base_path().parent / '正文' / '毕业论文高清图'
+
+
 def get_paths() -> Dict[str, Path]:
     """
     获取系统路径（WSL/Windows兼容）
@@ -48,22 +89,15 @@ def get_paths() -> Dict[str, Path]:
         - 'scripts': 脚本目录
         - 'data_file': 主数据文件路径
     """
-    # 检测系统环境
-    is_wsl = 'microsoft' in platform.uname().release.lower()
-    is_windows = platform.system() == 'Windows'
-
-    if is_wsl or not is_windows:
-        # WSL或Linux环境
-        base_path = Path('/home/tomja/projects/博士毕业论文/大论文/论文撰写/统计分析')
-    else:
-        # Windows环境
-        base_path = Path('/home/tomja/projects/博士毕业论文/大论文/论文撰写/统计分析')
+    base_path = get_stats_base_path()
 
     paths = {
         'base': base_path,
+        'writing_base': base_path.parent,
         'input': base_path / '语料_输入',
         'output_data': base_path / '结果_输出' / 'Data',
         'output_figures': base_path / '结果_输出' / 'Figures',
+        'hd_figures': get_hd_output_dir(),
         'scripts': base_path / '脚本',
         'data_file': base_path / '语料_输入' / 'CFMC_5989.json'
     }
@@ -312,6 +346,11 @@ def setup_matplotlib_chinese():
 
 
 # =============================================================================
+# 高清图输出目录
+# =============================================================================
+HD_OUTPUT_DIR = get_hd_output_dir()
+
+# =============================================================================
 # 图表保存
 # =============================================================================
 
@@ -357,6 +396,17 @@ def save_figure(fig: plt.Figure,
                    facecolor='white', edgecolor='none')
         saved_paths.append(file_path)
 
+    # 高清输出（1200 DPI）
+    HD_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    hd_path = HD_OUTPUT_DIR / f"{fig_id}_{filename}.png"
+    fig.savefig(hd_path, dpi=1200, bbox_inches='tight',
+               facecolor='white', edgecolor='none')
+
+    # SVG 矢量输出（用于 Word→PDF 无损转换）
+    svg_path = HD_OUTPUT_DIR / f"{fig_id}_{filename}.svg"
+    fig.savefig(svg_path, format='svg', bbox_inches='tight',
+               facecolor='white', edgecolor='none')
+
     # 清除缓存避免图像重叠
     plt.close(fig)
     plt.clf()
@@ -364,6 +414,8 @@ def save_figure(fig: plt.Figure,
     print(f"[OK] 已保存 {fig_id}: {title or filename}")
     for p in saved_paths:
         print(f"  → {p}")
+    print(f"  → 高清: {hd_path}")
+    print(f"  → 矢量: {svg_path}")
 
     return saved_paths
 
@@ -864,14 +916,14 @@ def bin_accessibility(value: float) -> str:
 
 def bin_complexity(value: float) -> str:
     """
-    将5级概念复杂度归并为3级
+    将4级概念复杂度归并为3级
 
-    归并规则：1-2级=低, 3级=中, 4-5级=高
+    归并规则：1-2级=低, 3级=中, 4级=高
 
     Parameters
     ----------
     value : float
-        概念复杂度原始值（1-5）
+        概念复杂度原始值（1-4）
 
     Returns
     -------
@@ -1033,7 +1085,7 @@ MAPPING_BASIS_CODES = {
     'function_similarity': '功能相似性'
 }
 
-# 映射基础数值编码（用于SEM分析）
+# 映射基础数值编码（历史输出/扩展分析使用；不进入当前PLS-SEM）
 MAPPING_BASIS_NUM = {
     'similarity': 1,
     'correlation': 2,

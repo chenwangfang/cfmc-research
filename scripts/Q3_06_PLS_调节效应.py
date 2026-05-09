@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 """
 Q3_06_调节效应.py
-汉语认知特色的调节效应分析
+整体性/关系性文本间接指标的探索性调节效应分析
 
 研究内容：
-- 探索性分析：汉语认知特色（整体意象、关系性思维）对四阶段机制的调节效应
-- holistic_imagery与relational_thinking高相关（r~=0.74），合并为复合调节变量
-- 检验调节变量对各路径的调节作用
+- 探索性分析：整体性意象与关系性思维文本间接指标对四阶段机制路径关联的交互线索
+- holistic_imagery与relational_thinking高相关（r~=0.74），合并为降维用复合指标
+- 基于阶段指标均值进行OLS交互回归，不在PLS-SEM内部重新估计调节路径
+- 报告未校正p值，并提供FDR(BH)与Bonferroni敏感性提示
 
 输出：
-- 表101：调节效应检验结果表
-- 图29：汉语认知风格调节效应示意图
+- 表66：调节效应检验结果表
+- 图32：整体性/关系性复合指标调节效应示意图
 
 依赖：
 - CFMC_for_SEM.csv（由Q3_01生成）
@@ -20,6 +21,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 import sys
+import textwrap
 from scipy import stats
 import warnings
 warnings.filterwarnings('ignore')
@@ -56,6 +58,14 @@ def format_p_value(p) -> str:
         return f'{p:.3f}'
     else:
         return f'{p:.3f}'
+
+def format_q_value(q) -> str:
+    """格式化FDR(BH) q值"""
+    if pd.isna(q):
+        return '-'
+    if q < 0.001:
+        return '<.001'
+    return f'{q:.3f}'
 
 def ensure_output_dirs(dirs):
     """确保输出目录存在"""
@@ -104,8 +114,13 @@ def load_sem_data() -> pd.DataFrame:
 
 def create_composite_moderator(df: pd.DataFrame) -> pd.DataFrame:
     """
-    创建复合调节变量
+    创建整体性/关系性复合指标。
+
+    若两个文本间接指标字段缺失，直接报错终止。调节效应分析不能使用模拟数据替代真实
+    标注字段，否则会污染复现结果。
+
     chinese_cognitive_style = (holistic_imagery + relational_thinking) / 2
+    chinese_cognitive_style_z = zscore(chinese_cognitive_style)
     """
     print_subsection_header("创建复合调节变量")
 
@@ -145,16 +160,21 @@ def create_composite_moderator(df: pd.DataFrame) -> pd.DataFrame:
         print(f"  复合变量有效样本: {df['chinese_cognitive_style'].notna().sum()}")
 
     else:
-        print("  警告：缺少汉语认知特色字段，使用模拟数据")
-        np.random.seed(42)
-        df['chinese_cognitive_style'] = np.random.uniform(2, 5, len(df))
-        df['chinese_cognitive_style_z'] = stats.zscore(df['chinese_cognitive_style'])
+        missing = []
+        if not has_holistic:
+            missing.append('holistic_imagery')
+        if not has_relational:
+            missing.append('relational_thinking')
+        raise ValueError(
+            f"缺少整体性/关系性文本间接指标字段: {', '.join(missing)}。"
+            "请先回到CFMC标注数据或Q3_01预处理脚本补齐真实字段。"
+        )
 
     return df
 
 
 def calculate_latent_scores(df: pd.DataFrame) -> pd.DataFrame:
-    """计算潜变量得分（通过指标平均）"""
+    """计算阶段指标均值（各阶段指标标准化后取均值）"""
     print_subsection_header("计算潜变量得分")
 
     for stage, fields in STAGE_FIELDS.items():
@@ -190,7 +210,8 @@ def test_moderation_regression(df: pd.DataFrame,
                                 y_var: str,
                                 moderator: str = 'chinese_cognitive_style_z') -> dict:
     """
-    使用回归分析检验调节效应
+    使用OLS交互回归检验阶段路径关联的调节效应。
+
     Y = b0 + b1*X + b2*M + b3*X*M + e
     """
     from scipy import stats as sp_stats
@@ -299,6 +320,43 @@ def test_moderation_regression(df: pd.DataFrame,
         }
 
 
+def add_multiplicity_sensitivity(results_df: pd.DataFrame,
+                                 alpha: float = 0.05) -> pd.DataFrame:
+    """加入多重检验敏感性列，供探索性报告解释边界使用。"""
+    results_df = results_df.copy()
+    p_values = pd.to_numeric(results_df['p'], errors='coerce')
+    valid_p = p_values.dropna()
+
+    results_df['FDR(BH) q'] = np.nan
+    results_df['Bonferroni提示'] = '-'
+    results_df['Bonferroni阈值'] = np.nan
+
+    m = len(valid_p)
+    if m == 0:
+        return results_df
+
+    bonf_alpha = alpha / m
+    results_df.loc[p_values.notna(), 'Bonferroni阈值'] = bonf_alpha
+    results_df.loc[p_values.notna(), 'Bonferroni提示'] = np.where(
+        p_values[p_values.notna()] <= bonf_alpha,
+        '通过',
+        '未通过'
+    )
+
+    ordered = valid_p.sort_values()
+    running_q = 1.0
+    q_values = {}
+    for rank, (idx, p_value) in reversed(list(enumerate(ordered.items(), start=1))):
+        q_value = min(running_q, p_value * m / rank)
+        q_values[idx] = min(q_value, 1.0)
+        running_q = q_values[idx]
+
+    for idx, q_value in q_values.items():
+        results_df.at[idx, 'FDR(BH) q'] = q_value
+
+    return results_df
+
+
 def test_all_moderation_effects(df: pd.DataFrame) -> pd.DataFrame:
     """检验所有路径的调节效应"""
     print_subsection_header("检验各路径调节效应")
@@ -360,7 +418,7 @@ def test_all_moderation_effects(df: pd.DataFrame) -> pd.DataFrame:
                       '*' if mod_result.get('p_interaction', 1) < 0.05 else ''
         })
 
-    return pd.DataFrame(results)
+    return add_multiplicity_sensitivity(pd.DataFrame(results))
 
 
 def simple_slopes_analysis(df: pd.DataFrame,
@@ -420,8 +478,8 @@ def simple_slopes_analysis(df: pd.DataFrame,
 
 
 def create_moderation_table(mod_results: pd.DataFrame) -> str:
-    """创建表101：调节效应检验结果表"""
-    print_subsection_header("创建表94")
+    """创建表66：调节效应检验结果表"""
+    print_subsection_header("创建调节效应检验表")
 
     # 格式化数值
     table_data = []
@@ -435,6 +493,8 @@ def create_moderation_table(mod_results: pd.DataFrame) -> str:
             't': f"{row['t']:.2f}" if not np.isnan(row['t']) else '-',
             'p': format_p_value(row['p']) if not np.isnan(row['p']) else '-',
             'ΔR²': f"{row['ΔR²']:.4f}" if not np.isnan(row['ΔR²']) else '-',
+            'FDR(BH) q': format_q_value(row['FDR(BH) q']) if not np.isnan(row['FDR(BH) q']) else '-',
+            'Bonferroni提示': row['Bonferroni提示'],
             '显著性': row['显著性']
         })
 
@@ -443,36 +503,106 @@ def create_moderation_table(mod_results: pd.DataFrame) -> str:
     # 保存（文件名与映射文件对齐：PLS_调节效应检验结果.csv）
     from pathlib import Path
     output_dir = get_paths()['output_data']
-    table_df.to_csv(output_dir / 'PLS_调节效应检验结果.csv', index=True, encoding='utf-8-sig')
+    table_df.to_csv(output_dir / 'PLS_调节效应检验结果.csv', index=False, encoding='utf-8-sig')
     table_df.to_json(output_dir / 'PLS_调节效应检验结果.json', orient='records', force_ascii=False, indent=2)
     print(f"  [OK] Saved: PLS_调节效应检验结果.csv / .json")
 
     # 生成Markdown
-    md_content = """
-## 表94 汉语认知特色对四阶段机制的调节效应检验
+    md_content = textwrap.dedent("""
+## 整体性/关系性复合指标对四阶段机制的调节效应检验
 
-| 路径 | 系数 | n | b(交互) | SE | t | p | ΔR² | 显著性 |
-|:-----|:-----|---:|--------:|----:|---:|----:|-----:|:------:|
-"""
+| 路径 | 系数 | n | b(交互) | SE | t | 未校正p | ΔR² | FDR(BH) q | Bonferroni提示 | 显著性 |
+|:-----|:-----|---:|--------:|----:|---:|----:|-----:|----:|:--------------:|:------:|
+    """).lstrip()
     for item in table_data:
-        md_content += f"| {item['路径']} | {item['系数']} | {item['n']} | {item['b(交互)']} | {item['SE']} | {item['t']} | {item['p']} | {item['ΔR²']} | {item['显著性']} |\n"
+        md_content += f"| {item['路径']} | {item['系数']} | {item['n']} | {item['b(交互)']} | {item['SE']} | {item['t']} | {item['p']} | {item['ΔR²']} | {item['FDR(BH) q']} | {item['Bonferroni提示']} | {item['显著性']} |\n"
 
-    md_content += """
-**注**：调节变量为汉语认知特色复合变量（chinese_cognitive_style），由holistic_imagery和relational_thinking平均计算得到。
+    md_content += textwrap.dedent("""
+**注**：调节变量为整体性/关系性复合指标，脚本中原始均值为chinese_cognitive_style，入模变量为标准化后的chinese_cognitive_style_z。
+各路径中的*η*₁、*η*₂和*η*₃为阶段指标均值，由对应指标标准化后取均值；本表报告的是OLS交互回归结果，不是在PLS-SEM内部重新估计的调节路径。
 b(交互)为交互项回归系数，ΔR²为加入交互项后R²的增量。
+表中p为未校正口径；Bonferroni提示按四项交互检验的.05/4阈值判断，FDR(BH) q用于敏感性参照。
 *p < 0.05, **p < 0.01, ***p < 0.001
-"""
+    """)
+
+    return md_content
+
+
+def create_moderator_group_counts(df: pd.DataFrame) -> str:
+    """生成整体性/关系性复合指标三分组样本量说明。"""
+    valid_mask = df['chinese_cognitive_style_z'].notna()
+    M = df.loc[valid_mask, 'chinese_cognitive_style_z'].values
+
+    high_mask = M >= np.percentile(M, 67)
+    mid_mask = (M > np.percentile(M, 33)) & (M < np.percentile(M, 67))
+    low_mask = M <= np.percentile(M, 33)
+
+    group_counts = {
+        '有效样本': int(valid_mask.sum()),
+        '高复合指标组': int(high_mask.sum()),
+        '中复合指标组': int(mid_mask.sum()),
+        '低复合指标组': int(low_mask.sum()),
+    }
+    print("  复合指标分组样本量:", group_counts)
+
+    return textwrap.dedent(f"""
+    **复合指标分组样本量**：有效样本{group_counts['有效样本']}例；高复合指标组*n*={group_counts['高复合指标组']}，中复合指标组*n*={group_counts['中复合指标组']}，低复合指标组*n*={group_counts['低复合指标组']}。三组样本量差异来自分位点处的密集分布。
+
+    """)
+
+
+def create_core_sample_sensitivity(df: pd.DataFrame) -> str:
+    """生成核心隐喻样本敏感性检验。"""
+    if 'construction_type' not in df.columns:
+        return ""
+
+    core_df = df[df['construction_type'].eq('copular_metaphor')].copy()
+    if len(core_df) == 0 or len(core_df) == len(df):
+        return ""
+
+    print_subsection_header("核心隐喻样本敏感性检验")
+    core_df = create_composite_moderator(core_df)
+    core_df = calculate_latent_scores(core_df)
+    core_results = test_all_moderation_effects(core_df)
+
+    output_dir = get_paths()['output_data']
+    core_results.to_csv(output_dir / 'PLS_调节效应核心样本敏感性.csv', index=False, encoding='utf-8-sig')
+    core_results.to_json(output_dir / 'PLS_调节效应核心样本敏感性.json', orient='records', force_ascii=False, indent=2)
+    print("  [OK] Saved: PLS_调节效应核心样本敏感性.csv / .json")
+
+    md_content = textwrap.dedent(f"""
+    ## 核心隐喻样本敏感性检验
+
+    发布全样本共{len(df)}例，其中construction_type为copular_metaphor的核心隐喻样本为{len(core_df)}例。核心样本敏感性检验用于判断边界/对照记录是否改变交互项方向与解释边界。
+
+    | 路径 | n | b(交互) | SE | t | 未校正p | ΔR² | FDR(BH) q | Bonferroni提示 |
+    |:-----|---:|--------:|----:|---:|----:|-----:|----:|:--------------:|
+    """).lstrip()
+
+    for _, row in core_results.iterrows():
+        md_content += (
+            f"| {row['路径']} | {int(row['n']) if not np.isnan(row['n']) else '-'} "
+            f"| {row['b(交互)']:.3f} | {row['SE']:.3f} | {row['t']:.2f} "
+            f"| {format_p_value(row['p'])} | {row['ΔR²']:.4f} "
+            f"| {format_q_value(row['FDR(BH) q'])} | {row['Bonferroni提示']} |\n"
+        )
+
+    md_content += textwrap.dedent("""
+
+    **敏感性结论**：核心隐喻样本与发布全样本的交互项方向一致；*η*₃→Y在核心样本中达到Bonferroni敏感性阈值，但Y仍为系词功能名义编码，因此该端点结果仍只能解释为编码口径下的探索性线索，不解释为等级路径增强。
+
+    """)
 
     return md_content
 
 
 def plot_moderation_effect(df: pd.DataFrame, mod_results: pd.DataFrame):
-    """绘制图29：汉语认知风格调节效应示意图"""
+    """绘制图32：整体性/关系性复合指标调节效应示意图"""
     import matplotlib.pyplot as plt
     import matplotlib.font_manager as fm
     from utils_公共函数 import get_font_paths
 
-    print_subsection_header("绘制图24")
+    print_subsection_header("绘制图32")
 
     # 设置中文字体
     font_paths = get_font_paths()
@@ -542,9 +672,9 @@ def plot_moderation_effect(df: pd.DataFrame, mod_results: pd.DataFrame):
         # 分三组绘制（线型：红色短虚线，绿色实线，蓝色长虚线）
         # dashes格式：(线段长度, 间隔长度)
         groups = [
-            ('高认知特色', M >= np.percentile(M, 67), 'red', '--', None),
-            ('中认知特色', (M > np.percentile(M, 33)) & (M < np.percentile(M, 67)), 'green', '-', None),
-            ('低认知特色', M <= np.percentile(M, 33), 'blue', '--', (12, 4))  # 长虚线
+            ('高复合指标', M >= np.percentile(M, 67), 'red', '--', None),
+            ('中复合指标', (M > np.percentile(M, 33)) & (M < np.percentile(M, 67)), 'green', '-', None),
+            ('低复合指标', M <= np.percentile(M, 33), 'blue', '--', (12, 4))  # 长虚线
         ]
 
         import matplotlib.patheffects as pe
@@ -587,12 +717,12 @@ def plot_moderation_effect(df: pd.DataFrame, mod_results: pd.DataFrame):
         ax.legend(loc='upper right', fontsize=12, prop=font_cn)
         ax.grid(True, alpha=0.3)
 
-    # fig.suptitle('图24 汉语认知风格调节效应示意图',
+    # fig.suptitle('图32 整体性/关系性复合指标调节效应示意图',
                  # fontproperties=font_cn_title, fontsize=18, fontweight='bold', y=1.02)
     plt.tight_layout()
 
-    save_figure(fig, "汉语认知风格调节效应示意图", global_num=32,
-                title="汉语认知风格调节效应示意图")
+    save_figure(fig, "整体性关系性复合指标调节效应示意图", global_num=32,
+                title="整体性/关系性复合指标调节效应示意图")
     plt.close()
 
 
@@ -600,18 +730,21 @@ def summarize_moderation_findings(mod_results: pd.DataFrame) -> str:
     """总结调节效应发现"""
     print_subsection_header("调节效应发现总结")
 
-    sig_paths = mod_results[mod_results['显著性'] != '']
-    nonsig_paths = mod_results[mod_results['显著性'] == '']
+    sig_paths = mod_results[mod_results['显著性'].isin(['*', '**', '***'])]
+    nonsig_paths = mod_results[~mod_results['显著性'].isin(['*', '**', '***'])]
+    bonf_pass_paths = mod_results[mod_results['Bonferroni提示'] == '通过']
 
     summary = "\n### 调节效应分析结果摘要\n\n"
 
     if len(sig_paths) > 0:
-        summary += f"**显著调节效应**：共发现{len(sig_paths)}条路径存在显著调节效应\n\n"
+        summary += f"**未校正口径下的交互线索**：共发现{len(sig_paths)}条路径的交互项达到*p* < 0.05。\n\n"
         for _, row in sig_paths.iterrows():
-            summary += f"- {row['路径']}：b(交互) = {row['b(交互)']:.3f}, p = {format_p_value(row['p'])}\n"
+            summary += f"- {row['路径']}：b(交互) = {row['b(交互)']:.3f}, p = {format_p_value(row['p'])}, FDR(BH) q = {format_q_value(row['FDR(BH) q'])}, Bonferroni提示 = {row['Bonferroni提示']}\n"
 
-        summary += "\n**理论解释**：汉语认知特色（整体意象和关系性思维）对上述路径具有调节作用，"
-        summary += "表明汉语使用者在隐喻加工过程中表现出与英语使用者不同的认知模式。\n\n"
+        summary += f"\n**多重检验敏感性**：四项交互检验的Bonferroni阈值为.0125；通过该阈值的路径为{len(bonf_pass_paths)}条。"
+        summary += "FDR(BH)口径用于辅助判断探索性线索，不能替代确认性检验。\n\n"
+        summary += "**理论解释边界**：整体性/关系性复合指标与上述路径存在交互线索，"
+        summary += "提示文本中的整体化、关系化线索可能与阶段路径关联强度存在阶段性关联。该结果不能直接解释为语言使用者稳定认知风格、话题突出性测量结果或汉英加工差异。\n\n"
 
         # 具体解释各显著路径
         summary += "**具体解读**：\n"
@@ -620,19 +753,19 @@ def summarize_moderation_findings(mod_results: pd.DataFrame) -> str:
             b_val = row['b(交互)']
             if path == 'eta2->eta3':
                 direction = "正向" if b_val > 0 else "负向"
-                summary += f"- **{path}**：汉语认知特色对参照点锚定→跨域映射路径有{direction}调节作用"
-                summary += f"（b={b_val:.3f}），表明整体意象和关系性思维增强了参照点到映射的转化效率。\n"
+                summary += f"- **{path}**：整体性/关系性复合指标对参照点锚定→跨域映射路径有{direction}调节作用"
+                summary += f"（b={b_val:.3f}），说明该路径的关联方向与复合指标水平有关，需结合效应量谨慎解释。\n"
             elif path == 'eta3->Y':
                 direction = "正向" if b_val > 0 else "负向"
-                summary += f"- **{path}**：汉语认知特色对跨域映射→系词功能路径有{direction}调节作用"
-                summary += f"（b={b_val:.3f}），表明汉语认知风格影响映射关系向语言编码的转化方式。\n"
+                summary += f"- **{path}**：整体性/关系性复合指标对跨域映射→系词功能路径有{direction}调节作用"
+                summary += f"（b={b_val:.3f}），但Y为系词功能名义编码，且该路径未通过Bonferroni阈值；因此只能作为语言编码端点在当前数值化口径下的探索性线索，不解释为路径强度增强。\n"
             elif path == 'eta1->eta2':
                 direction = "正向" if b_val > 0 else "负向"
-                summary += f"- **{path}**：汉语认知特色对认知域激活→参照点锚定路径有{direction}调节作用"
+                summary += f"- **{path}**：整体性/关系性复合指标对认知域激活→参照点锚定路径有{direction}调节作用"
                 summary += f"（b={b_val:.3f}）。\n"
             elif path == 'eta1->eta3':
                 direction = "正向" if b_val > 0 else "负向"
-                summary += f"- **{path}**：汉语认知特色对认知域激活→跨域映射直接路径有{direction}调节作用"
+                summary += f"- **{path}**：整体性/关系性复合指标对认知域激活→跨域映射直接路径有{direction}调节作用"
                 summary += f"（b={b_val:.3f}）。\n"
 
     if len(nonsig_paths) > 0 and len(sig_paths) > 0:
@@ -641,10 +774,10 @@ def summarize_moderation_findings(mod_results: pd.DataFrame) -> str:
             summary += f"- {row['路径']}：b(交互) = {row['b(交互)']:.3f}, p = {format_p_value(row['p'])} (ns)\n"
 
     if len(sig_paths) == 0:
-        summary += "**结果**：未发现汉语认知特色对四阶段机制路径的显著调节效应。\n\n"
+        summary += "**结果**：未发现整体性/关系性复合指标对四阶段机制路径的显著调节效应。\n\n"
         summary += "**可能解释**：\n"
-        summary += "1. 四阶段机制可能具有跨文化的普遍性\n"
-        summary += "2. 汉语认知特色的影响可能体现在其他层面\n"
+        summary += "1. 四阶段机制可能具有较稳定的结构\n"
+        summary += "2. 整体性/关系性文本线索的影响可能体现在其他层面\n"
         summary += "3. 样本量或测量精度可能限制了调节效应的检测\n"
 
     print(summary)
@@ -675,54 +808,56 @@ def main():
     print_section_header("调节效应检验")
     mod_results = test_all_moderation_effects(df)
 
-    # 5. 创建表94
+    # 5. 创建调节效应检验表
     print_section_header("生成输出")
     table_md = create_moderation_table(mod_results)
+    group_counts_md = create_moderator_group_counts(df)
+    core_sensitivity_md = create_core_sample_sensitivity(df)
 
-    # 6. 绘制图24
+    # 6. 绘制图32
     plot_moderation_effect(df, mod_results)
 
     # 7. 总结发现
     summary = summarize_moderation_findings(mod_results)
 
     # 保存完整报告
-    report = f"""# Q3_06 调节效应分析报告
+    report = "\n\n".join([
+        "# Q3_06 调节效应分析报告",
+        "## 分析定位\n本分析属于**探索性分析**（定量），基于阶段指标均值检验整体性/关系性文本间接指标与四阶段认知编码机制路径之间的交互线索，并报告多重检验敏感性。",
+        "## 分析目的\n探索性分析整体性意象与关系性思维两个文本间接指标是否与阶段路径关联强度存在交互关系。",
+        textwrap.dedent("""\
+        ## 理论背景
+        本分析不直接测量话题突出性或语言使用者认知风格，而是使用语料标注中的两个文本间接指标：
+        - **整体性意象（holistic_imagery）**：记录隐喻表达是否调用整体场景化线索
+        - **关系性思维（relational_thinking）**：记录源域与目标域之间关系对应的显化程度
 
-## 分析定位
-本分析属于**探索性分析**（定量），检验汉语认知特色对四阶段认知编码机制的调节效应。
-
-## 分析目的
-探索性分析汉语认知特色（整体意象、关系性思维）对四阶段认知编码机制的调节效应。
-
-## 理论背景
-汉语作为主题突出语言，具有区别于英语等主语突出语言的认知特征：
-- **整体意象（holistic_imagery）**：强调整体性思维，倾向于将事物置于关系网络中理解
-- **关系性思维（relational_thinking）**：注重事物间的关系和联系，而非独立实体
-
-这两个认知特征可能对Sullivan四阶段认知编码机制产生调节作用，影响隐喻加工的认知路径。
-
-## 方法
-1. 将holistic_imagery和relational_thinking合并为复合调节变量chinese_cognitive_style
-   - 公式：chinese_cognitive_style = (holistic_imagery + relational_thinking) / 2
-   - 理由：两变量高相关（*r* ≈ 0.74），合并可减少多重共线性
-2. 使用层级回归分析检验交互效应
-   - 模型：Y = b₀ + b₁X + b₂M + b₃(X×M) + ε
-   - 交互项b₃显著表明存在调节效应
-3. 计算ΔR²评估调节效应大小
-   - ΔR² = R²(含交互项) - R²(不含交互项)
-
-{table_md}
-
-{summary}
-
-## 与第8章的关系
-- **本节（7.5节）定位**：实证发现——呈现调节效应检验的统计结果
-- **第8.3节定位**：理论讨论——基于本节发现，讨论汉语认知特色对Sullivan框架的理论扩展意义
-
-## 输出文件
-- 表94_调节效应检验结果.csv
-- 图28_汉语认知风格调节效应示意图.png
-"""
+        这两个文本线索可能与Sullivan四阶段认知编码机制的路径强度存在关联，但其证据功能限于探索性解释，不能直接替代文化心理学或语言类型学测量。"""),
+        textwrap.dedent("""\
+        ## 方法
+        1. 将holistic_imagery和relational_thinking合并为整体性/关系性复合指标
+           - 公式：chinese_cognitive_style = (holistic_imagery + relational_thinking) / 2；chinese_cognitive_style_z = zscore(chinese_cognitive_style)
+           - 理由：两变量高相关（*r* ≈ 0.74），合并可减少多重共线性；该处理属于探索性降维，不预设稳定心理构念已经得到测量
+        2. 按表24的指标分配计算阶段指标均值，使用OLS交互回归检验交互效应
+           - *η*₁、*η*₂和*η*₃为对应指标标准化后的指标均值，不等同于重新估计的PLS潜变量得分
+           - 模型：Y = b₀ + b₁X + b₂M + b₃(X×M) + ε
+           - 交互项b₃在未校正口径下达到显著，仅说明存在探索性交互线索
+        3. 计算ΔR²评估调节效应大小
+           - ΔR² = R²(含交互项) - R²(不含交互项)
+        4. 对四项交互检验报告FDR(BH) q值与Bonferroni敏感性提示"""),
+        group_counts_md.strip(),
+        table_md.strip(),
+        core_sensitivity_md.strip(),
+        summary.strip(),
+        textwrap.dedent("""\
+        ## 与第8章的关系
+        - **本节（7.5节）定位**：实证发现——呈现调节效应检验的统计结果与解释边界
+        - **第8.3节定位**：理论讨论——基于本节发现，讨论整体化、关系化文本线索对Sullivan框架本土化的启发；话题突出型语言推演与本报告的文本线索结果分属不同证据层级"""),
+        textwrap.dedent("""\
+        ## 输出文件
+        - PLS_调节效应检验结果.csv
+        - PLS_调节效应核心样本敏感性.csv
+        - 图32_整体性关系性复合指标调节效应示意图.png""")
+    ]).strip() + "\n"
 
     report_path = OUTPUT_DIR / "Q3_06_调节效应分析报告.md"
     with open(report_path, 'w', encoding='utf-8') as f:

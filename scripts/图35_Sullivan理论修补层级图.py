@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 图35 Sullivan理论修补层级图
-展示本研究对Sullivan (2013)理论的双重修补：C1跨语言验证 + C2机制形式化
+展示本研究对Sullivan (2013)理论的双重修补：C1跨语言适用性检验 + C2机制形式化
 数据：动态读取自 结果_输出/Data/ 目录
 """
 
@@ -44,22 +44,13 @@ def get_chinese_font():
 
 def get_output_dir():
     """获取输出目录路径，适配不同操作系统"""
-    system = platform.system()
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.normpath(os.path.join(script_dir, '..', '结果_输出', 'Figures'))
 
-    if system == 'Windows':
-        return r'E:\博士毕业论文\大论文\论文撰写\统计分析\结果_输出\Figures'
-    elif system == 'Linux':
-        if os.path.exists('/mnt/c/Windows'):
-            return '/home/tomja/projects/博士毕业论文/大论文/论文撰写/统计分析/结果_输出/Figures'
-        else:
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            return script_dir
-    elif system == 'Darwin':
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        return script_dir
-    else:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        return script_dir
+def get_hd_dir():
+    """获取高清图目录，自动适配 WSL 与 Windows UNC。"""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.normpath(os.path.join(script_dir, '..', '..', '正文', '毕业论文高清图'))
 
 def get_data_dir():
     """获取Data目录路径"""
@@ -157,21 +148,21 @@ def main():
     ax.text(0.3, 1.9, '基\n础\n层', fontsize=12, ha='center', va='center',
             color=border_base, fontproperties=font_prop_bold)
 
-    # --- 中层：C1跨语言验证 ---
+    # --- 中层：C1跨语言适用性检验 ---
     mid_box = FancyBboxPatch((1, 3.6), 10, 2.2,
                              boxstyle="round,pad=0.05,rounding_size=0.3",
                              facecolor=color_mid, edgecolor=border_mid, linewidth=2.5)
     ax.add_patch(mid_box)
 
-    ax.text(6, 5.1, 'C1：跨语言验证', fontsize=16,
+    ax.text(6, 5.1, 'C1：跨语言适用性检验', fontsize=16,
             ha='center', va='center', color=border_mid, fontproperties=font_prop_bold)
-    ax.text(6, 4.45, '验证范围：英语 → 汉语（印欧语系 → 汉藏语系）', fontsize=12,
+    ax.text(6, 4.45, '检验范围：英语 → 汉语（印欧语系 → 汉藏语系）', fontsize=12,
             ha='center', va='center', color='#333', fontproperties=font_prop)
     # 动态数据：C1相关系数
     ax.text(6, 3.95, f'核心证据：认知通达度×概念复杂度负相关（r = {data["c1_r"]:.3f}）', fontsize=12,
             ha='center', va='center', color='#333', fontproperties=font_prop)
 
-    ax.text(0.3, 4.7, '验\n证\n层', fontsize=12, ha='center', va='center',
+    ax.text(0.3, 4.7, '检\n验\n层', fontsize=12, ha='center', va='center',
             color=border_mid, fontproperties=font_prop_bold)
 
     # --- 顶层：C2机制形式化 ---
@@ -185,7 +176,7 @@ def main():
     ax.text(6, 7.25, '细化路径：两步程序 → 四阶段认知编码机制', fontsize=12,
             ha='center', va='center', color='#333', fontproperties=font_prop)
     # 动态数据：C2 PLS-SEM指标
-    ax.text(6, 6.75, f'量化验证：PLS-SEM建模（GoF = {data["gof"]:.3f}，beta = {data["beta2"]:.3f}）', fontsize=12,
+    ax.text(6, 6.75, f'量化检验：PLS-SEM建模（GoF = {data["gof"]:.3f}，beta = {data["beta2"]:.3f}）', fontsize=12,
             ha='center', va='center', color='#333', fontproperties=font_prop)
 
     ax.text(0.3, 7.5, '形\n式\n化\n层', fontsize=12, ha='center', va='center',
@@ -215,7 +206,7 @@ def main():
             color='#C62828', fontproperties=font_prop_bold)
 
     # ============ 底部说明 ============
-    note_text = '说明：底层为Sullivan原理论基础；中层C1验证其跨语言适用性；顶层C2将描述框架形式化为可检验模型'
+    note_text = '说明：底层为Sullivan原理论基础；中层C1提供跨语言适用性检验；顶层C2聚焦前三阶段机制形式化及语言编码边界'
     ax.text(6, 0.3, note_text, fontsize=10, ha='center', va='center',
             color='#666', fontproperties=font_prop_italic)
 
@@ -224,11 +215,24 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     plt.tight_layout()
-    plt.savefig(f"{output_dir}/图35_Sullivan理论修补层级图.png", dpi=1200, bbox_inches='tight',
+    png_path = f"{output_dir}/图35_Sullivan理论修补层级图.png"
+    plt.savefig(png_path, dpi=300, bbox_inches='tight',
+                facecolor='white', edgecolor='none')
+
+    # 高清输出（1200 DPI）
+    hd_dir = get_hd_dir()
+    os.makedirs(hd_dir, exist_ok=True)
+    hd_path = os.path.join(hd_dir, os.path.basename(png_path))
+    plt.savefig(hd_path, dpi=1200, bbox_inches='tight',
+                facecolor='white', edgecolor='none')
+    svg_path = hd_path.replace('.png', '.svg')
+    plt.savefig(svg_path, format='svg', bbox_inches='tight',
                 facecolor='white', edgecolor='none')
 
     print("✅ 图35已保存至:")
-    print(f"  - {output_dir}/图35_Sullivan理论修补层级图.png")
+    print(f"  - {png_path}")
+    print(f"  - 高清: {hd_path}")
+    print(f"  - 矢量: {svg_path}")
 
     plt.close()
 

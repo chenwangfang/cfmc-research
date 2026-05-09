@@ -54,7 +54,7 @@ FONTS = {
     'theory_author': 11,
     'box_title': 15,
     'box_subtitle': 13,
-    'content': 13,
+    'content': 12,
     'arrow_label': 11
 }
 
@@ -109,28 +109,51 @@ def create_figure_8_2():
     # ax.text(6, 8.65, '图34 本研究与相关理论关系图',
             # fontsize=FONTS['main_title'], ha='center', va='center', fontweight='bold')
 
-    # ========== 顶层：CMT（居中）==========
-    # CMT框（居中显示）
-    cmt_width = 5.0
-    cmt_x = (12 - cmt_width) / 2  # 居中
+    # ========== 顶层：CMT 与 CIT ==========
+    # CMT框
+    cmt_width = 4.7
+    cmt_x = 0.9
     cmt_box = FancyBboxPatch((cmt_x, row1_y), cmt_width, row1_h,
                               boxstyle="round,pad=0.02,rounding_size=0.1",
                               facecolor=COLORS['cmt'],
                               edgecolor=COLORS['border_cmt'],
                               linewidth=2)
     ax.add_patch(cmt_box)
-    ax.text(6, row1_y + row1_h - 0.45, '概念隐喻理论（CMT）',
+    ax.text(cmt_x + cmt_width / 2, row1_y + row1_h - 0.45, '概念隐喻理论（CMT）',
             fontsize=FONTS['theory_name'], ha='center', fontweight='bold',
             color=COLORS['border_cmt'])
-    ax.text(6, row1_y + 0.35, 'Lakoff & Johnson (1980)',
+    ax.text(cmt_x + cmt_width / 2, row1_y + 0.35, 'Lakoff & Johnson (1980)',
             fontsize=FONTS['theory_author'], ha='center', color='#424242', style='italic')
 
-    # CMT → Sullivan 箭头（居中）
-    ax.annotate('', xy=(6, row2_top + 0.05), xytext=(6, row1_y - 0.05),
+    # CIT框
+    cit_width = 4.7
+    cit_x = 6.4
+    cit_box = FancyBboxPatch((cit_x, row1_y), cit_width, row1_h,
+                              boxstyle="round,pad=0.02,rounding_size=0.1",
+                              facecolor=COLORS['cit'],
+                              edgecolor=COLORS['border_cit'],
+                              linewidth=2)
+    ax.add_patch(cit_box)
+    ax.text(cit_x + cit_width / 2, row1_y + row1_h - 0.45, '概念整合理论（CIT）',
+            fontsize=FONTS['theory_name'], ha='center', fontweight='bold',
+            color=COLORS['border_cit'])
+    ax.text(cit_x + cit_width / 2, row1_y + 0.35, 'Fauconnier & Turner (2002)',
+            fontsize=FONTS['theory_author'], ha='center', color='#424242', style='italic')
+
+    # CMT → Sullivan 箭头
+    ax.annotate('', xy=(4.2, row2_top + 0.05), xytext=(cmt_x + cmt_width / 2, row1_y - 0.05),
                 arrowprops=dict(arrowstyle='->,head_length=0.25,head_width=0.18',
                                color=COLORS['arrow'], lw=1.5))
-    ax.text(6.15, (row1_y + row2_top) / 2, '概念层面',
+    ax.text(4.35, (row1_y + row2_top) / 2, '概念基础',
             fontsize=FONTS['arrow_label'], ha='left', color=COLORS['arrow'])
+
+    # CIT → CFMC 虚线箭头
+    ax.annotate('', xy=(9.4, row3_top + 0.05), xytext=(cit_x + cit_width / 2, row1_y - 0.05),
+                arrowprops=dict(arrowstyle='->,head_length=0.22,head_width=0.16',
+                               color=COLORS['border_cit'], lw=1.5,
+                               linestyle='--'))
+    ax.text(9.55, 5.65, '意义建构参照',
+            fontsize=FONTS['arrow_label'], ha='left', color=COLORS['border_cit'])
 
     # ========== 中层：Sullivan理论 ==========
     sullivan_box = FancyBboxPatch((2.5, row2_y), 7, row2_h,
@@ -149,7 +172,7 @@ def create_figure_8_2():
     ax.annotate('', xy=(6, row3_top + 0.05), xytext=(6, row2_y - 0.05),
                 arrowprops=dict(arrowstyle='->,head_length=0.3,head_width=0.22',
                                color=COLORS['main_arrow'], lw=2.5))
-    ax.text(6.15, (row2_y + row3_top) / 2, '本研究：汉语验证与本土化修补',
+    ax.text(6.15, (row2_y + row3_top) / 2, '本研究：汉语验证与类型学补充',
             fontsize=FONTS['arrow_label'], ha='left', fontweight='bold',
             color=COLORS['main_arrow'])
 
@@ -176,11 +199,11 @@ def create_figure_8_2():
 
     # 三个要点
     content_base = row3_y + 0.45
-    ax.text(2.3, content_base + 1.0, '• 借鉴Langacker认知语法：深化认知机制（参照点锚定）',
+    ax.text(2.3, content_base + 1.0, '• 借鉴Langacker认知语法：操作化参照点锚定',
             fontsize=FONTS['content'], ha='left', color='#1B5E20')
     ax.text(2.3, content_base + 0.5, '• 整合Goldberg构式网络理论：补充网络组织（Q2）',
             fontsize=FONTS['content'], ha='left', color='#1B5E20')
-    ax.text(2.3, content_base, '• 聚焦汉语类型学特征：零系词现象、认知风格调节',
+    ax.text(2.3, content_base, '• 纳入汉语类型学与文化认知线索：零系词、话题突出、整体性/关系性',
             fontsize=FONTS['content'], ha='left', color='#1B5E20')
 
     # ========== 底层：认知语法 和 构式语法 ==========
@@ -229,15 +252,17 @@ def create_figure_8_2():
 
 def get_output_dir():
     """获取输出目录，兼容WSL和Windows"""
-    system = platform.system()
-
-    if system == 'Windows':
-        base_path = r'E:\博士毕业论文\大论文\论文撰写\统计分析\结果_输出\Figures'
-    else:
-        base_path = '/home/tomja/projects/博士毕业论文/大论文/论文撰写/统计分析/结果_输出/Figures'
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    base_path = os.path.normpath(os.path.join(script_dir, '..', '结果_输出', 'Figures'))
 
     os.makedirs(base_path, exist_ok=True)
     return base_path
+
+
+def get_hd_dir():
+    """获取高清图目录，自动适配 WSL 与 Windows UNC。"""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.normpath(os.path.join(script_dir, '..', '..', '正文', '毕业论文高清图'))
 
 
 def main():
@@ -248,10 +273,21 @@ def main():
 
     png_path = os.path.join(output_dir, "图34_本研究与相关理论关系图.png")
 
-    fig.savefig(png_path, dpi=1200, bbox_inches='tight', facecolor='white')
+    fig.savefig(png_path, dpi=300, bbox_inches='tight', facecolor='white')
+
+    # 高清输出（1200 DPI）
+    hd_dir = get_hd_dir()
+    os.makedirs(hd_dir, exist_ok=True)
+    hd_path = os.path.join(hd_dir, os.path.basename(png_path))
+    fig.savefig(hd_path, dpi=1200, bbox_inches='tight', facecolor='white')
+    svg_path = hd_path.replace('.png', '.svg')
+    fig.savefig(svg_path, format='svg', bbox_inches='tight', facecolor='white')
+
     plt.close(fig)
 
     print(f"图34已保存:\n  PNG: {png_path}")
+    print(f"  高清: {hd_path}")
+    print(f"  矢量: {svg_path}")
 
 
 if __name__ == "__main__":

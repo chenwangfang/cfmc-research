@@ -36,12 +36,48 @@ from pathlib import Path
 # 配置
 # =============================================================================
 
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
+
+def _is_m_s_python(path: Path) -> bool:
+    """判断解释器是否来自 m_s 统计分析环境。"""
+    normalized = str(path).replace('\\', '/').lower()
+    return '/m_s/' in normalized or normalized.endswith('/m_s/python.exe')
+
+
+def resolve_python_executable() -> str:
+    """选择当前平台可用的 m_s Python，Windows 端优先继承当前解释器。"""
+    current = Path(sys.executable)
+    candidates = []
+
+    if current.exists() and _is_m_s_python(current):
+        candidates.append(current)
+
+    if platform.system() == 'Windows':
+        candidates.extend([
+            Path(r'F:\ProgramData\anaconda3\envs\m_s\python.exe'),
+            Path(r'C:\ProgramData\anaconda3\envs\m_s\python.exe'),
+            current,
+        ])
+    else:
+        candidates.extend([
+            Path('/home/tomja/miniconda3/envs/m_s/bin/python'),
+            current,
+        ])
+
+    for candidate in candidates:
+        try:
+            if candidate.exists():
+                return str(candidate)
+        except OSError:
+            continue
+
+    return sys.executable
+
+
 # 全局统一Python路径（m_s虚拟环境，含plspm及所有分析依赖）
-# 自动检测运行环境：Windows直接运行 vs WSL运行
-if platform.system() == 'Windows':
-    PYTHON_EXE = r'/home/tomja/miniconda3/envs/m_s/bin/python'
-else:
-    PYTHON_EXE = '/home/tomja/miniconda3/envs/m_s/bin/python'
+PYTHON_EXE = resolve_python_executable()
 
 # 脚本运行顺序定义
 SCRIPTS = {
@@ -152,13 +188,18 @@ def run_script(script_path, script_dir):
         # stdout直接输出到终端（避免多进程管道死锁）
         # stderr捕获用于错误报告
         result = subprocess.run(
-            [PYTHON_EXE, script_path],
-            cwd=script_dir,
+            [str(PYTHON_EXE), str(script_path)],
+            cwd=str(script_dir),
             stdout=None,  # 直接输出到终端
             stderr=subprocess.PIPE,
             text=True,
             encoding='utf-8',
             errors='replace',
+            env={
+                **os.environ,
+                'PYTHONIOENCODING': 'utf-8',
+                'PYTHONUTF8': '1',
+            },
             timeout=3600  # 1小时超时（Bootstrap 5000次需要较长时间）
         )
         return {
@@ -266,6 +307,7 @@ def run_all(modules_to_run, dry_run=False):
     print_header("汉语系表隐喻构式统计分析 - 批量运行工具")
     print(f"\n  运行时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"  脚本目录: {script_dir}")
+    print(f"  Python解释器: {PYTHON_EXE}")
     print(f"  运行模块: {', '.join(modules_to_run)}")
     print(f"  运行模式: {'预览模式（不实际执行）' if dry_run else '正式运行'}")
 
