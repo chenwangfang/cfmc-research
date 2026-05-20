@@ -35,9 +35,9 @@ This research builds upon Sullivan's (2013) theory of metaphorical constructions
 
 | Question | Content | Hypotheses | Chapter |
 |:---------|:--------|:-----------|:--------|
-| **Q1** | Typological System | H1-1: Negative correlation between cognitive accessibility and conceptual complexity (*r* = -0.40 to -0.60)<br>H1-2: qualified support for the CA×MD 12-cell operational classification; GMM/Bootstrap stability and prototype-gradient evidence meet the criteria, while LDA is retained as a boundary stress test | Ch.5 |
+| **Q1** | Typological System | H1-1: Negative correlation between cognitive accessibility and conceptual complexity (*r* = -0.40 to -0.60)<br>H1-2: qualified support for the CA×MD 12-cell operational classification; GMM/Bootstrap stability, CA×MD operational-space stratification, and conceptual-complexity external-validity evidence meet the criteria, while LDA is retained as a boundary stress test | Ch.5 |
 | **Q2** | Network Organization | H2: the full 12-type unweighted macro network meets the descriptive small-world criterion (*C*≥0.60, *L*≤3.0, σ>1), with finite mean-level robustness under perturbation tests | Ch.6 |
-| **Q3** | Cognitive Mechanism | H3-1: PLS-SEM tests the first three cognitive-stage pathways and the boundary relation to linguistic encoding (GoF>0.25, core path coefficients significant at *p*<.05; PLS-MGA with 3 copula function groups tests cross-function sharing of the first three pathways)<br>H3-2: Layered bridge associations among prototype distance, cognitive accessibility, and four-stage indicators; 9-type Pearson approximate correlations are reported as exploratory supplements only | Ch.7 |
+| **Q3** | Cognitive Mechanism | H3-1: PLS-SEM tests the first three cognitive-stage pathways and the boundary relation to linguistic encoding, with Y treated as a numeric proxy for nominal copula-function categories (GoF>0.25, core path coefficients significant at *p*<.05; PLS-MGA with 3 copula function groups tests cross-function sharing of the first three pathways)<br>H3-2: Layered bridge associations among prototype distance, cognitive accessibility, and four-stage indicators; 9-type Pearson approximate correlations are reported as exploratory supplements only | Ch.7 |
 
 ## Repository Structure
 

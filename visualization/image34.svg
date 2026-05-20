@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-05-08T22:26:43.608934</dc:date>
+    <dc:date>2026-05-19T12:01:43.396322</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 68.976 54.528 68.976 61.488
 L 68.976 140.832 
 Q 68.976 147.792 75.996 147.792 
 z
-" clip-path="url(#p90e62ea415)" style="fill: #e3f2fd; stroke: #1565c0; stroke-width: 2; stroke-linejoin: miter"/>
+" clip-path="url(#pc9bd9d7a58)" style="fill: #e3f2fd; stroke: #1565c0; stroke-width: 2; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 462.096 147.792 
@@ -53,7 +53,7 @@ Q 455.076 54.528 455.076 61.488
 L 455.076 140.832 
 Q 455.076 147.792 462.096 147.792 
 z
-" clip-path="url(#p90e62ea415)" style="fill: #fce4ec; stroke: #c2185b; stroke-width: 2; stroke-linejoin: miter"/>
+" clip-path="url(#pc9bd9d7a58)" style="fill: #fce4ec; stroke: #c2185b; stroke-width: 2; stroke-linejoin: miter"/>
    </g>
    <g id="patch_4">
     <path d="M 188.316 262.632 
@@ -66,7 +66,7 @@ Q 181.296 183.288 181.296 190.248
 L 181.296 255.672 
 Q 181.296 262.632 188.316 262.632 
 z
-" clip-path="url(#p90e62ea415)" style="fill: #fff8e1; stroke: #f9a825; stroke-width: 2.5; stroke-linejoin: miter"/>
+" clip-path="url(#pc9bd9d7a58)" style="fill: #fff8e1; stroke: #f9a825; stroke-width: 2.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_5">
     <path d="M 118.116 467.952 
@@ -79,7 +79,7 @@ Q 111.096 298.128 111.096 305.088
 L 111.096 460.992 
 Q 111.096 467.952 118.116 467.952 
 z
-" clip-path="url(#p90e62ea415)" style="fill: #e8f5e9; stroke: #2e7d32; stroke-width: 3; stroke-linejoin: miter"/>
+" clip-path="url(#pc9bd9d7a58)" style="fill: #e8f5e9; stroke: #2e7d32; stroke-width: 3; stroke-linejoin: miter"/>
    </g>
    <g id="patch_6">
     <path d="M 151.812 454.032 
@@ -92,7 +92,7 @@ Q 146.196 339.888 146.196 345.456
 L 146.196 448.464 
 Q 146.196 454.032 151.812 454.032 
 z
-" clip-path="url(#p90e62ea415)" style="fill: #c8e6c9; stroke-dasharray: 5.55,2.4; stroke-dashoffset: 0; stroke: #2e7d32; stroke-width: 1.5; stroke-linejoin: miter"/>
+" clip-path="url(#pc9bd9d7a58)" style="fill: #c8e6c9; stroke-dasharray: 5.55,2.4; stroke-dashoffset: 0; stroke: #2e7d32; stroke-width: 1.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_7">
     <path d="M 97.056 575.832 
@@ -105,7 +105,7 @@ Q 90.036 503.448 90.036 510.408
 L 90.036 568.872 
 Q 90.036 575.832 97.056 575.832 
 z
-" clip-path="url(#p90e62ea415)" style="fill: #f3e5f5; stroke: #7b1fa2; stroke-width: 2; stroke-linejoin: miter"/>
+" clip-path="url(#pc9bd9d7a58)" style="fill: #f3e5f5; stroke: #7b1fa2; stroke-width: 2; stroke-linejoin: miter"/>
    </g>
    <g id="patch_8">
     <path d="M 504.216 575.832 
@@ -118,7 +118,7 @@ Q 497.196 503.448 497.196 510.408
 L 497.196 568.872 
 Q 497.196 575.832 504.216 575.832 
 z
-" clip-path="url(#p90e62ea415)" style="fill: #fbe9e7; stroke: #e64a19; stroke-width: 2; stroke-linejoin: miter"/>
+" clip-path="url(#pc9bd9d7a58)" style="fill: #fbe9e7; stroke: #e64a19; stroke-width: 2; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <!-- 概念隐喻理论（CMT） -->
@@ -3321,8 +3321,8 @@ z
     </g>
    </g>
    <g id="text_10">
-    <!-- CFMC理论框架 -->
-    <g style="fill: #2e7d32" transform="translate(376.402734 323.88) scale(0.15 -0.15)">
+    <!-- CFMC -->
+    <g style="fill: #2e7d32" transform="translate(406.402734 323.88) scale(0.15 -0.15)">
      <defs>
       <path id="MicrosoftYaHei-Bold-46" d="M 3319 3997 
 L 1591 3997 
@@ -3337,125 +3337,11 @@ L 3319 4841
 L 3319 3997 
 z
 " transform="scale(0.015625)"/>
-      <path id="MicrosoftYaHei-Bold-6846" d="M 75 1697 
-Q 572 2550 800 3416 
-L 138 3416 
-L 138 4203 
-L 819 4203 
-L 819 5303 
-L 1613 5303 
-L 1613 4203 
-L 2175 4203 
-L 2175 3416 
-L 1613 3416 
-L 1613 2797 
-Q 1897 2634 2250 2422 
-L 1925 1691 
-Q 1769 1834 1613 1972 
-L 1613 -847 
-L 819 -847 
-L 819 1656 
-Q 594 1100 269 553 
-Q 181 1141 75 1697 
-z
-M 2300 5041 
-L 6163 5041 
-L 6163 4309 
-L 3081 4309 
-L 3081 116 
-L 6250 116 
-L 6250 -616 
-L 2300 -616 
-L 2300 5041 
-z
-M 3244 1297 
-L 4294 1297 
-L 4294 1891 
-L 3438 1891 
-L 3438 2541 
-L 4294 2541 
-L 4294 3134 
-L 3331 3134 
-L 3331 3797 
-L 6031 3797 
-L 6031 3134 
-L 5044 3134 
-L 5044 2541 
-L 5925 2541 
-L 5925 1891 
-L 5044 1891 
-L 5044 1297 
-L 6125 1297 
-L 6125 634 
-L 3244 634 
-L 3244 1297 
-z
-" transform="scale(0.015625)"/>
-      <path id="MicrosoftYaHei-Bold-67b6" d="M 1594 2191 
-Q 1553 2438 1394 2866 
-Q 1131 2372 663 1997 
-Q 444 2234 88 2509 
-Q 894 3178 981 4091 
-L 300 4091 
-L 300 4778 
-L 1038 4778 
-Q 1050 5028 1050 5316 
-L 1806 5316 
-Q 1806 5034 1794 4778 
-L 3138 4778 
-Q 3106 2888 3011 2661 
-Q 2916 2434 2752 2318 
-Q 2588 2203 1594 2191 
-z
-M 1738 4091 
-Q 1638 3334 1419 2913 
-Q 1781 2897 2013 2897 
-Q 2203 2897 2256 3036 
-Q 2309 3175 2331 4091 
-L 1738 4091 
-z
-M 3525 4928 
-L 5931 4928 
-L 5931 2422 
-L 3525 2422 
-L 3525 4928 
-z
-M 5119 3097 
-L 5119 4253 
-L 4338 4253 
-L 4338 3097 
-L 5119 3097 
-z
-M 2756 2253 
-L 3644 2253 
-L 3644 1778 
-L 6225 1778 
-L 6225 1066 
-L 4272 1066 
-Q 5044 397 6306 22 
-Q 6075 -366 5913 -778 
-Q 4494 -247 3644 791 
-L 3644 -859 
-L 2756 -859 
-L 2756 784 
-Q 1956 -147 500 -753 
-Q 313 -366 88 -53 
-Q 1219 350 2059 1066 
-L 200 1066 
-L 200 1778 
-L 2756 1778 
-L 2756 2253 
-z
-" transform="scale(0.015625)"/>
      </defs>
      <use xlink:href="#MicrosoftYaHei-Bold-43"/>
      <use xlink:href="#MicrosoftYaHei-Bold-46" x="67.333984"/>
      <use xlink:href="#MicrosoftYaHei-Bold-4d" x="123.144531"/>
      <use xlink:href="#MicrosoftYaHei-Bold-43" x="225.976562"/>
-     <use xlink:href="#MicrosoftYaHei-Bold-7406" x="293.310547"/>
-     <use xlink:href="#MicrosoftYaHei-Bold-8bba" x="393.310547"/>
-     <use xlink:href="#MicrosoftYaHei-Bold-6846" x="493.310547"/>
-     <use xlink:href="#MicrosoftYaHei-Bold-67b6" x="593.310547"/>
     </g>
    </g>
    <g id="text_11">
@@ -5997,7 +5883,7 @@ L 608.363968 469.70359
   </g>
  </g>
  <defs>
-  <clipPath id="p90e62ea415">
+  <clipPath id="pc9bd9d7a58">
    <rect x="7.2" y="7.2" width="842.4" height="626.4"/>
   </clipPath>
  </defs>

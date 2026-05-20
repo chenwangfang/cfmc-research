@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-05-08T22:26:39.441668</dc:date>
+    <dc:date>2026-05-19T12:01:39.252596</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 68.6592 82.044 68.6592 88.974
 L 68.6592 185.301 
 Q 68.6592 192.231 75.6432 192.231 
 z
-" clip-path="url(#p96c8e4d818)" style="fill: #e3f2fd; stroke: #1565c0; stroke-width: 2.5; stroke-linejoin: miter"/>
+" clip-path="url(#pb1e47acbf2)" style="fill: #e3f2fd; stroke: #1565c0; stroke-width: 2.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 421.3512 344.691 
@@ -53,7 +53,7 @@ Q 414.3672 199.854 414.3672 206.784
 L 414.3672 337.761 
 Q 414.3672 344.691 421.3512 344.691 
 z
-" clip-path="url(#p96c8e4d818)" style="fill: #fff3e0; stroke: #ef6c00; stroke-width: 2.5; stroke-linejoin: miter"/>
+" clip-path="url(#pb1e47acbf2)" style="fill: #fff3e0; stroke: #ef6c00; stroke-width: 2.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_4">
     <path d="M 75.6432 504.081 
@@ -66,17 +66,17 @@ Q 68.6592 366.174 68.6592 373.104
 L 68.6592 497.151 
 Q 68.6592 504.081 75.6432 504.081 
 z
-" clip-path="url(#p96c8e4d818)" style="fill: #e8f5e9; stroke: #2e7d32; stroke-width: 2.5; stroke-linejoin: miter"/>
+" clip-path="url(#pb1e47acbf2)" style="fill: #e8f5e9; stroke: #2e7d32; stroke-width: 2.5; stroke-linejoin: miter"/>
    </g>
    <g id="line2d_1">
     <path d="M 579.888 38.385 
 L 600.84 38.385 
-" clip-path="url(#p96c8e4d818)" style="fill: none; stroke: #7b1fa2; stroke-width: 2.5; stroke-linecap: square"/>
+" clip-path="url(#pb1e47acbf2)" style="fill: none; stroke: #7b1fa2; stroke-width: 2.5; stroke-linecap: square"/>
    </g>
    <g id="line2d_2">
     <path d="M 579.888 59.175 
 L 600.84 59.175 
-" clip-path="url(#p96c8e4d818)" style="fill: none; stroke: #ef6c00; stroke-width: 2.5; stroke-linecap: square"/>
+" clip-path="url(#pb1e47acbf2)" style="fill: none; stroke: #ef6c00; stroke-width: 2.5; stroke-linecap: square"/>
    </g>
    <g id="text_1">
     <!-- Q1 类型特征 -->
@@ -5611,8 +5611,8 @@ z
     </g>
    </g>
    <g id="text_17">
-    <!-- H3-2: |ρ|=0.40 限定性支持 -->
-    <g style="fill: #1b5e20" transform="translate(161.317375 487.449) scale(0.1 -0.1)">
+    <!-- H3-2: |ρ|=0.40 限定支持 -->
+    <g style="fill: #1b5e20" transform="translate(166.317375 487.449) scale(0.1 -0.1)">
      <defs>
       <path id="MicrosoftYaHei-7c" d="M 1134 -1628 
 L 597 -1628 
@@ -5662,9 +5662,8 @@ z
      <use xlink:href="#MicrosoftYaHei-20" x="683.203125"/>
      <use xlink:href="#MicrosoftYaHei-9650" x="712.792969"/>
      <use xlink:href="#MicrosoftYaHei-5b9a" x="812.792969"/>
-     <use xlink:href="#MicrosoftYaHei-6027" x="912.792969"/>
-     <use xlink:href="#MicrosoftYaHei-652f" x="1012.792969"/>
-     <use xlink:href="#MicrosoftYaHei-6301" x="1112.792969"/>
+     <use xlink:href="#MicrosoftYaHei-652f" x="912.792969"/>
+     <use xlink:href="#MicrosoftYaHei-6301" x="1012.792969"/>
     </g>
    </g>
    <g id="patch_5">
@@ -7700,7 +7699,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p96c8e4d818">
+  <clipPath id="pb1e47acbf2">
    <rect x="7.2" y="7.2" width="698.4" height="554.4"/>
   </clipPath>
  </defs>

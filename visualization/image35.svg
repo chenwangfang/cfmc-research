@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-05-08T22:26:50.523870</dc:date>
+    <dc:date>2026-05-19T12:01:50.041294</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 73.384125 492.588 73.384125 513.54
 L 73.384125 632.268 
 Q 73.384125 653.22 94.284375 653.22 
 z
-" clip-path="url(#pcc77ae2fc7)" style="fill: #e3f2fd; stroke: #1976d2; stroke-width: 2.5; stroke-linejoin: miter"/>
+" clip-path="url(#pe6332c9b4a)" style="fill: #e3f2fd; stroke: #1976d2; stroke-width: 2.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 94.284375 457.668 
@@ -53,7 +53,7 @@ Q 73.384125 297.036 73.384125 317.988
 L 73.384125 436.716 
 Q 73.384125 457.668 94.284375 457.668 
 z
-" clip-path="url(#pcc77ae2fc7)" style="fill: #fff8e1; stroke: #ff9800; stroke-width: 2.5; stroke-linejoin: miter"/>
+" clip-path="url(#pe6332c9b4a)" style="fill: #fff8e1; stroke: #ff9800; stroke-width: 2.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_4">
     <path d="M 94.284375 262.116 
@@ -66,7 +66,7 @@ Q 73.384125 101.484 73.384125 122.436
 L 73.384125 241.164 
 Q 73.384125 262.116 94.284375 262.116 
 z
-" clip-path="url(#pcc77ae2fc7)" style="fill: #e8f4e8; stroke: #4caf50; stroke-width: 2.5; stroke-linejoin: miter"/>
+" clip-path="url(#pe6332c9b4a)" style="fill: #e8f4e8; stroke: #4caf50; stroke-width: 2.5; stroke-linejoin: miter"/>
    </g>
    <g id="patch_5">
     <path d="M 421.205 494.082501 
@@ -78,7 +78,7 @@ L 429.205 471.174241
 Q 429.205 482.628371 429.205 494.082501 
 L 421.205 494.082501 
 z
-" clip-path="url(#pcc77ae2fc7)" style="fill: #666666; stroke: #666666; stroke-linecap: round"/>
+" clip-path="url(#pe6332c9b4a)" style="fill: #666666; stroke: #666666; stroke-linecap: round"/>
    </g>
    <g id="patch_6">
     <path d="M 421.205 298.530501 
@@ -90,7 +90,7 @@ L 429.205 275.622241
 Q 429.205 287.076371 429.205 298.530501 
 L 421.205 298.530501 
 z
-" clip-path="url(#pcc77ae2fc7)" style="fill: #666666; stroke: #666666; stroke-linecap: round"/>
+" clip-path="url(#pe6332c9b4a)" style="fill: #666666; stroke: #666666; stroke-linecap: round"/>
    </g>
    <g id="text_1">
     <!-- Sullivan (2013) 隐喻构式理论 -->
@@ -6242,7 +6242,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="pcc77ae2fc7">
+  <clipPath id="pe6332c9b4a">
    <rect x="7.2" y="7.2" width="836.01" height="698.4"/>
   </clipPath>
  </defs>
